@@ -23,6 +23,8 @@ import InterviewGuidePage from "./pages/InterviewGuidePage";
 import DriverManagementPage from "./pages/DriverManagementPage";
 import DifficultConversationsPage from "./pages/DifficultConversationsPage";
 import SchedulingPage from "./pages/SchedulingPage";
+import BookingPage from "./pages/BookingPage";
+import BookingManagementPage from "./pages/BookingManagementPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/book" element={<BookingPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
@@ -56,6 +59,7 @@ const App = () => (
               <Route path="conversations" element={<DifficultConversationsPage />} />
               <Route path="crew" element={<CrewPage />} />
               <Route path="scheduling" element={<SchedulingPage />} />
+              <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />

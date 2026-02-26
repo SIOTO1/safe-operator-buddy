@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_requests: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          equipment: string[]
+          event_date: string
+          event_end_time: string | null
+          event_id: string | null
+          event_location: string
+          event_time: string | null
+          guest_count: number | null
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          special_requests: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          equipment?: string[]
+          event_date: string
+          event_end_time?: string | null
+          event_id?: string | null
+          event_location: string
+          event_time?: string | null
+          guest_count?: number | null
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          special_requests?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          equipment?: string[]
+          event_date?: string
+          event_end_time?: string | null
+          event_id?: string | null
+          event_location?: string
+          event_time?: string | null
+          guest_count?: number | null
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          special_requests?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_availability: {
         Row: {
           available_date: string
