@@ -1,0 +1,1 @@
+ALTER TABLE public.equipment_catalog ADD COLUMN price numeric(10,2) DEFAULT NULL;
