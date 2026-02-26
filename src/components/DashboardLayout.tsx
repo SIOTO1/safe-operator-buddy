@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { to: "/dashboard", icon: BarChart3, label: "Dashboard", end: true },
@@ -18,8 +19,24 @@ const navItems = [
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [crewMode, setCrewMode] = useState(false);
+  const [orgName, setOrgName] = useState<string | null>(null);
+  const [orgLogo, setOrgLogo] = useState<string | null>(null);
   const { user, role, profile, signOut } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase
+      .from("organization_settings")
+      .select("company_name, logo_url")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setOrgName(data.company_name || null);
+          setOrgLogo(data.logo_url || null);
+        }
+      });
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,9 +53,13 @@ const DashboardLayout = () => {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
             <div className="flex items-center gap-2">
-              <Shield className="text-sidebar-primary" size={24} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-              <span className="font-display font-bold text-lg text-sidebar-accent-foreground">
-                SIOTO<span className="text-sidebar-primary">.AI</span>
+              {orgLogo ? (
+                <img src={orgLogo} alt="Company logo" className="w-7 h-7 rounded object-contain" />
+              ) : (
+                <Shield className="text-sidebar-primary" size={24} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
+              )}
+              <span className="font-display font-bold text-lg text-sidebar-accent-foreground truncate">
+                {orgName || <>SIOTO<span className="text-sidebar-primary">.AI</span></>}
               </span>
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground">
