@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { format, addDays, startOfWeek, isSameDay, parseISO, isAfter, isBefore, startOfDay } from "date-fns";
-import { CalendarDays, Plus, MapPin, Clock, Users, ChevronLeft, ChevronRight, Check, X, UserCheck, AlertTriangle } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { format, addDays, addMonths, subMonths, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, parseISO, isBefore, startOfDay, getDay } from "date-fns";
+import { CalendarDays, Plus, MapPin, Clock, Users, ChevronLeft, ChevronRight, Check, X, UserCheck, AlertTriangle, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,11 +54,14 @@ const SchedulingPage = () => {
   const isOwner = role === "owner";
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
   const [events, setEvents] = useState<Event[]>([]);
+  const [monthEvents, setMonthEvents] = useState<Event[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [crewMembers, setCrewMembers] = useState<CrewMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("calendar");
 
   // Dialog states
   const [createEventOpen, setCreateEventOpen] = useState(false);
@@ -70,6 +73,24 @@ const SchedulingPage = () => {
   const [newEvent, setNewEvent] = useState({ title: "", location: "", start_time: "08:00", end_time: "16:00", notes: "", crew_needed: "2" });
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  // Month calendar days (padded to fill grid)
+  const monthDays = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    
+    // Pad start (Monday = 0 in our grid)
+    const startDow = (getDay(monthStart) + 6) % 7; // Convert Sun=0 to Mon=0
+    const padBefore = Array.from({ length: startDow }, (_, i) => addDays(monthStart, -(startDow - i)));
+    
+    // Pad end to fill 6 rows max
+    const totalSoFar = padBefore.length + days.length;
+    const rows = Math.ceil(totalSoFar / 7);
+    const padAfter = Array.from({ length: rows * 7 - totalSoFar }, (_, i) => addDays(monthEnd, i + 1));
+    
+    return [...padBefore, ...days, ...padAfter];
+  }, [currentMonth]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -103,17 +124,31 @@ const SchedulingPage = () => {
     }
   }, [weekStart, isOwner]);
 
+  // Fetch month events separately
+  const fetchMonthEvents = useCallback(async () => {
+    try {
+      const mStart = format(monthDays[0], "yyyy-MM-dd");
+      const mEnd = format(monthDays[monthDays.length - 1], "yyyy-MM-dd");
+      const { data, error } = await supabase.from("events").select("*").gte("event_date", mStart).lte("event_date", mEnd).order("event_date");
+      if (error) throw error;
+      setMonthEvents((data || []) as Event[]);
+    } catch (err) {
+      console.error("Month fetch error:", err);
+    }
+  }, [monthDays]);
+
   useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { if (activeTab === "month") fetchMonthEvents(); }, [activeTab, fetchMonthEvents]);
 
   // Realtime subscriptions
   useEffect(() => {
     const channel = supabase
       .channel("scheduling")
-      .on("postgres_changes", { event: "*", schema: "public", table: "events" }, () => fetchData())
-      .on("postgres_changes", { event: "*", schema: "public", table: "event_assignments" }, () => fetchData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "events" }, () => { fetchData(); if (activeTab === "month") fetchMonthEvents(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "event_assignments" }, () => { fetchData(); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetchData]);
+  }, [fetchData, fetchMonthEvents, activeTab]);
 
   const handleCreateEvent = async () => {
     if (!newEvent.title || !selectedDate) return;
@@ -133,6 +168,7 @@ const SchedulingPage = () => {
       setCreateEventOpen(false);
       setNewEvent({ title: "", location: "", start_time: "08:00", end_time: "16:00", notes: "", crew_needed: "2" });
       fetchData();
+      if (activeTab === "month") fetchMonthEvents();
     } catch (err) {
       console.error(err);
       toast.error("Failed to create event");
@@ -146,6 +182,7 @@ const SchedulingPage = () => {
       if (error) throw error;
       toast.success("Event deleted");
       fetchData();
+      if (activeTab === "month") fetchMonthEvents();
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete event");
@@ -206,6 +243,11 @@ const SchedulingPage = () => {
     return events.filter(e => e.event_date === dateStr);
   };
 
+  const getMonthEventsForDay = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    return monthEvents.filter(e => e.event_date === dateStr);
+  };
+
   const getAssignmentsForEvent = (eventId: string) => {
     return assignments.filter(a => a.event_id === eventId);
   };
@@ -234,11 +276,15 @@ const SchedulingPage = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="calendar" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="calendar">
             <CalendarDays size={16} className="mr-1.5" />
             Week View
+          </TabsTrigger>
+          <TabsTrigger value="month">
+            <Calendar size={16} className="mr-1.5" />
+            Month View
           </TabsTrigger>
           <TabsTrigger value="availability">
             <UserCheck size={16} className="mr-1.5" />
@@ -361,6 +407,116 @@ const SchedulingPage = () => {
               })}
             </div>
           )}
+        </TabsContent>
+
+        {/* MONTH VIEW */}
+        <TabsContent value="month" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                <ChevronLeft size={16} />
+              </Button>
+              <span className="font-medium text-sm min-w-[140px] text-center">
+                {format(currentMonth, "MMMM yyyy")}
+              </span>
+              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                <ChevronRight size={16} />
+              </Button>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setCurrentMonth(startOfMonth(new Date()))}>
+              This Month
+            </Button>
+          </div>
+
+          {/* Day headers */}
+          <div className="grid grid-cols-7 gap-1">
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
+              <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">{d}</div>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {monthDays.map((day) => {
+              const dayEvents = getMonthEventsForDay(day);
+              const isToday = isSameDay(day, new Date());
+              const inMonth = isSameMonth(day, currentMonth);
+              const isPast = isBefore(day, today);
+
+              return (
+                <div
+                  key={day.toISOString()}
+                  className={cn(
+                    "rounded-lg border p-1.5 min-h-[90px] transition-colors",
+                    isToday ? "border-primary bg-primary/5" : "border-border",
+                    !inMonth && "opacity-40 bg-muted/20",
+                    inMonth && !isToday && "bg-card"
+                  )}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={cn(
+                      "text-xs font-bold font-display",
+                      isToday && "text-primary",
+                      !inMonth && "text-muted-foreground"
+                    )}>
+                      {format(day, "d")}
+                    </span>
+                    {isOwner && inMonth && !isPast && (
+                      <button
+                        onClick={() => {
+                          setSelectedDate(day);
+                          setCreateEventOpen(true);
+                        }}
+                        className="text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-0.5">
+                    {dayEvents.slice(0, 3).map((evt) => {
+                      const evtAssignments = getAssignmentsForEvent(evt.id);
+                      const isFull = evtAssignments.length >= evt.crew_needed;
+                      return (
+                        <div
+                          key={evt.id}
+                          onClick={() => {
+                            if (isOwner) {
+                              setSelectedEvent(evt);
+                              setAssignDialogOpen(true);
+                            }
+                          }}
+                          className={cn(
+                            "rounded px-1.5 py-0.5 text-[10px] font-medium truncate cursor-pointer transition-colors",
+                            isFull
+                              ? "bg-chart-2/15 text-chart-2"
+                              : "bg-primary/15 text-primary"
+                          )}
+                        >
+                          {evt.start_time ? `${evt.start_time.slice(0, 5)} ` : ""}{evt.title}
+                        </div>
+                      );
+                    })}
+                    {dayEvents.length > 3 && (
+                      <span className="text-[9px] text-muted-foreground pl-1">+{dayEvents.length - 3} more</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Month summary */}
+          <div className="flex gap-4 text-xs text-muted-foreground">
+            <span>{monthEvents.length} event{monthEvents.length !== 1 ? "s" : ""} this month</span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded bg-primary/20" /> Needs crew
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded bg-chart-2/20" /> Fully staffed
+            </span>
+          </div>
         </TabsContent>
 
         {/* MY AVAILABILITY */}
