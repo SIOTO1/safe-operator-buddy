@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { toast } from "sonner";
 
 interface OrgSettings {
@@ -29,6 +30,7 @@ const emptySettings: OrgSettings = {
 
 const SettingsPage = () => {
   const { role } = useAuth();
+  const { updateOrg } = useOrgSettings();
   const isOwner = role === "owner";
   const [settings, setSettings] = useState<OrgSettings>(emptySettings);
   const [loading, setLoading] = useState(true);
@@ -90,6 +92,7 @@ const SettingsPage = () => {
         if (error) throw error;
         if (data) setSettings(data);
       }
+      updateOrg(settings.company_name || null, settings.logo_url);
       toast.success("Settings saved successfully");
     } catch (err: any) {
       console.error("Error saving settings:", err);
@@ -129,6 +132,7 @@ const SettingsPage = () => {
         .getPublicUrl(fileName);
 
       setSettings((prev) => ({ ...prev, logo_url: urlData.publicUrl }));
+      updateOrg(settings.company_name || null, urlData.publicUrl);
       toast.success("Logo uploaded");
     } catch (err: any) {
       console.error("Error uploading logo:", err);
