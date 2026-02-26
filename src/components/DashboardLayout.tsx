@@ -1,0 +1,123 @@
+import { useState } from "react";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { to: "/dashboard", icon: BarChart3, label: "Dashboard", end: true },
+  { to: "/dashboard/chat", icon: MessageSquare, label: "AI Assistant" },
+  { to: "/dashboard/knowledge", icon: BookOpen, label: "Knowledge Base" },
+  { to: "/dashboard/checklists", icon: ClipboardCheck, label: "Checklists" },
+  { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
+  { to: "/dashboard/crew", icon: Users, label: "Crew" },
+];
+
+const DashboardLayout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [crewMode, setCrewMode] = useState(false);
+
+  return (
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border transform transition-transform duration-200 lg:relative lg:translate-x-0",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+            <div className="flex items-center gap-2">
+              <Shield className="text-sidebar-primary" size={24} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
+              <span className="font-display font-bold text-lg text-sidebar-accent-foreground">
+                SIOTO<span className="text-sidebar-primary">.AI</span>
+              </span>
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground">
+              <X size={20} />
+            </button>
+          </div>
+
+          <nav className="flex-1 p-3 space-y-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }) => cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <item.icon size={18} />
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* Crew Mode Toggle */}
+          <div className="p-4 border-t border-sidebar-border">
+            <button
+              onClick={() => setCrewMode(!crewMode)}
+              className={cn(
+                "flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                crewMode ? "bg-sidebar-primary text-sidebar-primary-foreground" : "bg-sidebar-accent text-sidebar-accent-foreground"
+              )}
+            >
+              <span className="flex items-center gap-2">
+                <Users size={18} />
+                Crew Mode
+              </span>
+              <span className={cn(
+                "w-8 h-5 rounded-full relative transition-colors",
+                crewMode ? "bg-success" : "bg-sidebar-border"
+              )}>
+                <span className={cn(
+                  "absolute top-0.5 w-4 h-4 rounded-full bg-sidebar-accent-foreground transition-transform",
+                  crewMode ? "left-3.5" : "left-0.5"
+                )} />
+              </span>
+            </button>
+          </div>
+
+          <div className="p-4 border-t border-sidebar-border">
+            <NavLink to="/" className="flex items-center gap-2 text-sm text-sidebar-foreground hover:text-sidebar-accent-foreground transition-colors">
+              <LogOut size={16} />
+              Sign Out
+            </NavLink>
+          </div>
+        </div>
+      </aside>
+
+      {/* Overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-foreground/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* Main */}
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <header className="flex items-center gap-4 h-14 px-4 border-b border-border bg-card lg:px-6">
+          <button onClick={() => setSidebarOpen(true)} className="lg:hidden">
+            <Menu size={20} />
+          </button>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2 text-sm">
+            {crewMode && (
+              <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+                CREW MODE
+              </span>
+            )}
+            <span className="text-muted-foreground">Demo User</span>
+          </div>
+        </header>
+        <div className="flex-1 overflow-auto">
+          <Outlet context={{ crewMode }} />
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default DashboardLayout;
