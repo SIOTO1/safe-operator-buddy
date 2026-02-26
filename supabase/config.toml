@@ -2,3 +2,9 @@ project_id = "atdpdxocpjnldajapjyp"
 
 [functions.chat]
 verify_jwt = false
+
+[functions.generate-sop-doc]
+verify_jwt = false
+
+[functions.generate-interview-guide]
+verify_jwt = false

@@ -19,6 +19,7 @@ import SettingsPage from "./pages/SettingsPage";
 import IncidentReportPage from "./pages/IncidentReportPage";
 import WaiverPage from "./pages/WaiverPage";
 import SOPsPage from "./pages/SOPsPage";
+import InterviewGuidePage from "./pages/InterviewGuidePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="incident-report" element={<IncidentReportPage />} />
               <Route path="waiver" element={<WaiverPage />} />
               <Route path="sops" element={<SOPsPage />} />
+              <Route path="interview-guide" element={<InterviewGuidePage />} />
               <Route path="crew" element={<CrewPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
