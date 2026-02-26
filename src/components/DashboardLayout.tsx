@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings } from "lucide-react";
+import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ const navItems = [
   { to: "/dashboard/knowledge", icon: BookOpen, label: "Knowledge Base" },
   { to: "/dashboard/checklists", icon: ClipboardCheck, label: "Checklists" },
   { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
+  { to: "/dashboard/incident-report", icon: AlertTriangle, label: "Incident Report" },
   { to: "/dashboard/crew", icon: Users, label: "Crew" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
 ];
