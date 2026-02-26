@@ -13,7 +13,7 @@ const navItems = [
   { to: "/dashboard/checklists", icon: ClipboardCheck, label: "Checklists" },
   { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
   { to: "/dashboard/crew", icon: Users, label: "Crew" },
-  { to: "/dashboard/settings", icon: Settings, label: "Settings" },
+  { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
 ];
 
 const DashboardLayout = () => {
@@ -68,7 +68,7 @@ const DashboardLayout = () => {
           </div>
 
           <nav className="flex-1 p-3 space-y-1">
-            {navItems.map((item) => (
+            {navItems.filter(item => !item.ownerOnly || role === "owner").map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
