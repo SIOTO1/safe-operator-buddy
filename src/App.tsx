@@ -17,6 +17,7 @@ import ContractsPage from "./pages/ContractsPage";
 import CrewPage from "./pages/CrewPage";
 import SettingsPage from "./pages/SettingsPage";
 import IncidentReportPage from "./pages/IncidentReportPage";
+import WaiverPage from "./pages/WaiverPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="checklists" element={<ChecklistsPage />} />
               <Route path="contracts" element={<ContractsPage />} />
               <Route path="incident-report" element={<IncidentReportPage />} />
+              <Route path="waiver" element={<WaiverPage />} />
               <Route path="crew" element={<CrewPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
