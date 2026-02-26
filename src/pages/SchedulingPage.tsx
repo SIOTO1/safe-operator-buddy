@@ -62,6 +62,8 @@ const SchedulingPage = () => {
   const [crewMembers, setCrewMembers] = useState<CrewMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("calendar");
+  const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
+  const [dropTargetDate, setDropTargetDate] = useState<string | null>(null);
 
   // Dialog states
   const [createEventOpen, setCreateEventOpen] = useState(false);
@@ -228,6 +230,19 @@ const SchedulingPage = () => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to update availability");
+    }
+  };
+
+  const handleRescheduleEvent = async (eventId: string, newDate: string) => {
+    try {
+      const { error } = await supabase.from("events").update({ event_date: newDate }).eq("id", eventId);
+      if (error) throw error;
+      toast.success("Event rescheduled!");
+      fetchData();
+      if (activeTab === "month") fetchMonthEvents();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to reschedule event");
     }
   };
 
@@ -446,11 +461,32 @@ const SchedulingPage = () => {
               return (
                 <div
                   key={day.toISOString()}
+                  onDragOver={(e) => {
+                    if (!isOwner || isPast) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    setDropTargetDate(format(day, "yyyy-MM-dd"));
+                  }}
+                  onDragLeave={() => setDropTargetDate(null)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDropTargetDate(null);
+                    const eventId = e.dataTransfer.getData("text/plain");
+                    if (eventId && isOwner) {
+                      const newDate = format(day, "yyyy-MM-dd");
+                      const evt = monthEvents.find(ev => ev.id === eventId);
+                      if (evt && evt.event_date !== newDate) {
+                        handleRescheduleEvent(eventId, newDate);
+                      }
+                    }
+                    setDraggedEventId(null);
+                  }}
                   className={cn(
                     "rounded-lg border p-1.5 min-h-[90px] transition-colors",
                     isToday ? "border-primary bg-primary/5" : "border-border",
                     !inMonth && "opacity-40 bg-muted/20",
-                    inMonth && !isToday && "bg-card"
+                    inMonth && !isToday && "bg-card",
+                    dropTargetDate === format(day, "yyyy-MM-dd") && "border-primary bg-primary/10 ring-2 ring-primary/20"
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -481,6 +517,16 @@ const SchedulingPage = () => {
                       return (
                         <div
                           key={evt.id}
+                          draggable={isOwner}
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData("text/plain", evt.id);
+                            e.dataTransfer.effectAllowed = "move";
+                            setDraggedEventId(evt.id);
+                          }}
+                          onDragEnd={() => {
+                            setDraggedEventId(null);
+                            setDropTargetDate(null);
+                          }}
                           onClick={() => {
                             if (isOwner) {
                               setSelectedEvent(evt);
@@ -488,10 +534,12 @@ const SchedulingPage = () => {
                             }
                           }}
                           className={cn(
-                            "rounded px-1.5 py-0.5 text-[10px] font-medium truncate cursor-pointer transition-colors",
+                            "rounded px-1.5 py-0.5 text-[10px] font-medium truncate transition-colors",
+                            isOwner ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
                             isFull
                               ? "bg-chart-2/15 text-chart-2"
-                              : "bg-primary/15 text-primary"
+                              : "bg-primary/15 text-primary",
+                            draggedEventId === evt.id && "opacity-40 ring-1 ring-primary"
                           )}
                         >
                           {evt.start_time ? `${evt.start_time.slice(0, 5)} ` : ""}{evt.title}
@@ -508,7 +556,7 @@ const SchedulingPage = () => {
           </div>
 
           {/* Month summary */}
-          <div className="flex gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
             <span>{monthEvents.length} event{monthEvents.length !== 1 ? "s" : ""} this month</span>
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded bg-primary/20" /> Needs crew
@@ -516,6 +564,11 @@ const SchedulingPage = () => {
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded bg-chart-2/20" /> Fully staffed
             </span>
+            {isOwner && (
+              <span className="flex items-center gap-1 text-muted-foreground/70">
+                💡 Drag events between days to reschedule
+              </span>
+            )}
           </div>
         </TabsContent>
 
