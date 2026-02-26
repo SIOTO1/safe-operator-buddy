@@ -37,7 +37,7 @@ const AuthPage = () => {
         navigate("/dashboard");
       } else {
         const validatedName = nameSchema.parse(displayName);
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: validatedEmail,
           password: validatedPassword,
           options: {
@@ -46,7 +46,12 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
-        toast.success("Check your email to confirm your account!");
+        if (data.session) {
+          toast.success("Account created! Welcome aboard!");
+          navigate("/dashboard");
+        } else {
+          toast.success("Check your email to confirm your account!");
+        }
       }
     } catch (err: any) {
       if (err instanceof z.ZodError) {
