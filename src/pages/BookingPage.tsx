@@ -41,6 +41,7 @@ interface CatalogItem {
   name: string;
   description: string | null;
   image_url: string | null;
+  price: number | null;
 }
 
 const BookingPage = () => {
@@ -61,7 +62,7 @@ const BookingPage = () => {
   useEffect(() => {
     supabase
       .from("equipment_catalog")
-      .select("id, name, description, image_url")
+      .select("id, name, description, image_url, price")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .then(({ data }) => {
@@ -241,7 +242,12 @@ const BookingPage = () => {
                   >
                     <Checkbox checked={form.equipment?.includes(item)} onCheckedChange={() => toggleEquipment(item)} />
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium">{item}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{item}</span>
+                        {catalogItem?.price != null && (
+                          <span className="text-xs font-semibold text-primary">${catalogItem.price.toFixed(2)}</span>
+                        )}
+                      </div>
                       {catalogItem?.description && (
                         <p className="text-xs text-muted-foreground line-clamp-1">{catalogItem.description}</p>
                       )}
