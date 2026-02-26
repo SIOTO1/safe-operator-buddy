@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { Plus, Pencil, Trash2, GripVertical, Package, ImageIcon } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Plus, Pencil, Trash2, Package, Upload, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,6 +33,8 @@ const EquipmentCatalogPage = () => {
   const [editing, setEditing] = useState<EquipmentItem | null>(null);
   const [form, setForm] = useState({ name: "", description: "", image_url: "" });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -66,6 +68,29 @@ const EquipmentCatalogPage = () => {
     setEditing(item);
     setForm({ name: item.name, description: item.description || "", image_url: item.image_url || "" });
     setDialogOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `equipment-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("equipment-images").upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("equipment-images").getPublicUrl(fileName);
+      setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
+      toast.success("Image uploaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const handleSave = async () => {
@@ -195,9 +220,22 @@ const EquipmentCatalogPage = () => {
               <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Brief description of the item..." rows={3} maxLength={500} />
             </div>
             <div>
-              <Label>Image URL</Label>
-              <Input value={form.image_url} onChange={e => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />
-              <p className="text-xs text-muted-foreground mt-1">Paste a link to an image of this item</p>
+              <Label>Image</Label>
+              <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleImageUpload} />
+              {form.image_url ? (
+                <div className="relative w-24 h-24 mt-1.5">
+                  <img src={form.image_url} alt="Preview" className="w-full h-full rounded-lg object-cover border border-border" />
+                  <button type="button" onClick={() => setForm(prev => ({ ...prev, image_url: "" }))} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <Button type="button" variant="outline" size="sm" className="mt-1.5 gap-1.5" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                  <Upload size={14} />
+                  {uploading ? "Uploading..." : "Upload Image"}
+                </Button>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
             </div>
           </div>
           <DialogFooter>
