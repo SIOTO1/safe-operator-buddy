@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut } from "lucide-react";
+import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ const navItems = [
   { to: "/dashboard/checklists", icon: ClipboardCheck, label: "Checklists" },
   { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
   { to: "/dashboard/crew", icon: Users, label: "Crew" },
+  { to: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
 const DashboardLayout = () => {
