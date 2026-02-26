@@ -20,7 +20,7 @@ const navItems = [
   { to: "/dashboard/conversations", icon: MessageSquareWarning, label: "Difficult Conversations" },
   { to: "/dashboard/crew", icon: Users, label: "Crew" },
   { to: "/dashboard/scheduling", icon: CalendarDays, label: "Scheduling" },
-  { to: "/dashboard/bookings", icon: Inbox, label: "Bookings", ownerOnly: true },
+  { to: "/dashboard/bookings", icon: Inbox, label: "Bookings", minRole: "manager" as const },
   { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
 ];
 
@@ -61,7 +61,11 @@ const DashboardLayout = () => {
           </div>
 
           <nav className="flex-1 p-3 space-y-1">
-            {navItems.filter(item => !item.ownerOnly || role === "owner").map((item) => (
+            {navItems.filter(item => {
+              if (item.ownerOnly) return role === "owner";
+              if ((item as any).minRole === "manager") return role === "owner" || role === "manager";
+              return true;
+            }).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
