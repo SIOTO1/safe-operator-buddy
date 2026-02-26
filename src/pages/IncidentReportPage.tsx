@@ -1,18 +1,20 @@
 import { useState } from "react";
-import { AlertTriangle, Download, Calendar, MapPin, Clock, User, FileText } from "lucide-react";
+import { format } from "date-fns";
+import { AlertTriangle, Download, MapPin, Clock, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
+import DatePicker from "@/components/DatePicker";
 import jsPDF from "jspdf";
 
 const IncidentReportPage = () => {
   const { toast } = useToast();
   const { orgName } = useOrgSettings();
+  const [incidentDate, setIncidentDate] = useState<Date>();
   const [formData, setFormData] = useState({
     reporterName: "",
     reporterRole: "",
-    date: "",
     time: "",
     location: "",
     equipmentType: "",
@@ -36,7 +38,7 @@ const IncidentReportPage = () => {
   };
 
   const handleGenerate = () => {
-    if (!formData.reporterName || !formData.date || !formData.circumstances) return;
+    if (!formData.reporterName || !incidentDate || !formData.circumstances) return;
     setGenerated(true);
   };
 
@@ -49,7 +51,8 @@ const IncidentReportPage = () => {
       const contentWidth = pageWidth - margin * 2;
       let y = 20;
 
-      // Header
+      const dateStr = incidentDate ? format(incidentDate, "PPP") : "";
+
       doc.setFontSize(20);
       doc.setFont("helvetica", "bold");
       doc.text(companyName, pageWidth / 2, y, { align: "center" });
@@ -67,7 +70,6 @@ const IncidentReportPage = () => {
       doc.line(margin, y, pageWidth - margin, y);
       y += 10;
 
-      // Sections
       const addSection = (title: string, fields: [string, string][]) => {
         if (y > 250) { doc.addPage(); y = 20; }
         doc.setFontSize(10);
@@ -90,7 +92,7 @@ const IncidentReportPage = () => {
       addSection("REPORT INFORMATION", [
         ["Reporter", formData.reporterName],
         ["Role", formData.reporterRole],
-        ["Date", formData.date],
+        ["Date", dateStr],
         ["Time", formData.time],
         ["Location", formData.location],
       ]);
@@ -120,12 +122,9 @@ const IncidentReportPage = () => {
       ]);
 
       if (formData.additionalNotes) {
-        addSection("ADDITIONAL NOTES", [
-          ["Notes", formData.additionalNotes],
-        ]);
+        addSection("ADDITIONAL NOTES", [["Notes", formData.additionalNotes]]);
       }
 
-      // Signature block
       y += 10;
       if (y > 240) { doc.addPage(); y = 20; }
       doc.setDrawColor(180);
@@ -142,7 +141,7 @@ const IncidentReportPage = () => {
       doc.line(110, y, 185, y);
       doc.text("Date", 140, y + 5);
 
-      const fileName = `incident-report-${formData.date || "undated"}-${formData.reporterName.replace(/\s+/g, "-").toLowerCase() || "report"}.pdf`;
+      const fileName = `incident-report-${incidentDate ? format(incidentDate, "yyyy-MM-dd") : "undated"}-${formData.reporterName.replace(/\s+/g, "-").toLowerCase() || "report"}.pdf`;
       doc.save(fileName);
       toast({ title: "Report Downloaded", description: `Saved as ${fileName}` });
     } catch {
@@ -150,33 +149,58 @@ const IncidentReportPage = () => {
     }
   };
 
-  const inputFields = [
-    { section: "Report Information", fields: [
-      { label: "Your Name", field: "reporterName", icon: User, type: "text", placeholder: "Operator name" },
-      { label: "Your Role", field: "reporterRole", icon: User, type: "text", placeholder: "Owner, Manager, Crew..." },
-      { label: "Incident Date", field: "date", icon: Calendar, type: "date", placeholder: "" },
-      { label: "Incident Time", field: "time", icon: Clock, type: "time", placeholder: "" },
-      { label: "Location", field: "location", icon: MapPin, type: "text", placeholder: "Event address" },
-    ]},
-    { section: "Equipment Details", fields: [
-      { label: "Equipment Type", field: "equipmentType", icon: FileText, type: "text", placeholder: "Bounce house, water slide..." },
-      { label: "Equipment ID / Name", field: "equipmentId", icon: FileText, type: "text", placeholder: "Unit name or serial #" },
-    ]},
-    { section: "Incident Details", fields: [
-      { label: "Injured Person Name", field: "injuredPerson", icon: User, type: "text", placeholder: "Name of injured party" },
-      { label: "Injured Person Age", field: "injuredAge", icon: User, type: "text", placeholder: "Age" },
-      { label: "Injury Description", field: "injuryDescription", icon: AlertTriangle, type: "text", placeholder: "Type and location of injury" },
-    ]},
-    { section: "Environmental Conditions", fields: [
-      { label: "Weather Conditions", field: "weatherConditions", icon: FileText, type: "text", placeholder: "Sunny, cloudy, windy..." },
-      { label: "Wind Speed (mph)", field: "windSpeed", icon: FileText, type: "text", placeholder: "Measured or estimated" },
-      { label: "Surface Type", field: "surfaceType", icon: FileText, type: "text", placeholder: "Grass, concrete, asphalt..." },
-    ]},
-    { section: "Witness Information", fields: [
-      { label: "Witness Name", field: "witnessName", icon: User, type: "text", placeholder: "Full name" },
-      { label: "Witness Contact", field: "witnessContact", icon: User, type: "text", placeholder: "Phone or email" },
-    ]},
+  const textInputFields = [
+    { label: "Your Name", field: "reporterName", icon: User, placeholder: "Operator name" },
+    { label: "Your Role", field: "reporterRole", icon: User, placeholder: "Owner, Manager, Crew..." },
+    { label: "Incident Time", field: "time", icon: Clock, type: "time" as const, placeholder: "" },
+    { label: "Location", field: "location", icon: MapPin, placeholder: "Event address" },
   ];
+
+  const equipmentFields = [
+    { label: "Equipment Type", field: "equipmentType", icon: FileText, placeholder: "Bounce house, water slide..." },
+    { label: "Equipment ID / Name", field: "equipmentId", icon: FileText, placeholder: "Unit name or serial #" },
+  ];
+
+  const incidentFields = [
+    { label: "Injured Person Name", field: "injuredPerson", icon: User, placeholder: "Name of injured party" },
+    { label: "Injured Person Age", field: "injuredAge", icon: User, placeholder: "Age" },
+    { label: "Injury Description", field: "injuryDescription", icon: AlertTriangle, placeholder: "Type and location of injury" },
+  ];
+
+  const envFields = [
+    { label: "Weather Conditions", field: "weatherConditions", icon: FileText, placeholder: "Sunny, cloudy, windy..." },
+    { label: "Wind Speed (mph)", field: "windSpeed", icon: FileText, placeholder: "Measured or estimated" },
+    { label: "Surface Type", field: "surfaceType", icon: FileText, placeholder: "Grass, concrete, asphalt..." },
+  ];
+
+  const witnessFields = [
+    { label: "Witness Name", field: "witnessName", icon: User, placeholder: "Full name" },
+    { label: "Witness Contact", field: "witnessContact", icon: User, placeholder: "Phone or email" },
+  ];
+
+  const renderFieldGroup = (title: string, fields: typeof textInputFields, extra?: React.ReactNode) => (
+    <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+      <h2 className="font-display font-semibold text-base">{title}</h2>
+      {fields.map(f => (
+        <div key={f.field}>
+          <label className="text-sm font-medium mb-1 block">{f.label}</label>
+          <div className="relative">
+            <f.icon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type={(f as any).type || "text"}
+              value={formData[f.field as keyof typeof formData]}
+              onChange={e => handleChange(f.field, e.target.value)}
+              placeholder={f.placeholder}
+              className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        </div>
+      ))}
+      {extra}
+    </div>
+  );
+
+  const dateStr = incidentDate ? format(incidentDate, "PPP") : "";
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
@@ -189,30 +213,18 @@ const IncidentReportPage = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8 max-w-6xl">
-        {/* Form */}
         <div className="space-y-4">
-          {inputFields.map(section => (
-            <div key={section.section} className="rounded-xl border border-border bg-card p-5 space-y-3">
-              <h2 className="font-display font-semibold text-base">{section.section}</h2>
-              {section.fields.map(f => (
-                <div key={f.field}>
-                  <label className="text-sm font-medium mb-1 block">{f.label}</label>
-                  <div className="relative">
-                    <f.icon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                      type={f.type}
-                      value={formData[f.field as keyof typeof formData]}
-                      onChange={e => handleChange(f.field, e.target.value)}
-                      placeholder={f.placeholder}
-                      className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                </div>
-              ))}
+          {renderFieldGroup("Report Information", textInputFields, (
+            <div>
+              <label className="text-sm font-medium mb-1 block">Incident Date</label>
+              <DatePicker value={incidentDate} onChange={setIncidentDate} placeholder="Select incident date" />
             </div>
           ))}
+          {renderFieldGroup("Equipment Details", equipmentFields)}
+          {renderFieldGroup("Incident Details", incidentFields)}
+          {renderFieldGroup("Environmental Conditions", envFields)}
+          {renderFieldGroup("Witness Information", witnessFields)}
 
-          {/* Textareas */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-3">
             <h2 className="font-display font-semibold text-base">Detailed Description</h2>
             <div>
@@ -253,7 +265,6 @@ const IncidentReportPage = () => {
           </Button>
         </div>
 
-        {/* Preview */}
         <div>
           {generated ? (
             <motion.div
@@ -269,7 +280,7 @@ const IncidentReportPage = () => {
 
               {[
                 { label: "Reporter", value: `${formData.reporterName}${formData.reporterRole ? ` (${formData.reporterRole})` : ""}` },
-                { label: "Date/Time", value: `${formData.date}${formData.time ? ` at ${formData.time}` : ""}` },
+                { label: "Date/Time", value: `${dateStr}${formData.time ? ` at ${formData.time}` : ""}` },
                 { label: "Location", value: formData.location },
                 { label: "Equipment", value: `${formData.equipmentType}${formData.equipmentId ? ` — ${formData.equipmentId}` : ""}` },
                 { label: "Injured", value: `${formData.injuredPerson}${formData.injuredAge ? `, age ${formData.injuredAge}` : ""}` },

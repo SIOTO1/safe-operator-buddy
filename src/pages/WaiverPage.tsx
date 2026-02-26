@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { useToast } from "@/hooks/use-toast";
 import { contractTemplates } from "@/lib/contractTemplates";
 import { FileSignature, Download, RotateCcw } from "lucide-react";
+import DatePicker from "@/components/DatePicker";
 import jsPDF from "jspdf";
 
 const WaiverPage = () => {
@@ -20,16 +22,17 @@ const WaiverPage = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [activeCanvas, setActiveCanvas] = useState<"participant" | "guardian" | null>(null);
 
+  const [eventDate, setEventDate] = useState<Date>();
+  const [dateOfBirth, setDateOfBirth] = useState<Date>();
+
   const [form, setForm] = useState({
     participantName: "",
-    dateOfBirth: "",
     email: "",
     phone: "",
     isMinor: false,
     guardianName: "",
     guardianRelationship: "",
     equipmentType: "",
-    eventDate: "",
     eventLocation: "",
     medicalConditions: "",
     emergencyContactName: "",
@@ -94,9 +97,9 @@ const WaiverPage = () => {
 
   const canSubmit =
     form.participantName &&
-    form.dateOfBirth &&
+    dateOfBirth &&
     form.equipmentType &&
-    form.eventDate &&
+    eventDate &&
     form.ackRisks &&
     form.ackRules &&
     form.ackIndemnity &&
@@ -122,20 +125,21 @@ const WaiverPage = () => {
       y += lines.length * (size * 0.5) + 4;
     };
 
-    // Header
+    const eventDateStr = eventDate ? format(eventDate, "PPP") : "N/A";
+    const dobStr = dateOfBirth ? format(dateOfBirth, "PPP") : "N/A";
+
     addText(companyName, 18, true);
     addText("LIABILITY WAIVER & ASSUMPTION OF RISK", 14, true);
     y += 4;
 
     addText(`Equipment Type: ${selectedTemplate?.label || form.equipmentType}`, 11, true);
-    addText(`Event Date: ${form.eventDate}`);
+    addText(`Event Date: ${eventDateStr}`);
     addText(`Event Location: ${form.eventLocation || "N/A"}`);
     y += 4;
 
-    // Participant info
     addText("PARTICIPANT INFORMATION", 12, true);
     addText(`Name: ${form.participantName}`);
-    addText(`Date of Birth: ${form.dateOfBirth}`);
+    addText(`Date of Birth: ${dobStr}`);
     addText(`Email: ${form.email || "N/A"}`);
     addText(`Phone: ${form.phone || "N/A"}`);
     if (form.medicalConditions) addText(`Medical Conditions: ${form.medicalConditions}`);
@@ -149,41 +153,32 @@ const WaiverPage = () => {
       y += 4;
     }
 
-    // Assumption of Risk
     addText("ASSUMPTION OF RISK", 12, true);
     addText(
       `I, ${form.participantName}, acknowledge that participation in activities involving ${selectedTemplate?.label || "rental equipment"} carries inherent risks including but not limited to physical injury, falls, collisions, sprains, fractures, concussions, and in rare cases, serious injury or death. I voluntarily assume all risks associated with participation.`
     );
     y += 2;
 
-    // Safety rules
     if (selectedTemplate) {
       addText("SAFETY RULES & GUIDELINES", 12, true);
       selectedTemplate.terms.forEach((term, i) => addText(`${i + 1}. ${term}`));
       y += 2;
     }
 
-    // Indemnification
     addText("INDEMNIFICATION & HOLD HARMLESS", 12, true);
     if (selectedTemplate) {
       addText(selectedTemplate.indemnity);
     } else {
-      addText(
-        `I agree to indemnify, defend, and hold harmless ${companyName}, its owners, employees, and agents from any claims arising from my participation.`
-      );
+      addText(`I agree to indemnify, defend, and hold harmless ${companyName}, its owners, employees, and agents from any claims arising from my participation.`);
     }
     y += 2;
 
-    // Media release
     if (form.ackMediaRelease) {
       addText("MEDIA RELEASE", 12, true);
-      addText(
-        `I grant ${companyName} permission to use photographs and video taken during the event for promotional purposes.`
-      );
+      addText(`I grant ${companyName} permission to use photographs and video taken during the event for promotional purposes.`);
       y += 2;
     }
 
-    // Acknowledgments
     addText("ACKNOWLEDGMENTS", 12, true);
     addText("✓ I acknowledge the inherent risks of participation.");
     addText("✓ I agree to follow all safety rules and operator instructions.");
@@ -191,7 +186,6 @@ const WaiverPage = () => {
     if (form.ackMediaRelease) addText("✓ I consent to the media release.");
     y += 6;
 
-    // Participant signature
     addText("PARTICIPANT SIGNATURE", 12, true);
     if (canvasRef.current) {
       const sigData = canvasRef.current.toDataURL("image/png");
@@ -202,7 +196,6 @@ const WaiverPage = () => {
     addText(`Date: ${new Date().toLocaleDateString()}`);
     y += 4;
 
-    // Guardian signature
     if (form.isMinor && guardianCanvasRef.current) {
       addText("PARENT/GUARDIAN SIGNATURE", 12, true);
       const guardSig = guardianCanvasRef.current.toDataURL("image/png");
@@ -213,7 +206,6 @@ const WaiverPage = () => {
       addText(`Date: ${new Date().toLocaleDateString()}`);
     }
 
-    // Footer
     y += 6;
     doc.setFontSize(8);
     doc.setTextColor(120);
@@ -224,7 +216,7 @@ const WaiverPage = () => {
     if (y + 10 > 275) { doc.addPage(); y = 20; }
     doc.text(footer, 20, y);
 
-    doc.save(`Waiver_${form.participantName.replace(/\s+/g, "_")}_${form.eventDate || "undated"}.pdf`);
+    doc.save(`Waiver_${form.participantName.replace(/\s+/g, "_")}_${eventDate ? format(eventDate, "yyyy-MM-dd") : "undated"}.pdf`);
     toast({ title: "Waiver Generated", description: "PDF downloaded successfully." });
   };
 
@@ -260,7 +252,7 @@ const WaiverPage = () => {
             </div>
             <div className="space-y-2">
               <Label>Event Date *</Label>
-              <Input type="date" value={form.eventDate} onChange={(e) => update("eventDate", e.target.value)} />
+              <DatePicker value={eventDate} onChange={setEventDate} placeholder="Select event date" />
             </div>
           </div>
           <div className="space-y-2">
@@ -283,7 +275,12 @@ const WaiverPage = () => {
             </div>
             <div className="space-y-2">
               <Label>Date of Birth *</Label>
-              <Input type="date" value={form.dateOfBirth} onChange={(e) => update("dateOfBirth", e.target.value)} />
+              <DatePicker
+                value={dateOfBirth}
+                onChange={setDateOfBirth}
+                placeholder="Select date of birth"
+                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+              />
             </div>
             <div className="space-y-2">
               <Label>Email</Label>

@@ -1,21 +1,23 @@
 import { useState } from "react";
-import { FileText, Download, Calendar, MapPin, Clock, User, ChevronDown } from "lucide-react";
+import { format } from "date-fns";
+import { FileText, Download, MapPin, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { contractTemplates, ContractTemplate } from "@/lib/contractTemplates";
+import DatePicker from "@/components/DatePicker";
 import jsPDF from "jspdf";
 
 const ContractsPage = () => {
   const { toast } = useToast();
-  const { orgName, orgLogo } = useOrgSettings();
+  const { orgName } = useOrgSettings();
   const [selectedTemplate, setSelectedTemplate] = useState<ContractTemplate>(contractTemplates[0]);
+  const [eventDate, setEventDate] = useState<Date>();
   const [formData, setFormData] = useState({
     customerName: "",
     eventType: "",
     numberOfUnits: "1",
-    date: "",
     location: "",
     setupTime: "",
     takedownTime: "",
@@ -27,7 +29,7 @@ const ContractsPage = () => {
   };
 
   const handleGenerate = () => {
-    if (!formData.customerName || !formData.date) return;
+    if (!formData.customerName || !eventDate) return;
     setGenerated(true);
   };
 
@@ -39,6 +41,8 @@ const ContractsPage = () => {
       const margin = 20;
       const contentWidth = pageWidth - margin * 2;
       let y = 20;
+
+      const eventDateStr = eventDate ? format(eventDate, "PPP") : "";
 
       // Header
       doc.setFontSize(20);
@@ -57,12 +61,11 @@ const ContractsPage = () => {
       doc.line(margin, y, pageWidth - margin, y);
       y += 10;
 
-      // Event details
       const details = [
         ["Customer", formData.customerName],
         ["Equipment Type", selectedTemplate.label],
         ["Number of Units", formData.numberOfUnits],
-        ["Event Date", formData.date],
+        ["Event Date", eventDateStr],
         ["Location", formData.location],
         ["Setup Time", formData.setupTime],
         ["Takedown Time", formData.takedownTime],
@@ -83,7 +86,6 @@ const ContractsPage = () => {
       doc.line(margin, y, pageWidth - margin, y);
       y += 8;
 
-      // Terms
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.text("TERMS & CONDITIONS", margin + 5, y);
@@ -93,15 +95,11 @@ const ContractsPage = () => {
       doc.setFont("helvetica", "normal");
       selectedTemplate.terms.forEach((term, i) => {
         const lines = doc.splitTextToSize(`${i + 1}. ${term}`, contentWidth - 10);
-        if (y + lines.length * 4 > 270) {
-          doc.addPage();
-          y = 20;
-        }
+        if (y + lines.length * 4 > 270) { doc.addPage(); y = 20; }
         doc.text(lines, margin + 5, y);
         y += lines.length * 4 + 3;
       });
 
-      // Indemnity
       y += 4;
       if (y > 240) { doc.addPage(); y = 20; }
       doc.setFontSize(11);
@@ -115,7 +113,6 @@ const ContractsPage = () => {
       doc.text(indemnityLines, margin + 5, y);
       y += indemnityLines.length * 4 + 6;
 
-      // Safety notes
       if (y > 240) { doc.addPage(); y = 20; }
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
@@ -130,7 +127,6 @@ const ContractsPage = () => {
         y += lines.length * 4 + 2;
       });
 
-      // Signature block
       y += 12;
       if (y > 240) { doc.addPage(); y = 20; }
       doc.setFontSize(9);
@@ -139,24 +135,23 @@ const ContractsPage = () => {
 
       doc.line(margin + 5, y, 95, y);
       doc.text("Client Signature", margin + 20, y + 5);
-
       doc.line(110, y, 185, y);
       doc.text("Date", 140, y + 5);
-
       y += 16;
       doc.line(margin + 5, y, 95, y);
       doc.text("Printed Name", margin + 20, y + 5);
-
       doc.line(110, y, 185, y);
       doc.text("Operator Signature", 125, y + 5);
 
       const fileName = `${selectedTemplate.id}-agreement-${formData.customerName.replace(/\s+/g, "-").toLowerCase()}.pdf`;
       doc.save(fileName);
       toast({ title: "PDF Downloaded", description: `Saved as ${fileName}` });
-    } catch (error) {
+    } catch {
       toast({ title: "Download Failed", description: "Could not generate PDF.", variant: "destructive" });
     }
   };
+
+  const eventDateStr = eventDate ? format(eventDate, "PPP") : "";
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
@@ -166,9 +161,7 @@ const ContractsPage = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8 max-w-6xl">
-        {/* Form */}
         <div className="space-y-4">
-          {/* Template selector */}
           <div className="rounded-xl border border-border bg-card p-6 space-y-4">
             <h2 className="font-display font-semibold text-lg">Equipment Type</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -195,7 +188,6 @@ const ContractsPage = () => {
             {[
               { label: "Customer Name", field: "customerName", icon: User, type: "text", placeholder: "John Smith" },
               { label: "Number of Units", field: "numberOfUnits", icon: FileText, type: "number", placeholder: "1" },
-              { label: "Event Date", field: "date", icon: Calendar, type: "date", placeholder: "" },
               { label: "Location", field: "location", icon: MapPin, type: "text", placeholder: "123 Main St, City, State" },
               { label: "Setup Time", field: "setupTime", icon: Clock, type: "time", placeholder: "" },
               { label: "Takedown Time", field: "takedownTime", icon: Clock, type: "time", placeholder: "" },
@@ -215,6 +207,11 @@ const ContractsPage = () => {
               </div>
             ))}
 
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Event Date</label>
+              <DatePicker value={eventDate} onChange={setEventDate} placeholder="Select event date" />
+            </div>
+
             <Button onClick={handleGenerate} className="w-full" size="lg">
               <FileText size={18} />
               Generate Contract
@@ -222,7 +219,6 @@ const ContractsPage = () => {
           </div>
         </div>
 
-        {/* Preview */}
         <div>
           {generated ? (
             <motion.div
@@ -236,13 +232,12 @@ const ContractsPage = () => {
                 <h3 className="font-display font-bold mt-3">RENTAL AGREEMENT — {selectedTemplate.label.toUpperCase()}</h3>
               </div>
 
-              {/* Details */}
               <div className="space-y-2">
                 {[
                   ["Customer", formData.customerName],
                   ["Equipment", selectedTemplate.label],
                   ["Units", formData.numberOfUnits],
-                  ["Date", formData.date],
+                  ["Date", eventDateStr],
                   ["Location", formData.location],
                   ["Setup", formData.setupTime],
                   ["Takedown", formData.takedownTime],
@@ -254,7 +249,6 @@ const ContractsPage = () => {
                 ))}
               </div>
 
-              {/* Terms preview */}
               <div>
                 <h4 className="font-semibold mb-2">Terms & Conditions</h4>
                 <ul className="space-y-1.5 text-xs text-muted-foreground">
@@ -267,14 +261,12 @@ const ContractsPage = () => {
                 </ul>
               </div>
 
-              {/* Indemnity preview */}
               <div>
                 <h4 className="font-semibold mb-2">Indemnification</h4>
                 <p className="text-xs text-muted-foreground line-clamp-3">{selectedTemplate.indemnity}</p>
                 <p className="text-xs text-primary font-medium mt-1">Full text in PDF</p>
               </div>
 
-              {/* Signature placeholder */}
               <div className="border-t border-border pt-4 space-y-3">
                 <div className="flex justify-between">
                   <div className="border-b border-foreground w-36 pb-1 text-center text-xs">Client Signature</div>
