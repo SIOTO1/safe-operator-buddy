@@ -1,5 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,6 +10,27 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { session, role, loading } = useAuth();
+  const { toast } = useToast();
+  const hasShownToast = useRef(false);
+
+  const shouldRedirectRole =
+    requiredRole && role
+      ? (() => {
+          const roleHierarchy = { owner: 3, manager: 2, crew: 1 };
+          return (roleHierarchy[role] || 0) < (roleHierarchy[requiredRole] || 0);
+        })()
+      : false;
+
+  useEffect(() => {
+    if (shouldRedirectRole && !hasShownToast.current) {
+      hasShownToast.current = true;
+      toast({
+        title: "Access Restricted",
+        description: "You don't have permission to access that page.",
+        variant: "destructive",
+      });
+    }
+  }, [shouldRedirectRole, toast]);
 
   if (loading) {
     return (
@@ -24,13 +47,8 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (requiredRole && role) {
-    const roleHierarchy = { owner: 3, manager: 2, crew: 1 };
-    const userLevel = roleHierarchy[role] || 0;
-    const requiredLevel = roleHierarchy[requiredRole] || 0;
-    if (userLevel < requiredLevel) {
-      return <Navigate to="/dashboard" replace />;
-    }
+  if (shouldRedirectRole) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
