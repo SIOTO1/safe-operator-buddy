@@ -2,8 +2,13 @@ import { useState } from "react";
 import { FileText, Download, Calendar, MapPin, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
+import { useOrgSettings } from "@/contexts/OrgSettingsContext";
+import jsPDF from "jspdf";
 
 const ContractsPage = () => {
+  const { toast } = useToast();
+  const { orgName } = useOrgSettings();
   const [formData, setFormData] = useState({
     customerName: "",
     eventType: "",
@@ -22,6 +27,83 @@ const ContractsPage = () => {
   const handleGenerate = () => {
     if (!formData.customerName || !formData.eventType || !formData.date) return;
     setGenerated(true);
+  };
+
+  const handleDownloadPDF = () => {
+    try {
+      const doc = new jsPDF();
+      const companyName = orgName || "SIOTO.AI";
+      const pageWidth = doc.internal.pageSize.getWidth();
+      let y = 20;
+
+      // Header
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text(companyName, pageWidth / 2, y, { align: "center" });
+      y += 8;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("Safety & Operations", pageWidth / 2, y, { align: "center" });
+      y += 12;
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("RENTAL AGREEMENT", pageWidth / 2, y, { align: "center" });
+      y += 4;
+      doc.setDrawColor(200);
+      doc.line(20, y, pageWidth - 20, y);
+      y += 12;
+
+      // Details
+      const details = [
+        ["Customer", formData.customerName],
+        ["Event Type", formData.eventType],
+        ["Number of Units", formData.numberOfUnits],
+        ["Event Date", formData.date],
+        ["Location", formData.location],
+        ["Setup Time", formData.setupTime],
+        ["Takedown Time", formData.takedownTime],
+      ];
+
+      doc.setFontSize(11);
+      for (const [label, value] of details) {
+        if (!value) continue;
+        doc.setFont("helvetica", "normal");
+        doc.text(label + ":", 25, y);
+        doc.setFont("helvetica", "bold");
+        doc.text(value, 80, y);
+        y += 9;
+      }
+
+      y += 10;
+      doc.setDrawColor(200);
+      doc.line(20, y, pageWidth - 20, y);
+      y += 10;
+
+      // Terms
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        "By signing below, the customer agrees to the safety guidelines and rental terms.",
+        25,
+        y,
+        { maxWidth: pageWidth - 50 }
+      );
+      y += 20;
+
+      // Signature lines
+      doc.line(25, y, 90, y);
+      doc.text("Customer Signature", 35, y + 5);
+
+      doc.line(120, y, 185, y);
+      doc.text("Date", 145, y + 5);
+
+      const fileName = `rental-agreement-${formData.customerName.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+      doc.save(fileName);
+
+      toast({ title: "PDF Downloaded", description: `Saved as ${fileName}` });
+    } catch (error) {
+      toast({ title: "Download Failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
+    }
   };
 
   return (
@@ -121,7 +203,7 @@ const ContractsPage = () => {
                 </div>
               </div>
 
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={handleDownloadPDF}>
                 <Download size={16} />
                 Download PDF
               </Button>
