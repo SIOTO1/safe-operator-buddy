@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
-import { Check, X, Calendar, MapPin, Users, Mail, Phone, Clock, Package, MessageSquare, Send } from "lucide-react";
+import { Check, X, Calendar, MapPin, Users, Mail, Phone, Clock, Package, MessageSquare, Send, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ interface BookingRequest {
   guest_count: number | null;
   created_at: string;
   event_id: string | null;
+  delivery_fee: number | null;
 }
 
 interface BookingNote {
@@ -61,9 +62,12 @@ const BookingDetailDialog = ({ booking, open, onOpenChange, onApprove, onDecline
   const [newNote, setNewNote] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [pastBookings, setPastBookings] = useState<PastBooking[]>([]);
+  const [deliveryFee, setDeliveryFee] = useState("");
+  const [savingFee, setSavingFee] = useState(false);
 
   useEffect(() => {
     if (!booking || !open) return;
+    setDeliveryFee(booking.delivery_fee != null ? booking.delivery_fee.toString() : "");
     // Fetch notes
     supabase
       .from("booking_notes")
@@ -106,7 +110,23 @@ const BookingDetailDialog = ({ booking, open, onOpenChange, onApprove, onDecline
     setSavingNote(false);
   };
 
-  if (!booking) return null;
+  const handleSaveDeliveryFee = async () => {
+    if (!booking) return;
+    const fee = deliveryFee.trim() ? parseFloat(deliveryFee) : null;
+    if (fee !== null && (isNaN(fee) || fee < 0)) {
+      toast.error("Please enter a valid delivery fee");
+      return;
+    }
+    setSavingFee(true);
+    const { error } = await supabase
+      .from("booking_requests")
+      .update({ delivery_fee: fee } as any)
+      .eq("id", booking.id);
+    if (error) toast.error("Failed to save delivery fee");
+    else toast.success("Delivery fee saved");
+    setSavingFee(false);
+  };
+
   const status = statusConfig[booking.status] || statusConfig.pending;
 
   return (
@@ -185,6 +205,27 @@ const BookingDetailDialog = ({ booking, open, onOpenChange, onApprove, onDecline
               </div>
             </div>
           )}
+
+          {/* Delivery Fee */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1">
+              <DollarSign size={12} /> Delivery Fee
+            </h4>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={deliveryFee}
+                onChange={e => setDeliveryFee(e.target.value)}
+                placeholder="0.00"
+                className="text-sm max-w-[140px]"
+              />
+              <Button size="sm" variant="outline" onClick={handleSaveDeliveryFee} disabled={savingFee}>
+                {savingFee ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
 
           {/* Internal Notes */}
           <div className="space-y-2">

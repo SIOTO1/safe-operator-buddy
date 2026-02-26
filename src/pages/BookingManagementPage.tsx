@@ -26,6 +26,7 @@ interface BookingRequest {
   guest_count: number | null;
   created_at: string;
   event_id: string | null;
+  delivery_fee: number | null;
 }
 
 const statusConfig: Record<string, { label: string; class: string }> = {
