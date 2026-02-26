@@ -318,6 +318,38 @@ const SOPsPage = () => {
                   });
                 })()}
               </motion.div>
+            ) : search.trim() ? (
+              /* Search results — show matching articles directly */
+              <motion.div key="search-results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {filteredArticles.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No articles match "{search}".</p>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground mb-3">{filteredArticles.length} result{filteredArticles.length !== 1 ? "s" : ""}</p>
+                    {filteredArticles.map((article, i) => (
+                      <motion.div
+                        key={article.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        onClick={() => { setSelectedArticle(article); setFlipped(false); }}
+                        className="p-4 rounded-xl border border-border bg-card hover:border-primary transition-colors cursor-pointer flex items-center justify-between"
+                      >
+                        <div>
+                          <h4 className="font-semibold text-sm">{article.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-0.5">{sopCategories.find(c => c.id === article.category)?.label} → {article.subcategory}</p>
+                          <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                            {article.tags.slice(0, 4).map(t => (
+                              <span key={t} className="text-[10px] bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded">{t}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
             ) : (
               <motion.div key="categories" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
