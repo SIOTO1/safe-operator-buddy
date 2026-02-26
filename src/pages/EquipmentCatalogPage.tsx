@@ -18,6 +18,7 @@ interface EquipmentItem {
   name: string;
   description: string | null;
   image_url: string | null;
+  price: number | null;
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -31,7 +32,7 @@ const EquipmentCatalogPage = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<EquipmentItem | null>(null);
-  const [form, setForm] = useState({ name: "", description: "", image_url: "" });
+  const [form, setForm] = useState({ name: "", description: "", image_url: "", price: "" });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,13 +61,13 @@ const EquipmentCatalogPage = () => {
       return;
     }
     setEditing(null);
-    setForm({ name: "", description: "", image_url: "" });
+    setForm({ name: "", description: "", image_url: "", price: "" });
     setDialogOpen(true);
   };
 
   const openEdit = (item: EquipmentItem) => {
     setEditing(item);
-    setForm({ name: item.name, description: item.description || "", image_url: item.image_url || "" });
+    setForm({ name: item.name, description: item.description || "", image_url: item.image_url || "", price: item.price != null ? String(item.price) : "" });
     setDialogOpen(true);
   };
 
@@ -97,11 +98,14 @@ const EquipmentCatalogPage = () => {
     if (!form.name.trim()) { toast.error("Name is required"); return; }
     setSaving(true);
     try {
+      const priceVal = form.price.trim() ? parseFloat(form.price) : null;
+      if (priceVal !== null && (isNaN(priceVal) || priceVal < 0)) { toast.error("Invalid price"); setSaving(false); return; }
       if (editing) {
         const { error } = await supabase.from("equipment_catalog").update({
           name: form.name.trim(),
           description: form.description.trim() || null,
           image_url: form.image_url.trim() || null,
+          price: priceVal,
         }).eq("id", editing.id);
         if (error) throw error;
         toast.success("Equipment updated");
@@ -110,6 +114,7 @@ const EquipmentCatalogPage = () => {
           name: form.name.trim(),
           description: form.description.trim() || null,
           image_url: form.image_url.trim() || null,
+          price: priceVal,
           sort_order: items.length,
           created_by: user!.id,
         });
@@ -182,6 +187,7 @@ const EquipmentCatalogPage = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm">{item.name}</span>
+                        {item.price != null && <Badge variant="outline" className="text-[10px]">${item.price.toFixed(2)}</Badge>}
                         {!item.is_active && <Badge variant="secondary" className="text-[10px]">Inactive</Badge>}
                       </div>
                       {item.description && (
@@ -218,6 +224,10 @@ const EquipmentCatalogPage = () => {
             <div>
               <Label>Description</Label>
               <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Brief description of the item..." rows={3} maxLength={500} />
+            </div>
+            <div>
+              <Label>Price ($)</Label>
+              <Input type="number" min="0" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="e.g., 199.99" />
             </div>
             <div>
               <Label>Image</Label>
