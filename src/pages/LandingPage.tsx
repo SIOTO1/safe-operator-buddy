@@ -38,8 +38,8 @@ const LandingPage = () => {
             <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => navigate("/dashboard")}>Log In</Button>
-            <Button onClick={() => navigate("/dashboard")}>Get Started</Button>
+            <Button variant="ghost" onClick={() => navigate("/auth")}>Log In</Button>
+            <Button onClick={() => navigate("/auth")}>Get Started</Button>
           </div>
         </div>
       </nav>
@@ -70,7 +70,7 @@ const LandingPage = () => {
               Instant answers, smart checklists, and compliance — all in one platform.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button variant="hero" onClick={() => navigate("/dashboard")}>
+              <Button variant="hero" onClick={() => navigate("/auth")}>
                 Start Free Trial <ChevronRight size={18} />
               </Button>
               <Button variant="hero-outline">
@@ -209,7 +209,7 @@ const LandingPage = () => {
           <p className="text-secondary-foreground/60 text-lg mb-8 max-w-xl mx-auto">
             Join operators who trust SIOTO.AI to keep their events safe and compliant.
           </p>
-          <Button variant="hero" onClick={() => navigate("/dashboard")}>
+          <Button variant="hero" onClick={() => navigate("/auth")}>
             Start Your Free Trial <ChevronRight size={18} />
           </Button>
         </div>
