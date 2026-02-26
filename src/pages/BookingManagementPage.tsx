@@ -1,16 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
-import { ClipboardList, Check, X, Calendar, MapPin, Users, Mail, Phone, Clock, ChevronDown, Package } from "lucide-react";
+import { Calendar, MapPin, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import BookingDetailDialog from "@/components/BookingDetailDialog";
 
 interface BookingRequest {
   id: string;
@@ -62,7 +61,6 @@ const BookingManagementPage = () => {
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
-  // Realtime
   useEffect(() => {
     const channel = supabase
       .channel("bookings")
@@ -73,7 +71,6 @@ const BookingManagementPage = () => {
 
   const handleApprove = async (booking: BookingRequest) => {
     try {
-      // Create event from booking
       const { data: eventData, error: eventError } = await supabase.from("events").insert({
         title: `${booking.customer_name} - ${booking.equipment[0] || "Rental"}`,
         event_date: booking.event_date,
@@ -84,17 +81,14 @@ const BookingManagementPage = () => {
         crew_needed: 2,
         created_by: user!.id,
       }).select("id").single();
-
       if (eventError) throw eventError;
 
-      // Update booking status
       const { error: updateError } = await supabase.from("booking_requests").update({
         status: "approved",
         reviewed_by: user!.id,
         reviewed_at: new Date().toISOString(),
         event_id: eventData.id,
       }).eq("id", booking.id);
-
       if (updateError) throw updateError;
       toast.success("Booking approved! Event created on schedule.");
       setDetailOpen(false);
@@ -131,36 +125,25 @@ const BookingManagementPage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">Booking Requests</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Review and manage customer rental requests
-          </p>
+          <p className="text-muted-foreground text-sm mt-1">Review and manage customer rental requests</p>
         </div>
         {pendingCount > 0 && (
           <Badge className="bg-primary text-primary-foreground">{pendingCount} pending</Badge>
         )}
       </div>
 
-      {/* Share link */}
       <Card>
         <CardContent className="py-3 flex items-center justify-between">
           <div className="text-sm">
             <span className="text-muted-foreground">Booking form: </span>
             <span className="font-mono text-xs bg-muted px-2 py-1 rounded">{window.location.origin}/book</span>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              navigator.clipboard.writeText(`${window.location.origin}/book`);
-              toast.success("Link copied!");
-            }}
-          >
+          <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/book`); toast.success("Link copied!"); }}>
             Copy Link
           </Button>
         </CardContent>
       </Card>
 
-      {/* Filters */}
       <div className="flex gap-2">
         {[
           { key: "pending", label: "Pending" },
@@ -168,12 +151,7 @@ const BookingManagementPage = () => {
           { key: "declined", label: "Declined" },
           { key: "all", label: "All" },
         ].map(f => (
-          <Button
-            key={f.key}
-            variant={filter === f.key ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter(f.key)}
-          >
+          <Button key={f.key} variant={filter === f.key ? "default" : "outline"} size="sm" onClick={() => setFilter(f.key)}>
             {f.label}
             {f.key === "pending" && pendingCount > 0 && (
               <span className="ml-1.5 bg-primary-foreground text-primary text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -184,7 +162,6 @@ const BookingManagementPage = () => {
         ))}
       </div>
 
-      {/* Bookings list */}
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Loading bookings...</div>
       ) : filtered.length === 0 ? (
@@ -196,16 +173,8 @@ const BookingManagementPage = () => {
           {filtered.map((booking, i) => {
             const status = statusConfig[booking.status] || statusConfig.pending;
             return (
-              <motion.div
-                key={booking.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}
-              >
-                <Card
-                  className="cursor-pointer hover:border-primary transition-colors"
-                  onClick={() => { setSelectedBooking(booking); setDetailOpen(true); }}
-                >
+              <motion.div key={booking.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+                <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => { setSelectedBooking(booking); setDetailOpen(true); }}>
                   <CardContent className="py-3">
                     <div className="flex items-center gap-4">
                       <div className="flex-1 min-w-0">
@@ -229,88 +198,13 @@ const BookingManagementPage = () => {
         </div>
       )}
 
-      {/* Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
-          {selectedBooking && (() => {
-            const status = statusConfig[selectedBooking.status] || statusConfig.pending;
-            return (
-              <>
-                <DialogHeader>
-                  <div className="flex items-center gap-2">
-                    <DialogTitle>{selectedBooking.customer_name}</DialogTitle>
-                    <Badge variant="outline" className={status.class}>{status.label}</Badge>
-                  </div>
-                  <DialogDescription>
-                    Submitted {format(parseISO(selectedBooking.created_at), "MMMM d, yyyy 'at' h:mm a")}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-2">
-                  {/* Contact */}
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase">Contact</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <span className="flex items-center gap-2"><Mail size={14} className="text-muted-foreground" />{selectedBooking.customer_email}</span>
-                      {selectedBooking.customer_phone && (
-                        <span className="flex items-center gap-2"><Phone size={14} className="text-muted-foreground" />{selectedBooking.customer_phone}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Event */}
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase">Event Details</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <span className="flex items-center gap-2"><Calendar size={14} className="text-muted-foreground" />{format(parseISO(selectedBooking.event_date), "EEEE, MMMM d, yyyy")}</span>
-                      {selectedBooking.event_time && (
-                        <span className="flex items-center gap-2"><Clock size={14} className="text-muted-foreground" />{selectedBooking.event_time}{selectedBooking.event_end_time ? ` - ${selectedBooking.event_end_time}` : ""}</span>
-                      )}
-                      <span className="flex items-center gap-2 col-span-2"><MapPin size={14} className="text-muted-foreground" />{selectedBooking.event_location}</span>
-                      {selectedBooking.guest_count && (
-                        <span className="flex items-center gap-2"><Users size={14} className="text-muted-foreground" />{selectedBooking.guest_count} guests</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Equipment */}
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase">Equipment</h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedBooking.equipment.map(item => (
-                        <Badge key={item} variant="secondary" className="text-xs">{item}</Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Special Requests */}
-                  {selectedBooking.special_requests && (
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase">Special Requests</h4>
-                      <p className="text-sm bg-muted/50 rounded-lg p-3">{selectedBooking.special_requests}</p>
-                    </div>
-                  )}
-                </div>
-
-                <DialogFooter>
-                  {selectedBooking.status === "pending" && (
-                    <>
-                      <Button variant="destructive" size="sm" onClick={() => handleDecline(selectedBooking)}>
-                        <X size={14} className="mr-1" /> Decline
-                      </Button>
-                      <Button size="sm" onClick={() => handleApprove(selectedBooking)}>
-                        <Check size={14} className="mr-1" /> Approve & Create Event
-                      </Button>
-                    </>
-                  )}
-                  {selectedBooking.status !== "pending" && (
-                    <Button variant="outline" onClick={() => setDetailOpen(false)}>Close</Button>
-                  )}
-                </DialogFooter>
-              </>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
+      <BookingDetailDialog
+        booking={selectedBooking}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onApprove={handleApprove}
+        onDecline={handleDecline}
+      />
     </div>
   );
 };

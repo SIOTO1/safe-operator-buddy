@@ -25,6 +25,7 @@ import DifficultConversationsPage from "./pages/DifficultConversationsPage";
 import SchedulingPage from "./pages/SchedulingPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
+import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="crew" element={<CrewPage />} />
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
+              <Route path="equipment" element={<EquipmentCatalogPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />

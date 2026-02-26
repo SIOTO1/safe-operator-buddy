@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { format } from "date-fns";
@@ -11,22 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const equipmentOptions = [
-  "Bounce House",
-  "Water Slide",
-  "Obstacle Course",
-  "Combo Unit",
-  "Dunk Tank",
-  "Foam Machine",
-  "Tables & Chairs",
-  "Tent / Canopy",
-  "Concession Machine",
-  "Interactive Game",
+// Fallback equipment options when no catalog items exist
+const defaultEquipmentOptions = [
+  "Bounce House", "Water Slide", "Obstacle Course", "Combo Unit", "Dunk Tank",
+  "Foam Machine", "Tables & Chairs", "Tent / Canopy", "Concession Machine", "Interactive Game",
 ];
 
 const bookingSchema = z.object({
@@ -44,37 +36,55 @@ const bookingSchema = z.object({
 
 type BookingForm = z.infer<typeof bookingSchema>;
 
+interface CatalogItem {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+}
+
 const BookingPage = () => {
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
 
   const [form, setForm] = useState<Partial<BookingForm>>({
-    customer_name: "",
-    customer_email: "",
-    customer_phone: "",
-    event_time: "10:00",
-    event_end_time: "16:00",
-    event_location: "",
-    equipment: [],
-    special_requests: "",
+    customer_name: "", customer_email: "", customer_phone: "",
+    event_time: "10:00", event_end_time: "16:00", event_location: "",
+    equipment: [], special_requests: "",
   });
+
+  // Load equipment catalog (public, no auth needed)
+  useEffect(() => {
+    supabase
+      .from("equipment_catalog")
+      .select("id, name, description, image_url")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        setCatalogItems((data || []) as CatalogItem[]);
+        setCatalogLoaded(true);
+      });
+  }, []);
+
+  const equipmentOptions = catalogItems.length > 0
+    ? catalogItems.map(c => c.name)
+    : defaultEquipmentOptions;
 
   const toggleEquipment = (item: string) => {
     const current = form.equipment || [];
     setForm({
       ...form,
-      equipment: current.includes(item)
-        ? current.filter(e => e !== item)
-        : [...current, item],
+      equipment: current.includes(item) ? current.filter(e => e !== item) : [...current, item],
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-
     const result = bookingSchema.safeParse(form);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -85,7 +95,6 @@ const BookingPage = () => {
       setErrors(fieldErrors);
       return;
     }
-
     setSubmitting(true);
     try {
       const data = result.data;
@@ -114,11 +123,7 @@ const BookingPage = () => {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center space-y-4"
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full text-center space-y-4">
           <CheckCircle size={48} className="text-chart-2 mx-auto" />
           <h1 className="text-2xl font-display font-bold">Booking Request Submitted!</h1>
           <p className="text-muted-foreground">
@@ -137,18 +142,13 @@ const BookingPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="text-primary" size={24} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-            <span className="font-display font-bold text-lg">
-              SIOTO<span className="text-primary">.AI</span>
-            </span>
+            <span className="font-display font-bold text-lg">SIOTO<span className="text-primary">.AI</span></span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-            <ArrowLeft size={16} className="mr-1" /> Home
-          </Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")}><ArrowLeft size={16} className="mr-1" /> Home</Button>
         </div>
       </header>
 
@@ -165,35 +165,18 @@ const BookingPage = () => {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <Label>Full Name *</Label>
-                <Input
-                  value={form.customer_name}
-                  onChange={e => setForm({ ...form, customer_name: e.target.value })}
-                  placeholder="John Smith"
-                  maxLength={100}
-                />
+                <Input value={form.customer_name} onChange={e => setForm({ ...form, customer_name: e.target.value })} placeholder="John Smith" maxLength={100} />
                 {errors.customer_name && <p className="text-xs text-destructive mt-1">{errors.customer_name}</p>}
               </div>
               <div>
                 <Label>Email *</Label>
-                <Input
-                  type="email"
-                  value={form.customer_email}
-                  onChange={e => setForm({ ...form, customer_email: e.target.value })}
-                  placeholder="john@example.com"
-                  maxLength={255}
-                />
+                <Input type="email" value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} placeholder="john@example.com" maxLength={255} />
                 {errors.customer_email && <p className="text-xs text-destructive mt-1">{errors.customer_email}</p>}
               </div>
             </div>
             <div className="max-w-xs">
               <Label>Phone (optional)</Label>
-              <Input
-                type="tel"
-                value={form.customer_phone}
-                onChange={e => setForm({ ...form, customer_phone: e.target.value })}
-                placeholder="(555) 123-4567"
-                maxLength={20}
-              />
+              <Input type="tel" value={form.customer_phone} onChange={e => setForm({ ...form, customer_phone: e.target.value })} placeholder="(555) 123-4567" maxLength={20} />
             </div>
           </div>
 
@@ -205,40 +188,20 @@ const BookingPage = () => {
                 <Label>Event Date *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !form.event_date && "text-muted-foreground"
-                      )}
-                    >
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !form.event_date && "text-muted-foreground")}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {form.event_date ? format(form.event_date, "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={form.event_date}
-                      onSelect={d => setForm({ ...form, event_date: d })}
-                      disabled={d => d < new Date()}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
+                    <Calendar mode="single" selected={form.event_date} onSelect={d => setForm({ ...form, event_date: d })} disabled={d => d < new Date()} initialFocus className={cn("p-3 pointer-events-auto")} />
                   </PopoverContent>
                 </Popover>
                 {errors.event_date && <p className="text-xs text-destructive mt-1">{errors.event_date}</p>}
               </div>
               <div>
                 <Label>Estimated Guest Count</Label>
-                <Input
-                  type="number"
-                  value={form.guest_count || ""}
-                  onChange={e => setForm({ ...form, guest_count: e.target.value ? parseInt(e.target.value) : undefined })}
-                  placeholder="e.g., 25"
-                  min={1}
-                  max={5000}
-                />
+                <Input type="number" value={form.guest_count || ""} onChange={e => setForm({ ...form, guest_count: e.target.value ? parseInt(e.target.value) : undefined })} placeholder="e.g., 25" min={1} max={5000} />
                 {errors.guest_count && <p className="text-xs text-destructive mt-1">{errors.guest_count}</p>}
               </div>
             </div>
@@ -254,12 +217,7 @@ const BookingPage = () => {
             </div>
             <div>
               <Label>Event Location / Address *</Label>
-              <Input
-                value={form.event_location}
-                onChange={e => setForm({ ...form, event_location: e.target.value })}
-                placeholder="123 Main St, City, State ZIP"
-                maxLength={300}
-              />
+              <Input value={form.event_location} onChange={e => setForm({ ...form, event_location: e.target.value })} placeholder="123 Main St, City, State ZIP" maxLength={300} />
               {errors.event_location && <p className="text-xs text-destructive mt-1">{errors.event_location}</p>}
             </div>
           </div>
@@ -269,48 +227,44 @@ const BookingPage = () => {
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Equipment Needed *</h2>
             {errors.equipment && <p className="text-xs text-destructive">{errors.equipment}</p>}
             <div className="grid sm:grid-cols-2 gap-2">
-              {equipmentOptions.map(item => (
-                <label
-                  key={item}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
-                    form.equipment?.includes(item)
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-card hover:border-primary/50"
-                  )}
-                >
-                  <Checkbox
-                    checked={form.equipment?.includes(item)}
-                    onCheckedChange={() => toggleEquipment(item)}
-                  />
-                  <span className="text-sm">{item}</span>
-                </label>
-              ))}
+              {equipmentOptions.map(item => {
+                const catalogItem = catalogItems.find(c => c.name === item);
+                return (
+                  <label
+                    key={item}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                      form.equipment?.includes(item)
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card hover:border-primary/50"
+                    )}
+                  >
+                    <Checkbox checked={form.equipment?.includes(item)} onCheckedChange={() => toggleEquipment(item)} />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium">{item}</span>
+                      {catalogItem?.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-1">{catalogItem.description}</p>
+                      )}
+                    </div>
+                    {catalogItem?.image_url && (
+                      <img src={catalogItem.image_url} alt={item} className="w-8 h-8 rounded object-cover shrink-0" />
+                    )}
+                  </label>
+                );
+              })}
             </div>
           </div>
 
           {/* Special Requests */}
           <div>
             <Label>Special Requests / Notes</Label>
-            <Textarea
-              value={form.special_requests}
-              onChange={e => setForm({ ...form, special_requests: e.target.value })}
-              placeholder="Any special requirements, theme details, setup instructions, etc."
-              rows={4}
-              maxLength={1000}
-            />
+            <Textarea value={form.special_requests} onChange={e => setForm({ ...form, special_requests: e.target.value })} placeholder="Any special requirements, theme details, setup instructions, etc." rows={4} maxLength={1000} />
             <p className="text-xs text-muted-foreground mt-1">{(form.special_requests || "").length}/1000</p>
           </div>
 
           <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-            {submitting ? "Submitting..." : (
-              <>
-                <Send size={16} className="mr-2" />
-                Submit Booking Request
-              </>
-            )}
+            {submitting ? "Submitting..." : <><Send size={16} className="mr-2" />Submit Booking Request</>}
           </Button>
-
           <p className="text-xs text-muted-foreground text-center">
             By submitting, you agree to be contacted about your rental request. This is a request only — not a confirmed booking.
           </p>

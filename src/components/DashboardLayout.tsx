@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox } from "lucide-react";
+import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,7 @@ const navItems = [
   { to: "/dashboard/crew", icon: Users, label: "Crew" },
   { to: "/dashboard/scheduling", icon: CalendarDays, label: "Scheduling" },
   { to: "/dashboard/bookings", icon: Inbox, label: "Bookings", minRole: "manager" as const },
+  { to: "/dashboard/equipment", icon: Package, label: "Equipment", minRole: "manager" as const },
   { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
 ];
 
