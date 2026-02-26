@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList } from "lucide-react";
+import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,7 @@ const navItems = [
   { to: "/dashboard/waiver", icon: FileSignature, label: "Liability Waiver" },
   { to: "/dashboard/sops", icon: ScrollText, label: "SOPs & Policies" },
   { to: "/dashboard/interview-guide", icon: ClipboardList, label: "Interview Guides" },
+  { to: "/dashboard/drivers", icon: Truck, label: "Driver Management" },
   { to: "/dashboard/crew", icon: Users, label: "Crew" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
 ];
