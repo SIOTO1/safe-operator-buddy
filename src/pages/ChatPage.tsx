@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Shield, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -100,7 +101,13 @@ const ChatPage = () => {
                   "rounded-xl px-4 py-3 max-w-[80%] text-sm leading-relaxed",
                   msg.role === "assistant" ? "bg-card border border-border" : "bg-primary text-primary-foreground"
                 )}>
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  {msg.role === "assistant" ? (
+                    <div className="prose prose-sm max-w-none prose-headings:font-display prose-strong:text-foreground">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  )}
                 </div>
               </div>
             ))}
