@@ -21,6 +21,7 @@ import WaiverPage from "./pages/WaiverPage";
 import SOPsPage from "./pages/SOPsPage";
 import InterviewGuidePage from "./pages/InterviewGuidePage";
 import DriverManagementPage from "./pages/DriverManagementPage";
+import DifficultConversationsPage from "./pages/DifficultConversationsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="sops" element={<SOPsPage />} />
               <Route path="interview-guide" element={<InterviewGuidePage />} />
               <Route path="drivers" element={<DriverManagementPage />} />
+              <Route path="conversations" element={<DifficultConversationsPage />} />
               <Route path="crew" element={<CrewPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
