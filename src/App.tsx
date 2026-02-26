@@ -42,7 +42,7 @@ const App = () => (
               <Route path="checklists" element={<ChecklistsPage />} />
               <Route path="contracts" element={<ContractsPage />} />
               <Route path="crew" element={<CrewPage />} />
-              <Route path="settings" element={<SettingsPage />} />
+              <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
