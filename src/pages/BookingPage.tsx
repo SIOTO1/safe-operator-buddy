@@ -51,6 +51,7 @@ const BookingPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [defaultDeliveryFee, setDefaultDeliveryFee] = useState<number | null>(null);
 
   const [form, setForm] = useState<Partial<BookingForm>>({
     customer_name: "", customer_email: "", customer_phone: "",
@@ -68,6 +69,17 @@ const BookingPage = () => {
       .then(({ data }) => {
         setCatalogItems((data || []) as CatalogItem[]);
         setCatalogLoaded(true);
+      });
+    // Fetch org default delivery fee
+    supabase
+      .from("organization_settings")
+      .select("default_delivery_fee")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && (data as any).default_delivery_fee != null) {
+          setDefaultDeliveryFee((data as any).default_delivery_fee);
+        }
       });
   }, []);
 
@@ -266,8 +278,10 @@ const BookingPage = () => {
             const selected = (form.equipment || [])
               .map(name => catalogItems.find(c => c.name === name))
               .filter((c): c is CatalogItem => c != null && c.price != null);
-            if (selected.length === 0) return null;
-            const total = selected.reduce((sum, c) => sum + (c.price || 0), 0);
+            if (selected.length === 0 && defaultDeliveryFee == null) return null;
+            const equipmentTotal = selected.reduce((sum, c) => sum + (c.price || 0), 0);
+            const deliveryFee = defaultDeliveryFee ?? 0;
+            const total = equipmentTotal + deliveryFee;
             return (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-2">
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Estimated Cost</h2>
@@ -277,10 +291,18 @@ const BookingPage = () => {
                     <span className="font-medium">${c.price!.toFixed(2)}</span>
                   </div>
                 ))}
-                <div className="border-t border-border pt-2 flex justify-between font-bold">
-                  <span>Estimated Total</span>
-                  <span className="text-primary">${total.toFixed(2)}</span>
-                </div>
+                {defaultDeliveryFee != null && (
+                  <div className="flex justify-between text-sm">
+                    <span>Delivery Fee</span>
+                    <span className="font-medium">${defaultDeliveryFee.toFixed(2)}</span>
+                  </div>
+                )}
+                {(selected.length > 0 || defaultDeliveryFee != null) && (
+                  <div className="border-t border-border pt-2 flex justify-between font-bold">
+                    <span>Estimated Total</span>
+                    <span className="text-primary">${total.toFixed(2)}</span>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">Final pricing may vary based on delivery distance and event details.</p>
               </div>
             );
