@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_notes: {
+        Row: {
+          booking_id: string
+          created_at: string
+          created_by: string
+          id: string
+          note: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          note: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_notes_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_requests: {
         Row: {
           created_at: string
@@ -106,6 +138,42 @@ export type Database = {
           is_available?: boolean
           notes?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      equipment_catalog: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
