@@ -4,7 +4,7 @@ import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, U
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 
 const navItems = [
   { to: "/dashboard", icon: BarChart3, label: "Dashboard", end: true },
@@ -19,24 +19,9 @@ const navItems = [
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [crewMode, setCrewMode] = useState(false);
-  const [orgName, setOrgName] = useState<string | null>(null);
-  const [orgLogo, setOrgLogo] = useState<string | null>(null);
+  const { orgName, orgLogo } = useOrgSettings();
   const { user, role, profile, signOut } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    supabase
-      .from("organization_settings")
-      .select("company_name, logo_url")
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setOrgName(data.company_name || null);
-          setOrgLogo(data.logo_url || null);
-        }
-      });
-  }, []);
 
   const handleSignOut = async () => {
     await signOut();
