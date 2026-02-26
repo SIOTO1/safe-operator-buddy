@@ -3,11 +3,14 @@ import { Send, Shield, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import { toast } from "sonner";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
 const quickQuestions = [
   "How to properly anchor an inflatable?",
@@ -18,30 +21,93 @@ const quickQuestions = [
   "Takedown procedure steps",
 ];
 
-const mockResponses: Record<string, string> = {
-  "anchor": "**Anchoring Guidelines (SIOTO-Approved)**\n\n1. **Grass/Dirt:** Use minimum 18\" steel stakes at each anchor point at a 45° angle\n2. **Concrete/Asphalt:** Use 40lb sandbags per anchor point minimum\n3. **Indoor:** Use sandbags — never stakes indoors\n\n⚠️ **Every anchor point must be secured** — no exceptions.\n\n🔗 *Reference: SIOTO Anchoring Rules v3.2*",
-  "wind": "**Wind Safety Limits (SIOTO-Approved)**\n\n- ✅ **0-15 mph:** Safe to operate\n- ⚠️ **15-20 mph:** Monitor closely, prepare to deflate\n- 🛑 **20+ mph:** **Immediately deflate and secure**\n\n📋 Use the Wind Check Log after each measurement.\n\n*Always check hourly during events. Use an anemometer — do not estimate.*",
-  "sandbag": "**Sandbag Requirements**\n\n| Unit Size | Min. Sandbags Per Point |\n|-----------|------------------------|\n| 10x10 | 35 lbs |\n| 13x13 | 40 lbs |\n| 15x15 | 50 lbs |\n| 20x20 | 60+ lbs |\n\n⚠️ These are **minimums**. Add weight for windy conditions.\n\n*Reference: SIOTO Anchoring Rules*",
-  "extension": "**Extension Cord Guidelines**\n\n1. Use **12-gauge** minimum for runs under 50ft\n2. Use **10-gauge** for runs 50-100ft\n3. **Never exceed 100ft** total cord length\n4. Cords must be **outdoor rated** and **GFCI protected**\n5. No daisy-chaining multiple cords\n6. Cover cords with **cord ramps** in pedestrian areas\n\n⚡ *Reference: SIOTO Electrical Safety Guide*",
-  "concrete": "**Surface Restrictions**\n\n✅ **Approved surfaces:** Grass, dirt, sand, rubber playground surface\n⚠️ **Conditional:** Concrete, asphalt (requires sandbags, protective tarp)\n🛑 **Not recommended:** Wet surfaces, slopes >5°, near pools\n\nFor concrete setups:\n- Place a **ground tarp** under the unit\n- Use **sandbags** (not stakes) at every anchor point\n- Check for **drainage issues**",
-  "takedown": "**Takedown Procedure (SIOTO-Approved)**\n\n1. ✅ Ensure all riders have exited\n2. ✅ Turn off and disconnect blower\n3. ✅ Open deflation zippers/flaps\n4. ✅ Remove all stakes/sandbags\n5. ✅ Squeeze out remaining air\n6. ✅ Clean unit surface\n7. ✅ Fold toward the blower tube\n8. ✅ Roll tightly and secure with straps\n9. ✅ Complete Post-Event Inspection checklist\n\n📝 *Log takedown in the event record.*",
-};
+async function streamChat({
+  messages,
+  onDelta,
+  onDone,
+}: {
+  messages: Message[];
+  onDelta: (text: string) => void;
+  onDone: () => void;
+}) {
+  const resp = await fetch(CHAT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    },
+    body: JSON.stringify({ messages }),
+  });
 
-function getResponse(input: string): string {
-  const lower = input.toLowerCase();
-  if (lower.includes("anchor") || lower.includes("stake")) return mockResponses.anchor;
-  if (lower.includes("wind") || lower.includes("speed")) return mockResponses.wind;
-  if (lower.includes("sandbag") || lower.includes("weight")) return mockResponses.sandbag;
-  if (lower.includes("cord") || lower.includes("extension") || lower.includes("electric")) return mockResponses.extension;
-  if (lower.includes("concrete") || lower.includes("surface") || lower.includes("asphalt")) return mockResponses.concrete;
-  if (lower.includes("takedown") || lower.includes("take down") || lower.includes("deflat")) return mockResponses.takedown;
-  return "I can help with safety questions about inflatable setup, anchoring, wind limits, electrical safety, surfaces, and takedown procedures. Try asking about one of these topics!\n\n*Powered by SIOTO.AI Knowledge Base*";
+  if (!resp.ok) {
+    const errorData = await resp.json().catch(() => ({}));
+    if (resp.status === 429) throw new Error("Rate limit exceeded. Please wait a moment.");
+    if (resp.status === 402) throw new Error("AI usage limit reached. Please add credits.");
+    throw new Error(errorData.error || "Failed to get response");
+  }
+
+  if (!resp.body) throw new Error("No response body");
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let textBuffer = "";
+  let streamDone = false;
+
+  while (!streamDone) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    textBuffer += decoder.decode(value, { stream: true });
+
+    let newlineIndex: number;
+    while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+      let line = textBuffer.slice(0, newlineIndex);
+      textBuffer = textBuffer.slice(newlineIndex + 1);
+
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (line.startsWith(":") || line.trim() === "") continue;
+      if (!line.startsWith("data: ")) continue;
+
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === "[DONE]") {
+        streamDone = true;
+        break;
+      }
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) onDelta(content);
+      } catch {
+        textBuffer = line + "\n" + textBuffer;
+        break;
+      }
+    }
+  }
+
+  // Final flush
+  if (textBuffer.trim()) {
+    for (let raw of textBuffer.split("\n")) {
+      if (!raw) continue;
+      if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+      if (raw.startsWith(":") || raw.trim() === "") continue;
+      if (!raw.startsWith("data: ")) continue;
+      const jsonStr = raw.slice(6).trim();
+      if (jsonStr === "[DONE]") continue;
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) onDelta(content);
+      } catch { /* ignore */ }
+    }
+  }
+
+  onDone();
 }
 
 const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,18 +115,36 @@ const ChatPage = () => {
   }, [messages]);
 
   const sendMessage = async (text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isLoading) return;
     const userMsg: Message = { role: "user", content: text.trim() };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInput("");
-    setIsTyping(true);
+    setIsLoading(true);
 
-    // Simulate AI delay
-    setTimeout(() => {
-      const response = getResponse(text);
-      setMessages(prev => [...prev, { role: "assistant", content: response }]);
-      setIsTyping(false);
-    }, 800);
+    let assistantSoFar = "";
+    const upsertAssistant = (chunk: string) => {
+      assistantSoFar += chunk;
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant") {
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
+        }
+        return [...prev, { role: "assistant", content: assistantSoFar }];
+      });
+    };
+
+    try {
+      await streamChat({
+        messages: updatedMessages,
+        onDelta: (chunk) => upsertAssistant(chunk),
+        onDone: () => setIsLoading(false),
+      });
+    } catch (e: any) {
+      console.error("Chat error:", e);
+      toast.error(e.message || "Failed to get AI response");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -111,7 +195,7 @@ const ChatPage = () => {
                 </div>
               </div>
             ))}
-            {isTyping && (
+            {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
                   <Shield size={16} />
@@ -138,14 +222,15 @@ const ChatPage = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
             placeholder="Ask a safety question..."
-            className="flex-1 rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            disabled={isLoading}
+            className="flex-1 rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
           />
-          <Button onClick={() => sendMessage(input)} size="icon" className="h-11 w-11 rounded-xl">
+          <Button onClick={() => sendMessage(input)} size="icon" className="h-11 w-11 rounded-xl" disabled={isLoading}>
             <Send size={18} />
           </Button>
         </div>
         <p className="text-center text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
-          <Sparkles size={12} /> Powered by SIOTO-approved safety guidelines
+          <Sparkles size={12} /> Powered by SIOTO.AI Knowledge Base
         </p>
       </div>
     </div>
