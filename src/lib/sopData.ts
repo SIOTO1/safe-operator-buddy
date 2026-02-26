@@ -50,7 +50,7 @@ export const sopCategories: SOPCategory[] = [
     label: "Setup & Takedown SOPs",
     icon: "Wrench",
     description: "Standard operating procedures for equipment setup and takedown",
-    subcategories: ["Bounce House Setup", "Water Slide Setup", "Tent Setup", "General Takedown"],
+    subcategories: ["Bounce House Setup", "Water Slide Setup", "Tent Setup", "Foam Machine Setup", "Dunk Tank Setup", "General Takedown"],
   },
   {
     id: "difficult-conversations",
@@ -976,5 +976,395 @@ Safety violations require IMMEDIATE intervention — do not wait for a "convenie
       back: "Separate & listen individually → Joint meeting with ground rules → Identify the core issue → Find a mutually fair solution → Follow up within a week.",
     },
     tags: ["conflict", "mediation", "team", "resolution"],
+  },
+
+  // ── Foam Machine Safety ──
+  {
+    id: "st-005",
+    title: "Foam Machine Safety & Operations",
+    category: "setup-takedown",
+    subcategory: "Foam Machine Setup",
+    content: `## Foam Machine Safety & Operations
+
+### Pre-Event Setup
+1. Position the foam machine on a flat, stable surface in an outdoor area with adequate drainage
+2. Ensure the foam zone is at least 20 feet from any electrical panels, outlets, or sensitive equipment
+3. Mark the foam zone boundaries clearly with cones, caution tape, or barriers
+4. Connect to a dedicated power circuit — foam machines draw significant amperage
+5. Fill the reservoir with manufacturer-approved foam solution ONLY — never substitute dish soap or other chemicals
+
+### Safety Perimeter
+- Establish a non-slip zone around the foam area with mats or towels at entry/exit points
+- Keep spectators and non-participants at least 10 feet from the foam zone
+- Designate a clear emergency exit path that is NOT through the foam
+
+### Participant Rules
+- All participants must remove shoes, jewelry, watches, and sharp accessories
+- No running within the foam zone — walking only
+- Keep foam away from eyes and mouth — if contact occurs, rinse immediately with clean water
+- Children under 6 must have a parent/guardian in the foam zone with them
+- Maximum occupancy limits must be posted and enforced
+
+### Operator Responsibilities
+- ⚠️ Monitor foam depth — do not let it exceed waist height on the shortest participant
+- ⚠️ Maintain line of sight to ALL participants at all times — reduced visibility is the #1 risk
+- ⚠️ Check foam solution levels every 30 minutes
+- ⚠️ Stop operations immediately if wind disperses foam into roads, neighboring properties, or electrical areas
+
+### Cleanup & Environmental
+- Foam solution is biodegradable but should not enter storm drains
+- Direct runoff to grass or landscaped areas when possible
+- Hose down equipment after each use to prevent residue buildup
+- Allow surfaces to dry completely before allowing vehicle or foot traffic
+
+### Emergency Procedures
+- 🛑 If a participant cannot be located in the foam: STOP the machine and clear all participants immediately
+- 🛑 If foam contacts electrical equipment: Cut power at the breaker, do NOT touch wet equipment
+- 🛑 If allergic reaction occurs: Move participant to clean area, rinse skin, seek medical attention`,
+    flashcard: {
+      front: "What is the #1 safety risk with foam machines?",
+      back: "Reduced visibility. Operators must maintain line of sight to ALL participants at all times. If a participant cannot be located, stop the machine and clear everyone immediately.",
+    },
+    tags: ["foam", "foam machine", "party", "safety", "visibility"],
+  },
+  {
+    id: "st-006",
+    title: "Foam Solution Handling & Storage",
+    category: "setup-takedown",
+    subcategory: "Foam Machine Setup",
+    content: `## Foam Solution Handling & Storage
+
+### Approved Solutions
+- Use ONLY manufacturer-recommended foam concentrate
+- Never substitute with dish soap, bubble bath, or other household products
+- Verify the solution is hypoallergenic, non-toxic, and biodegradable before purchase
+
+### Mixing Instructions
+- Follow the manufacturer's dilution ratio exactly — more concentrate does NOT mean better foam
+- Use clean, potable water for mixing
+- Mix in a clean container — contaminants can cause skin irritation
+
+### Storage
+- Store concentrate in a cool, dry location away from direct sunlight
+- Keep containers sealed and labeled at all times
+- Store away from food, drinks, and first aid supplies
+- Check expiration dates — expired solution can cause skin reactions
+
+### Safety Data Sheet (SDS)
+- Keep the SDS for your foam solution accessible at all events
+- Know the first aid procedures listed on the SDS
+- If a participant reports skin irritation, document and reference the SDS
+
+### Disposal
+- Diluted foam water can be disposed of on grass or landscaped areas
+- Do NOT pour concentrated solution down drains
+- Follow local environmental regulations for disposal of unused concentrate`,
+    flashcard: {
+      front: "Can you substitute dish soap for foam machine solution?",
+      back: "NEVER. Use only manufacturer-recommended foam concentrate that is hypoallergenic, non-toxic, and biodegradable. Substitutes can cause skin and eye irritation.",
+    },
+    tags: ["foam solution", "chemical safety", "storage", "SDS"],
+  },
+
+  // ── Dunk Tank Operations ──
+  {
+    id: "st-007",
+    title: "Dunk Tank Setup & Safety",
+    category: "setup-takedown",
+    subcategory: "Dunk Tank Setup",
+    content: `## Dunk Tank Setup & Safety
+
+### Site Requirements
+- Flat, level surface capable of supporting 2,000+ lbs when filled
+- Within 50 feet of a garden hose water source
+- Minimum 10-foot clearance on all sides
+- Away from electrical lines, panels, and outlets
+- Drainage plan in place for post-event water removal
+
+### Fill Procedure
+1. Position the tank on the approved surface — do NOT move once filling begins
+2. Inspect the tank for cracks, rust, or structural damage before filling
+3. Connect hose and begin filling — monitor water level continuously
+4. Fill to the manufacturer-recommended depth (typically marked on the interior)
+5. Test the release mechanism multiple times BEFORE any participants enter
+6. Verify the seat locks properly in the raised position
+
+### Participant Safety
+- **Swimmers only** — the person on the seat must be comfortable in chest-deep water
+- Maximum weight limit for the seat: check manufacturer specs (typically 250 lbs)
+- No one under 18 on the seat without parental consent
+- Participants must remove glasses, jewelry, and phones before sitting
+- Safety spotter must be positioned next to the tank at ALL times
+
+### Throwing Zone
+- Throwing line: minimum 10 feet from the target
+- Use ONLY operator-provided soft throwing balls — no baseballs, rocks, or hard objects
+- One thrower at a time
+- Children under 10 should throw from a closer line (5-7 feet)
+
+### Supervision Requirements
+- ⚠️ Dedicated safety spotter at the tank at ALL times — this person does nothing else
+- ⚠️ Spotter must be able to reach the participant within 2 seconds
+- ⚠️ Never leave the tank unattended when filled with water
+- ⚠️ If lightning is detected within 10 miles: evacuate the tank immediately
+
+### Post-Event Procedures
+- Ensure ALL participants are out of the water
+- Drain the tank using a siphon or pump — do NOT tip the tank
+- Direct drainage away from structures, electrical equipment, and walkways
+- Clean and sanitize the tank interior before storage
+- Inspect for damage and document any issues`,
+    flashcard: {
+      front: "What is the most critical safety role at a dunk tank event?",
+      back: "A dedicated safety spotter who is positioned next to the tank at ALL times, can reach the participant within 2 seconds, and does nothing else during the event.",
+    },
+    tags: ["dunk tank", "water safety", "spotter", "drowning prevention"],
+  },
+  {
+    id: "st-008",
+    title: "Dunk Tank Water Quality & Hygiene",
+    category: "setup-takedown",
+    subcategory: "Dunk Tank Setup",
+    content: `## Dunk Tank Water Quality & Hygiene
+
+### Water Source
+- Use clean, potable water from a municipal source or tested well
+- Never fill from ponds, pools with unknown chemical levels, or untreated sources
+
+### During the Event
+- Monitor water clarity — if it becomes cloudy, consider draining and refilling
+- Check water temperature periodically — extremely cold water can cause shock
+- Remove any debris (grass, dirt, thrown items) from the water promptly
+- If blood or bodily fluids enter the water: stop operations, drain, clean, and refill
+
+### Sanitation
+- Add a small amount of chlorine or approved sanitizer per manufacturer guidelines
+- Do not over-chlorinate — this can cause skin and eye irritation
+- Test sanitizer levels if the event lasts more than 4 hours
+
+### Health Considerations
+- Do not allow participants with open wounds, rashes, or known infections to enter the water
+- Have clean towels available at the exit point
+- Post hygiene reminders near the tank
+
+### Post-Event Cleaning
+- Drain all water — never leave standing water overnight (mosquito breeding)
+- Scrub the interior with a mild bleach solution (1 tbsp per gallon)
+- Rinse thoroughly with clean water
+- Allow to air dry completely before storing`,
+    flashcard: {
+      front: "When should you stop dunk tank operations and drain the water?",
+      back: "If blood or bodily fluids enter the water, if the water becomes excessively cloudy, or if lightning is detected within 10 miles.",
+    },
+    tags: ["dunk tank", "water quality", "hygiene", "sanitation"],
+  },
+
+  // ── Tent Anchoring ──
+  {
+    id: "st-009",
+    title: "Tent Anchoring Procedures",
+    category: "setup-takedown",
+    subcategory: "Tent Setup",
+    content: `## Tent Anchoring Procedures
+
+### Surface Assessment
+Before selecting an anchoring method, assess the surface type:
+- **Grass/Dirt**: Stakes are the primary method
+- **Concrete/Asphalt**: Weights (water barrels, concrete blocks, sandbags) required
+- **Gravel/Decomposed Granite**: Auger stakes or weights depending on depth
+- **Wooden Deck**: Weights only — NEVER stake through a deck
+
+### Stake Anchoring (Grass/Dirt)
+1. Drive stakes at a 45-degree angle, leaning AWAY from the tent
+2. Use a minimum 24-inch stake for pop-up tents, 36-inch for frame tents
+3. Drive stakes until only 2-3 inches remain above ground
+4. Attach ratchet straps or ropes to stakes — NOT bungee cords
+5. Each leg must have its own anchor point — no sharing between legs
+
+### Weight Anchoring (Hard Surfaces)
+- Minimum weight per leg:
+  - 10x10 pop-up: 40 lbs per leg (160 lbs total)
+  - 20x20 frame tent: 100 lbs per leg (minimum)
+  - 20x40 frame tent: 150 lbs per leg (minimum)
+- Use water barrels, concrete blocks, or commercial tent weights
+- Secure weights to the tent frame with ratchet straps
+- NEVER use loose sandbags alone — they can shift
+
+### Wind Considerations
+- ⚠️ Do NOT set up tents if sustained winds exceed 25 mph
+- ⚠️ If gusts exceed 35 mph during an event: evacuate the tent immediately
+- Remove sidewalls in high wind conditions to reduce sail effect
+- Monitor weather forecasts throughout the event
+- Have a wind contingency plan discussed with the customer before setup
+
+### Inspection After Setup
+- Walk around the tent and verify every anchor point is secure
+- Check that fabric is taut but not overstressed at any point
+- Ensure all guy lines are visible and marked to prevent tripping
+- Verify tent is level — adjust leg heights if needed
+
+### Common Mistakes
+- 🛑 Using only 1-2 anchors on a 4-leg tent
+- 🛑 Using bungee cords instead of ratchet straps
+- 🛑 Failing to remove sidewalls in wind
+- 🛑 Setting up under power lines or tree branches
+- 🛑 Not checking stakes after the first hour (soil loosening)`,
+    flashcard: {
+      front: "At what wind speed should you NOT set up a tent?",
+      back: "Do not set up if sustained winds exceed 25 mph. If gusts exceed 35 mph during an event, evacuate the tent immediately. Remove sidewalls in high wind to reduce sail effect.",
+    },
+    tags: ["tent", "anchoring", "stakes", "wind", "weights"],
+  },
+  {
+    id: "st-010",
+    title: "Tent Emergency Weather Protocol",
+    category: "setup-takedown",
+    subcategory: "Tent Setup",
+    content: `## Tent Emergency Weather Protocol
+
+### Wind Escalation Plan
+
+**Level 1: Moderate Wind (15-25 mph)**
+- Remove all sidewalls to reduce wind load
+- Check all anchor points — re-tighten straps
+- Secure any loose items under or near the tent
+- Alert the customer and monitor conditions
+
+**Level 2: High Wind (25-35 mph)**
+- Evacuate all people from under the tent
+- If safe to do so, collapse the tent canopy
+- Do NOT attempt to take down the full tent frame in high wind — it becomes a sail
+- Move to a safe distance and monitor
+
+**Level 3: Severe Wind / Storm (35+ mph)**
+- Full evacuation — move everyone indoors or to vehicles
+- Do NOT approach the tent — structural failure risk
+- Call emergency services if the tent becomes airborne or causes damage
+- Document damage with photos for insurance
+
+### Lightning Protocol
+- If thunder is heard or lightning is seen: evacuate the tent IMMEDIATELY
+- Tents provide ZERO protection from lightning
+- Move to an enclosed building or hard-topped vehicle
+- Wait 30 minutes after the last lightning strike before resuming
+
+### Rain & Water Pooling
+- Tent canopies are NOT designed to hold water weight — pooling can cause collapse
+- If water begins pooling, push it off from underneath with a broom handle
+- Adjust peak height to ensure proper water runoff
+- Never allow guests under a tent with visible water pooling
+
+### Post-Storm Inspection
+- Inspect all structural connections before allowing re-entry
+- Check for bent poles, torn fabric, or shifted anchors
+- If ANY structural damage is found, do NOT allow re-entry — take the tent down
+- Document all damage and notify the office immediately`,
+    flashcard: {
+      front: "Do tents protect from lightning?",
+      back: "NO. Tents provide ZERO protection from lightning. Evacuate immediately if thunder is heard or lightning is seen. Wait 30 minutes after the last strike before resuming.",
+    },
+    tags: ["tent", "weather", "lightning", "emergency", "wind"],
+  },
+
+  // ── Water Slide Safety ──
+  {
+    id: "st-011",
+    title: "Water Slide Safety Protocols",
+    category: "setup-takedown",
+    subcategory: "Water Slide Setup",
+    content: `## Water Slide Safety Protocols
+
+### Pre-Setup Site Assessment
+- Flat, level surface with a slight downhill slope in the slide direction
+- Within 50 feet of a garden hose water source with adequate pressure
+- Clear of rocks, roots, fence posts, and other ground hazards
+- Drainage path identified — water runoff must not enter neighboring properties or structures
+- Minimum 15-foot clearance from the slide exit in the landing direction
+
+### Setup Procedure
+1. Lay out the unit on the approved surface — inspect for tears, holes, or damage
+2. Connect the blower(s) and fully inflate before connecting water
+3. Anchor ALL tie-down points per manufacturer specs — water slides experience more force than dry inflatables
+4. Connect the garden hose to the water inlet(s)
+5. Turn on water and verify even distribution across the slide surface
+6. Test the slide yourself or with a crew member before opening to participants
+7. Place non-slip mats at the entry stairs and exit/splash area
+
+### Participant Rules
+- One slider at a time — wait until the previous slider has exited the splash zone
+- Feet-first, sitting position ONLY — no diving, headfirst, standing, or flipping
+- Remove shoes, glasses, jewelry, belt buckles, and any sharp accessories
+- Appropriate swim attire required — no buttons, zippers, or rivets
+- Height and weight restrictions per manufacturer specs must be enforced
+- Children under 5 require adult supervision at the bottom of the slide
+
+### Operator Monitoring
+- ⚠️ Station one attendant at the TOP of the slide (controls who goes when)
+- ⚠️ Station one attendant at the BOTTOM (clears riders from splash zone)
+- ⚠️ Monitor water flow every 15 minutes — dry slides cause friction burns
+- ⚠️ Check anchor points every 30 minutes — water adds shifting forces
+
+### Water Management
+- Maintain consistent water flow throughout the event
+- If water supply is interrupted: CLOSE the slide immediately until flow resumes
+- Monitor the splash/landing area for excessive pooling — pump or redirect as needed
+- Ensure runoff does not create mud pits or slip hazards in surrounding areas
+
+### Heat & Sun Safety
+- Water slides are high-exertion activities — enforce hydration breaks
+- Vinyl surfaces can reach 140°F+ in direct sunlight — always run water before use
+- Monitor for sunburn, especially on younger participants
+- Recommend sunscreen application before sliding`,
+    flashcard: {
+      front: "How many attendants are required for a water slide?",
+      back: "Minimum TWO: one at the TOP (controls who goes and when) and one at the BOTTOM (clears riders from the splash zone). If water flow stops, close the slide immediately.",
+    },
+    tags: ["water slide", "safety", "attendants", "sunburn", "friction"],
+  },
+  {
+    id: "st-012",
+    title: "Water Slide Maintenance & Inspection",
+    category: "setup-takedown",
+    subcategory: "Water Slide Setup",
+    content: `## Water Slide Maintenance & Inspection
+
+### Pre-Event Inspection
+- Check entire slide surface for tears, holes, or worn seams
+- Inspect all water inlets and connections for leaks
+- Verify that the slide surface is smooth — no exposed stitching or rough patches that could cause abrasion
+- Test the splash pool for proper drainage
+- Confirm blower output is sufficient for the unit size
+
+### During Event Checks (Every Hour)
+- Walk the perimeter and inspect all anchor points
+- Check water flow at the top, middle, and bottom of the slide
+- Inspect the entry stairs for stability and grip
+- Monitor splash zone depth — should not exceed manufacturer recommendations
+- Check for debris on the slide surface (leaves, dirt, insects)
+
+### Post-Event Procedures
+1. Turn off water supply and disconnect hoses
+2. Allow remaining water to drain from the unit
+3. Deflate slowly and inspect the entire surface for new damage
+4. Clean with mild soap and water — remove grass, dirt, and algae
+5. Rinse thoroughly and allow to dry COMPLETELY before rolling
+6. Never store a wet water slide — mold and mildew will develop within 24-48 hours
+
+### Repair & Documentation
+- Small tears (under 2 inches): Patch with a vinyl repair kit before next use
+- Large tears or seam separations: Remove from service until professionally repaired
+- Document ALL damage in the Equipment Condition Log
+- Track repair history — units with repeated issues should be evaluated for retirement
+
+### Storage
+- Roll (never fold) once completely dry
+- Store in a cool, dry location off the ground
+- Keep away from rodents, sharp objects, and direct sunlight
+- Label each unit with its last inspection date`,
+    flashcard: {
+      front: "Can you store a water slide while it's still wet?",
+      back: "NEVER. Mold and mildew will develop within 24-48 hours. Always allow the slide to dry COMPLETELY before rolling and storing in a cool, dry location.",
+    },
+    tags: ["water slide", "maintenance", "inspection", "mold", "storage"],
   },
 ];
