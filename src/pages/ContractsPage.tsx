@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { FileText, Download, Calendar, MapPin, Clock, User } from "lucide-react";
+import { FileText, Download, Calendar, MapPin, Clock, User, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
+import { contractTemplates, ContractTemplate } from "@/lib/contractTemplates";
 import jsPDF from "jspdf";
 
 const ContractsPage = () => {
   const { toast } = useToast();
-  const { orgName } = useOrgSettings();
+  const { orgName, orgLogo } = useOrgSettings();
+  const [selectedTemplate, setSelectedTemplate] = useState<ContractTemplate>(contractTemplates[0]);
   const [formData, setFormData] = useState({
     customerName: "",
     eventType: "",
@@ -25,38 +27,40 @@ const ContractsPage = () => {
   };
 
   const handleGenerate = () => {
-    if (!formData.customerName || !formData.eventType || !formData.date) return;
+    if (!formData.customerName || !formData.date) return;
     setGenerated(true);
   };
 
   const handleDownloadPDF = () => {
     try {
       const doc = new jsPDF();
-      const companyName = orgName || "SIOTO.AI";
+      const companyName = orgName || "Your Company";
       const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
       let y = 20;
 
       // Header
-      doc.setFontSize(22);
+      doc.setFontSize(20);
       doc.setFont("helvetica", "bold");
       doc.text(companyName, pageWidth / 2, y, { align: "center" });
-      y += 8;
-      doc.setFontSize(10);
+      y += 7;
+      doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
       doc.text("Safety & Operations", pageWidth / 2, y, { align: "center" });
-      y += 12;
-      doc.setFontSize(16);
+      y += 10;
+      doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("RENTAL AGREEMENT", pageWidth / 2, y, { align: "center" });
+      doc.text(`RENTAL AGREEMENT — ${selectedTemplate.label.toUpperCase()}`, pageWidth / 2, y, { align: "center" });
       y += 4;
-      doc.setDrawColor(200);
-      doc.line(20, y, pageWidth - 20, y);
-      y += 12;
+      doc.setDrawColor(180);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 10;
 
-      // Details
+      // Event details
       const details = [
         ["Customer", formData.customerName],
-        ["Event Type", formData.eventType],
+        ["Equipment Type", selectedTemplate.label],
         ["Number of Units", formData.numberOfUnits],
         ["Event Date", formData.date],
         ["Location", formData.location],
@@ -64,45 +68,93 @@ const ContractsPage = () => {
         ["Takedown Time", formData.takedownTime],
       ];
 
-      doc.setFontSize(11);
+      doc.setFontSize(10);
       for (const [label, value] of details) {
         if (!value) continue;
         doc.setFont("helvetica", "normal");
-        doc.text(label + ":", 25, y);
+        doc.text(label + ":", margin + 5, y);
         doc.setFont("helvetica", "bold");
         doc.text(value, 80, y);
-        y += 9;
+        y += 8;
       }
 
-      y += 10;
+      y += 6;
       doc.setDrawColor(200);
-      doc.line(20, y, pageWidth - 20, y);
-      y += 10;
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 8;
 
       // Terms
-      doc.setFontSize(9);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("TERMS & CONDITIONS", margin + 5, y);
+      y += 7;
+
+      doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.text(
-        "By signing below, the customer agrees to the safety guidelines and rental terms.",
-        25,
-        y,
-        { maxWidth: pageWidth - 50 }
-      );
-      y += 20;
+      selectedTemplate.terms.forEach((term, i) => {
+        const lines = doc.splitTextToSize(`${i + 1}. ${term}`, contentWidth - 10);
+        if (y + lines.length * 4 > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(lines, margin + 5, y);
+        y += lines.length * 4 + 3;
+      });
 
-      // Signature lines
-      doc.line(25, y, 90, y);
-      doc.text("Customer Signature", 35, y + 5);
+      // Indemnity
+      y += 4;
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("INDEMNIFICATION & HOLD HARMLESS", margin + 5, y);
+      y += 7;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      const indemnityLines = doc.splitTextToSize(selectedTemplate.indemnity, contentWidth - 10);
+      if (y + indemnityLines.length * 4 > 270) { doc.addPage(); y = 20; }
+      doc.text(indemnityLines, margin + 5, y);
+      y += indemnityLines.length * 4 + 6;
 
-      doc.line(120, y, 185, y);
-      doc.text("Date", 145, y + 5);
+      // Safety notes
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text("SAFETY NOTES", margin + 5, y);
+      y += 7;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      selectedTemplate.safetyNotes.forEach(note => {
+        const lines = doc.splitTextToSize(`• ${note}`, contentWidth - 10);
+        if (y + lines.length * 4 > 270) { doc.addPage(); y = 20; }
+        doc.text(lines, margin + 5, y);
+        y += lines.length * 4 + 2;
+      });
 
-      const fileName = `rental-agreement-${formData.customerName.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+      // Signature block
+      y += 12;
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFontSize(9);
+      doc.text("By signing below, the Client acknowledges reading, understanding, and agreeing to all terms, conditions, and indemnification provisions stated herein.", margin + 5, y, { maxWidth: contentWidth - 10 });
+      y += 18;
+
+      doc.line(margin + 5, y, 95, y);
+      doc.text("Client Signature", margin + 20, y + 5);
+
+      doc.line(110, y, 185, y);
+      doc.text("Date", 140, y + 5);
+
+      y += 16;
+      doc.line(margin + 5, y, 95, y);
+      doc.text("Printed Name", margin + 20, y + 5);
+
+      doc.line(110, y, 185, y);
+      doc.text("Operator Signature", 125, y + 5);
+
+      const fileName = `${selectedTemplate.id}-agreement-${formData.customerName.replace(/\s+/g, "-").toLowerCase()}.pdf`;
       doc.save(fileName);
-
       toast({ title: "PDF Downloaded", description: `Saved as ${fileName}` });
     } catch (error) {
-      toast({ title: "Download Failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });
+      toast({ title: "Download Failed", description: "Could not generate PDF.", variant: "destructive" });
     }
   };
 
@@ -110,18 +162,38 @@ const ContractsPage = () => {
     <div className="p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-display font-bold">Contract Generator</h1>
-        <p className="text-muted-foreground text-sm mt-1">Create rental agreements with SIOTO branding</p>
+        <p className="text-muted-foreground text-sm mt-1">Create equipment-specific rental agreements with your company branding</p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8 max-w-5xl">
+      <div className="grid lg:grid-cols-2 gap-8 max-w-6xl">
         {/* Form */}
         <div className="space-y-4">
+          {/* Template selector */}
+          <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+            <h2 className="font-display font-semibold text-lg">Equipment Type</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {contractTemplates.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => { setSelectedTemplate(t); setGenerated(false); }}
+                  className={`text-left p-3 rounded-lg border text-sm transition-all ${
+                    selectedTemplate.id === t.id
+                      ? "border-primary bg-primary/10 font-medium"
+                      : "border-border bg-background hover:border-primary/50"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">{selectedTemplate.description}</p>
+          </div>
+
           <div className="rounded-xl border border-border bg-card p-6 space-y-4">
             <h2 className="font-display font-semibold text-lg">Event Details</h2>
 
             {[
               { label: "Customer Name", field: "customerName", icon: User, type: "text", placeholder: "John Smith" },
-              { label: "Event Type", field: "eventType", icon: FileText, type: "text", placeholder: "Birthday Party, Corporate Event..." },
               { label: "Number of Units", field: "numberOfUnits", icon: FileText, type: "number", placeholder: "1" },
               { label: "Event Date", field: "date", icon: Calendar, type: "date", placeholder: "" },
               { label: "Location", field: "location", icon: MapPin, type: "text", placeholder: "123 Main St, City, State" },
@@ -156,63 +228,70 @@ const ContractsPage = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-xl border-2 border-primary/20 bg-card p-8 space-y-6"
+              className="rounded-xl border-2 border-primary/20 bg-card p-6 space-y-5 text-sm"
             >
-              <div className="text-center border-b border-border pb-6">
-                <h2 className="font-display font-bold text-xl text-primary">SIOTO.AI</h2>
+              <div className="text-center border-b border-border pb-4">
+                <h2 className="font-display font-bold text-lg text-primary">{orgName || "Your Company"}</h2>
                 <p className="text-xs text-muted-foreground">Safety & Operations</p>
-                <h3 className="font-display font-bold text-lg mt-4">RENTAL AGREEMENT</h3>
+                <h3 className="font-display font-bold mt-3">RENTAL AGREEMENT — {selectedTemplate.label.toUpperCase()}</h3>
               </div>
 
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Customer</span>
-                  <span className="font-medium">{formData.customerName}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Event Type</span>
-                  <span className="font-medium">{formData.eventType}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Units</span>
-                  <span className="font-medium">{formData.numberOfUnits}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Date</span>
-                  <span className="font-medium">{formData.date}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Location</span>
-                  <span className="font-medium">{formData.location}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground">Setup</span>
-                  <span className="font-medium">{formData.setupTime}</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-muted-foreground">Takedown</span>
-                  <span className="font-medium">{formData.takedownTime}</span>
-                </div>
+              {/* Details */}
+              <div className="space-y-2">
+                {[
+                  ["Customer", formData.customerName],
+                  ["Equipment", selectedTemplate.label],
+                  ["Units", formData.numberOfUnits],
+                  ["Date", formData.date],
+                  ["Location", formData.location],
+                  ["Setup", formData.setupTime],
+                  ["Takedown", formData.takedownTime],
+                ].filter(([, v]) => v).map(([label, value]) => (
+                  <div key={label} className="flex justify-between py-1.5 border-b border-border">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="font-medium">{value}</span>
+                  </div>
+                ))}
               </div>
 
-              <div className="text-xs text-muted-foreground border-t border-border pt-4 space-y-2">
-                <p>By signing below, the customer agrees to the SIOTO safety guidelines and rental terms.</p>
-                <div className="flex justify-between pt-4">
-                  <div className="border-b border-foreground w-40 pb-1 text-center text-xs">Customer Signature</div>
-                  <div className="border-b border-foreground w-40 pb-1 text-center text-xs">Date</div>
+              {/* Terms preview */}
+              <div>
+                <h4 className="font-semibold mb-2">Terms & Conditions</h4>
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  {selectedTemplate.terms.slice(0, 3).map((t, i) => (
+                    <li key={i}>• {t}</li>
+                  ))}
+                  {selectedTemplate.terms.length > 3 && (
+                    <li className="text-primary font-medium">+ {selectedTemplate.terms.length - 3} more terms in PDF</li>
+                  )}
+                </ul>
+              </div>
+
+              {/* Indemnity preview */}
+              <div>
+                <h4 className="font-semibold mb-2">Indemnification</h4>
+                <p className="text-xs text-muted-foreground line-clamp-3">{selectedTemplate.indemnity}</p>
+                <p className="text-xs text-primary font-medium mt-1">Full text in PDF</p>
+              </div>
+
+              {/* Signature placeholder */}
+              <div className="border-t border-border pt-4 space-y-3">
+                <div className="flex justify-between">
+                  <div className="border-b border-foreground w-36 pb-1 text-center text-xs">Client Signature</div>
+                  <div className="border-b border-foreground w-36 pb-1 text-center text-xs">Date</div>
                 </div>
               </div>
 
               <Button variant="outline" className="w-full" onClick={handleDownloadPDF}>
                 <Download size={16} />
-                Download PDF
+                Download Full PDF
               </Button>
             </motion.div>
           ) : (
             <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 flex flex-col items-center justify-center text-center h-full min-h-[400px]">
               <FileText size={48} className="text-muted-foreground/30 mb-4" />
               <h3 className="font-display font-semibold text-muted-foreground">Contract Preview</h3>
-              <p className="text-sm text-muted-foreground/60 mt-1">Fill in the form to generate a contract</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">Select an equipment type and fill in details</p>
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, BookOpen, ChevronRight, Shield, Wind, Zap, ClipboardCheck, FileText, Eye, Wrench, Video, Globe } from "lucide-react";
+import { Search, BookOpen, ChevronRight, Shield, Wind, Zap, ClipboardCheck, FileText, Eye, Wrench, Video, Globe, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 
 const categories = [
@@ -17,19 +17,29 @@ const categories = [
 
 const sampleArticles: Record<string, { title: string; preview: string }[]> = {
   setup: [
-    { title: "Standard Bounce House Setup Procedure", preview: "Step-by-step guide for setting up residential bounce houses..." },
-    { title: "Commercial Inflatable Setup Guide", preview: "For large commercial units including obstacle courses..." },
-    { title: "Water Slide Setup Requirements", preview: "Special considerations for water inflatables..." },
+    { title: "Standard Bounce House Setup Procedure", preview: "Step-by-step guide for setting up residential bounce houses. Always follow your manufacturer's specific instructions." },
+    { title: "Commercial Inflatable Setup Guide", preview: "For large commercial units including obstacle courses. Anchoring and electrical requirements vary by manufacturer." },
+    { title: "Water Slide Setup Requirements", preview: "Special considerations for water inflatables including drainage, water supply, and slip-prevention measures." },
   ],
   anchoring: [
-    { title: "Grass & Dirt Anchoring (Stakes)", preview: "18\" minimum stake depth at 45° angle..." },
-    { title: "Hard Surface Anchoring (Sandbags)", preview: "Weight requirements per unit size on concrete..." },
-    { title: "Indoor Setup Anchoring", preview: "Sandbag-only anchoring for indoor events..." },
+    { title: "Grass & Dirt Anchoring (Stakes)", preview: "Steel stakes driven at 45° angle. Stake length and depth per your manufacturer's specifications for the specific unit." },
+    { title: "Hard Surface Anchoring (Sandbags)", preview: "Sandbag weight requirements vary by unit size, type, and manufacturer. Always consult your unit's manual for exact weights." },
+    { title: "Indoor Setup Anchoring", preview: "Sandbag-only anchoring for indoor events. Weight requirements per manufacturer specifications." },
   ],
   wind: [
-    { title: "Wind Speed Operating Limits", preview: "Safe operating ranges and emergency procedures..." },
-    { title: "Using an Anemometer", preview: "Proper wind measurement techniques and tools..." },
-    { title: "Severe Weather Action Plan", preview: "Steps to follow when weather turns dangerous..." },
+    { title: "Wind Speed Operating Limits", preview: "General guideline: 15-20 mph monitor closely, 20+ mph deflate immediately. Some manufacturers set stricter limits." },
+    { title: "Using an Anemometer", preview: "Proper wind measurement techniques and tools for accurate on-site wind speed monitoring." },
+    { title: "Severe Weather Action Plan", preview: "Steps to follow when weather turns dangerous. Have a written plan before every event." },
+  ],
+  electrical: [
+    { title: "Extension Cord Selection Guide", preview: "Cord gauge requirements depend on run length and blower amperage. Consult your blower manufacturer's specifications." },
+    { title: "GFCI Protection Requirements", preview: "All outdoor electrical connections must be GFCI-protected. Never daisy-chain extension cords." },
+    { title: "Blower Electrical Requirements", preview: "Amperage, voltage, and dedicated circuit requirements vary by blower model. Always check your blower's nameplate." },
+  ],
+  inspection: [
+    { title: "Pre-Event Inspection Checklist", preview: "Check seams, anchor loops, blower tubes, netting, and vinyl for damage before every setup." },
+    { title: "During-Event Monitoring Protocol", preview: "Monitor occupancy, rider behavior, and wind conditions at regular intervals throughout the event." },
+    { title: "Post-Event Inspection & Documentation", preview: "Document equipment condition after every event. Note any repairs needed for maintenance tracking." },
   ],
 };
 
@@ -50,7 +60,19 @@ const KnowledgePage = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">Knowledge Base</h1>
-          <p className="text-muted-foreground text-sm mt-1">Search SIOTO-approved safety guidelines</p>
+          <p className="text-muted-foreground text-sm mt-1">SIOTO safety guidelines — always verify with your manufacturer's specs</p>
+        </div>
+      </div>
+
+      {/* Disclaimer */}
+      <div className="flex items-start gap-3 p-4 rounded-xl border border-orange-500/30 bg-orange-500/5 max-w-3xl">
+        <AlertTriangle size={20} className="text-orange-500 shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <p className="font-semibold text-foreground">Important Disclaimer</p>
+          <p className="text-muted-foreground mt-1">
+            These are general safety guidelines. Specific requirements (sandbag weights, stake dimensions, electrical specs, occupancy limits)
+            <strong className="text-foreground"> vary by manufacturer, unit type, and unit size</strong>. Always follow your manufacturer's recommendations and local regulations.
+          </p>
         </div>
       </div>
 
