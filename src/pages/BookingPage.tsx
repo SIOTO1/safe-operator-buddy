@@ -261,6 +261,31 @@ const BookingPage = () => {
             </div>
           </div>
 
+          {/* Estimated Total */}
+          {(() => {
+            const selected = (form.equipment || [])
+              .map(name => catalogItems.find(c => c.name === name))
+              .filter((c): c is CatalogItem => c != null && c.price != null);
+            if (selected.length === 0) return null;
+            const total = selected.reduce((sum, c) => sum + (c.price || 0), 0);
+            return (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-2">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Estimated Cost</h2>
+                {selected.map(c => (
+                  <div key={c.id} className="flex justify-between text-sm">
+                    <span>{c.name}</span>
+                    <span className="font-medium">${c.price!.toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="border-t border-border pt-2 flex justify-between font-bold">
+                  <span>Estimated Total</span>
+                  <span className="text-primary">${total.toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Final pricing may vary based on delivery distance and event details.</p>
+              </div>
+            );
+          })()}
+
           {/* Special Requests */}
           <div>
             <Label>Special Requests / Notes</Label>
