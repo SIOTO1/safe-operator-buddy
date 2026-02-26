@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Settings, Upload, Save, Building2, Phone, Mail, Globe, MapPin } from "lucide-react";
+import { Settings, Upload, Save, Building2, Phone, Mail, Globe, MapPin, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ interface OrgSettings {
   email: string | null;
   address: string | null;
   website: string | null;
+  default_delivery_fee: number | null;
 }
 
 const emptySettings: OrgSettings = {
@@ -26,6 +27,7 @@ const emptySettings: OrgSettings = {
   email: null,
   address: null,
   website: null,
+  default_delivery_fee: null,
 };
 
 const SettingsPage = () => {
@@ -73,7 +75,8 @@ const SettingsPage = () => {
             address: settings.address,
             website: settings.website,
             logo_url: settings.logo_url,
-          })
+            default_delivery_fee: settings.default_delivery_fee,
+          } as any)
           .eq("id", settings.id);
         if (error) throw error;
       } else {
@@ -86,7 +89,8 @@ const SettingsPage = () => {
             address: settings.address,
             website: settings.website,
             logo_url: settings.logo_url,
-          })
+            default_delivery_fee: settings.default_delivery_fee,
+          } as any)
           .select()
           .single();
         if (error) throw error;
@@ -273,6 +277,23 @@ const SettingsPage = () => {
             rows={2}
             disabled={!isOwner}
           />
+        </div>
+
+        <div className="max-w-xs">
+          <Label htmlFor="default_delivery_fee" className="text-sm font-medium flex items-center gap-1.5 mb-1.5">
+            <DollarSign size={14} /> Default Delivery Fee
+          </Label>
+          <Input
+            id="default_delivery_fee"
+            type="number"
+            min="0"
+            step="0.01"
+            value={settings.default_delivery_fee != null ? settings.default_delivery_fee.toString() : ""}
+            onChange={(e) => setSettings(prev => ({ ...prev, default_delivery_fee: e.target.value ? parseFloat(e.target.value) : null }))}
+            placeholder="0.00"
+            disabled={!isOwner}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Shown on the public booking form's cost estimate</p>
         </div>
       </div>
 

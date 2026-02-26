@@ -1,0 +1,1 @@
+ALTER TABLE public.organization_settings ADD COLUMN default_delivery_fee numeric DEFAULT NULL;
