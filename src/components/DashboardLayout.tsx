@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { to: "/dashboard", icon: BarChart3, label: "Dashboard", end: true },
@@ -16,6 +17,13 @@ const navItems = [
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [crewMode, setCrewMode] = useState(false);
+  const { user, role, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -83,10 +91,13 @@ const DashboardLayout = () => {
           </div>
 
           <div className="p-4 border-t border-sidebar-border">
-            <NavLink to="/" className="flex items-center gap-2 text-sm text-sidebar-foreground hover:text-sidebar-accent-foreground transition-colors">
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 text-sm text-sidebar-foreground hover:text-sidebar-accent-foreground transition-colors"
+            >
               <LogOut size={16} />
               Sign Out
-            </NavLink>
+            </button>
           </div>
         </div>
       </aside>
@@ -109,7 +120,12 @@ const DashboardLayout = () => {
                 CREW MODE
               </span>
             )}
-            <span className="text-muted-foreground">Demo User</span>
+            <span className="text-muted-foreground">{profile?.display_name || user?.email || "User"}</span>
+            {role && (
+              <span className="bg-secondary text-secondary-foreground text-xs font-medium px-2 py-0.5 rounded-full capitalize">
+                {role}
+              </span>
+            )}
           </div>
         </header>
         <div className="flex-1 overflow-auto">
