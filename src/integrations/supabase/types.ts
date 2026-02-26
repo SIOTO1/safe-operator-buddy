@@ -52,6 +52,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string | null
+          delivery_fee: number | null
           equipment: string[]
           event_date: string
           event_end_time: string | null
@@ -71,6 +72,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone?: string | null
+          delivery_fee?: number | null
           equipment?: string[]
           event_date: string
           event_end_time?: string | null
@@ -90,6 +92,7 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
+          delivery_fee?: number | null
           equipment?: string[]
           event_date?: string
           event_end_time?: string | null

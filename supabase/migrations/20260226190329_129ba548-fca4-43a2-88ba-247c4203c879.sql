@@ -1,0 +1,1 @@
+ALTER TABLE public.booking_requests ADD COLUMN delivery_fee numeric DEFAULT NULL;
