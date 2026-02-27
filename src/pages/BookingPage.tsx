@@ -111,19 +111,25 @@ const BookingPage = () => {
     setSubmitting(true);
     try {
       const data = result.data;
-      const { error } = await supabase.from("booking_requests").insert({
-        customer_name: data.customer_name,
-        customer_email: data.customer_email,
-        customer_phone: data.customer_phone || null,
-        event_date: format(data.event_date, "yyyy-MM-dd"),
-        event_time: data.event_time || null,
-        event_end_time: data.event_end_time || null,
-        event_location: data.event_location,
-        equipment: data.equipment,
-        special_requests: data.special_requests || null,
-        guest_count: data.guest_count || null,
+      const { data: responseData, error } = await supabase.functions.invoke("submit-booking", {
+        body: {
+          customer_name: data.customer_name,
+          customer_email: data.customer_email,
+          customer_phone: data.customer_phone || null,
+          event_date: format(data.event_date, "yyyy-MM-dd"),
+          event_time: data.event_time || null,
+          event_end_time: data.event_end_time || null,
+          event_location: data.event_location,
+          equipment: data.equipment,
+          special_requests: data.special_requests || null,
+          guest_count: data.guest_count || null,
+        },
       });
       if (error) throw error;
+      if (responseData?.error) {
+        toast.error(responseData.error);
+        return;
+      }
       setSubmitted(true);
     } catch (err) {
       console.error(err);
