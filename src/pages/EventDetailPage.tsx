@@ -88,6 +88,7 @@ const EventDetailPage = () => {
   const [selectedProductId, setSelectedProductId] = useState("");
   const [productQty, setProductQty] = useState("1");
   const [addingProduct, setAddingProduct] = useState(false);
+  const [dateAllocations, setDateAllocations] = useState<Record<string, number>>({});
 
   const fetchEventProducts = useCallback(async () => {
     if (!eventId) return;
@@ -109,6 +110,28 @@ const EventDetailPage = () => {
     }
   }, [eventId]);
 
+  // Fetch how many units of each product are already assigned to events on the same date
+  const fetchDateAllocations = useCallback(async (eventDate: string) => {
+    if (!eventId) return;
+    // Get all events on the same date (excluding current event)
+    const { data: sameDay } = await supabase
+      .from("events")
+      .select("id")
+      .eq("event_date", eventDate)
+      .neq("id", eventId);
+    if (!sameDay || sameDay.length === 0) { setDateAllocations({}); return; }
+    const eventIds = sameDay.map(e => e.id);
+    const { data: allocations } = await supabase
+      .from("event_products")
+      .select("product_id, quantity")
+      .in("event_id", eventIds);
+    const map: Record<string, number> = {};
+    (allocations || []).forEach((a: any) => {
+      map[a.product_id] = (map[a.product_id] || 0) + a.quantity;
+    });
+    setDateAllocations(map);
+  }, [eventId]);
+
   useEffect(() => {
     if (!eventId) return;
     const fetchAll = async () => {
@@ -123,6 +146,10 @@ const EventDetailPage = () => {
         setEvent(eventRes.data as EventDetail);
         setEquipment((equipRes.data || []) as EventEquipment[]);
         setCatalogProducts((productsRes.data || []) as CatalogProduct[]);
+        // Fetch allocations for event date
+        if (eventRes.data?.event_date) {
+          fetchDateAllocations(eventRes.data.event_date);
+        }
       } catch (err) {
         console.error(err);
         toast.error("Failed to load event");
@@ -132,7 +159,7 @@ const EventDetailPage = () => {
     };
     fetchAll();
     fetchEventProducts();
-  }, [eventId, fetchEventProducts]);
+  }, [eventId, fetchEventProducts, fetchDateAllocations]);
 
   const handleDelete = async () => {
     if (!confirm("Delete this event? This cannot be undone.")) return;
@@ -151,6 +178,18 @@ const EventDetailPage = () => {
     if (!selectedProductId || !eventId) return;
     const qty = parseInt(productQty) || 1;
     if (qty < 1) { toast.error("Quantity must be at least 1"); return; }
+
+    // Check availability
+    const product = catalogProducts.find(p => p.id === selectedProductId);
+    if (product) {
+      const alreadyAllocated = dateAllocations[selectedProductId] || 0;
+      const available = product.quantity_available - alreadyAllocated;
+      if (qty > available) {
+        toast.error(`Only ${available} of ${product.name} available on this date (${alreadyAllocated} assigned to other events)`);
+        return;
+      }
+    }
+
     setAddingProduct(true);
     try {
       const { error } = await supabase.from("event_products").insert({
@@ -164,6 +203,7 @@ const EventDetailPage = () => {
       setProductQty("1");
       setShowAddProduct(false);
       fetchEventProducts();
+      if (event?.event_date) fetchDateAllocations(event.event_date);
     } catch (err: any) {
       if (err?.code === "23505") {
         toast.error("This product is already assigned to this event");
@@ -181,6 +221,7 @@ const EventDetailPage = () => {
     if (error) { toast.error("Failed to remove"); return; }
     toast.success("Product removed");
     fetchEventProducts();
+    if (event?.event_date) fetchDateAllocations(event.event_date);
   };
 
   if (loading) {
@@ -208,9 +249,16 @@ const EventDetailPage = () => {
     ? getInflatableSafetyLevel(weatherData.wind_speed || 0, weatherData.wind_gust || null)
     : null;
 
-  // Products already assigned — exclude from dropdown
+  // Products already assigned — exclude from dropdown; compute available qty
   const assignedProductIds = new Set(eventProducts.map(ep => ep.product_id));
-  const availableProducts = catalogProducts.filter(p => !assignedProductIds.has(p.id));
+  const availableProducts = catalogProducts
+    .filter(p => !assignedProductIds.has(p.id))
+    .map(p => {
+      const allocated = dateAllocations[p.id] || 0;
+      const availableQty = p.quantity_available - allocated;
+      return { ...p, availableQty };
+    })
+    .filter(p => p.availableQty > 0);
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
@@ -326,12 +374,13 @@ const EventDetailPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {availableProducts.length === 0 ? (
-                        <SelectItem value="_none" disabled>No products available</SelectItem>
+                        <SelectItem value="_none" disabled>No products available on this date</SelectItem>
                       ) : (
                         availableProducts.map(p => (
                           <SelectItem key={p.id} value={p.id}>
                             {p.name} — {CATEGORIES_MAP[p.category] || p.category}
                             {p.price != null ? ` ($${p.price})` : ""}
+                            {` • ${p.availableQty} avail.`}
                           </SelectItem>
                         ))
                       )}
