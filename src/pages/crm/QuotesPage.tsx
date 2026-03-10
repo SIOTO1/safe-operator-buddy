@@ -24,22 +24,10 @@ const QuotesPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const { data: quotes = [], isLoading } = useQuery({
     queryKey: ["crm-quotes"],
     queryFn: () => getQuotes(companyId),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: createQuote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
-      setCreateOpen(false);
-      setForm({ title: "", total_amount: "", notes: "" });
-      toast.success("Quote created");
-    },
-    onError: () => toast.error("Failed to create quote"),
   });
 
   const updateStatusMutation = useMutation({
@@ -57,20 +45,6 @@ const QuotesPage = () => {
       toast.success("Quote deleted");
     },
   });
-
-  const handleCreate = () => {
-    if (!form.title) return toast.error("Title is required");
-    createMutation.mutate({
-      title: form.title,
-      total_amount: form.total_amount ? parseFloat(form.total_amount) : 0,
-      notes: form.notes || null,
-      status: "draft",
-      lead_id: null,
-      company_id: companyId ?? null,
-      workspace_id: workspaceId ?? null,
-      created_by: user?.id || "",
-    });
-  };
 
   const filtered = filterStatus === "all" ? quotes : quotes.filter((q) => q.status === filterStatus);
 
