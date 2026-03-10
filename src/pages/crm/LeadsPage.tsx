@@ -6,14 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+
+const LEAD_SOURCES = ["Website", "Phone Inquiry", "Referral", "Training Inquiry", "Other"] as const;
+
+const emptyForm = { name: "", email: "", phone: "", company: "", source: "", status: "new" };
 
 const LeadsPage = () => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", source: "", status: "new" });
+  const [form, setForm] = useState(emptyForm);
 
   const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads"], queryFn: getLeads });
 
@@ -22,8 +27,8 @@ const LeadsPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
       setDialogOpen(false);
-      setForm({ name: "", email: "", phone: "", company: "", source: "", status: "new" });
-      toast.success("Lead created");
+      setForm(emptyForm);
+      toast.success("Lead created successfully");
     },
     onError: () => toast.error("Failed to create lead"),
   });
@@ -33,11 +38,11 @@ const LeadsPage = () => {
   );
 
   const handleCreate = () => {
-    if (!form.name || !form.email) return toast.error("Name and email are required");
+    if (!form.name) return toast.error("Name is required");
     createMutation.mutate({
       name: form.name,
       email: form.email,
-      phone: form.phone,
+      phone: form.phone || undefined,
       company: form.company || undefined,
       source: form.source || undefined,
       status: form.status,
@@ -50,17 +55,43 @@ const LeadsPage = () => {
         <h1 className="text-2xl font-bold">Leads</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button><Plus size={16} className="mr-2" />Add Lead</Button>
+            <Button><Plus size={16} className="mr-2" />New Lead</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader><DialogTitle>New Lead</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <div><Label>Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-              <div><Label>Email *</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-              <div><Label>Company</Label><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} /></div>
-              <div><Label>Source</Label><Input value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} /></div>
-              <Button onClick={handleCreate} className="w-full" disabled={createMutation.isPending}>Create Lead</Button>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <Label>Name <span className="text-destructive">*</span></Label>
+                <Input placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Email</Label>
+                <Input type="email" placeholder="email@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Phone</Label>
+                <Input type="tel" placeholder="(555) 123-4567" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Company</Label>
+                <Input placeholder="Company name" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Lead Source</Label>
+                <Select value={form.source} onValueChange={(v) => setForm({ ...form, source: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select source" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LEAD_SOURCES.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleCreate} className="w-full" disabled={createMutation.isPending}>
+                {createMutation.isPending ? "Creating..." : "Create Lead"}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
