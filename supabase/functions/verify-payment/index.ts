@@ -32,11 +32,20 @@ serve(async (req) => {
     );
 
     if (session.payment_status === "paid") {
+      // Retrieve payment intent to get the payment method
+      let paymentMethodId: string | null = null;
+      if (session.payment_intent) {
+        const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string);
+        paymentMethodId = (paymentIntent.payment_method as string) || null;
+      }
+
       await supabaseAdmin
         .from("payments")
         .update({
           payment_status: "completed",
           transaction_id: session.payment_intent as string,
+          stripe_customer_id: session.customer as string || null,
+          stripe_payment_method_id: paymentMethodId,
         })
         .eq("stripe_session_id", session_id);
 
