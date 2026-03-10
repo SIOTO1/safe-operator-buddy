@@ -9,8 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-interface Notification {
+interface AppNotification {
   id: string;
+  user_id: string;
   event_id: string | null;
   type: string;
   title: string;
