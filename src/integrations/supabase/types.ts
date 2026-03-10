@@ -974,6 +974,115 @@ export type Database = {
           },
         ]
       }
+      quote_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          product_id: string | null
+          quantity: number
+          quote_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          quote_id: string
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          product_id?: string | null
+          quantity?: number
+          quote_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          lead_id: string | null
+          notes: string | null
+          status: Database["public"]["Enums"]["quote_status"]
+          title: string
+          total_amount: number | null
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["quote_status"]
+          title?: string
+          total_amount?: number | null
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["quote_status"]
+          title?: string
+          total_amount?: number | null
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       route_stops: {
         Row: {
           address: string | null
@@ -1143,6 +1252,7 @@ export type Database = {
         | "generators"
         | "concessions"
         | "other"
+      quote_status: "draft" | "sent" | "accepted" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1282,6 +1392,7 @@ export const Constants = {
         "concessions",
         "other",
       ],
+      quote_status: ["draft", "sent", "accepted", "expired"],
     },
   },
 } as const
