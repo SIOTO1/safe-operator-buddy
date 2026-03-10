@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
         company: company?.trim().slice(0, 200) || null,
         source: source || "Website",
         stage: "new",
+        company_id: company_id || null,
       })
       .select()
       .single();
