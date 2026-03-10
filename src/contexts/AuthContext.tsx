@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const [{ data: roles }, { data: prof }] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", userId),
-        supabase.from("profiles").select("display_name, email").eq("user_id", userId).single(),
+        supabase.from("profiles").select("display_name, email, company_id").eq("user_id", userId).single(),
       ]);
 
       if (roles && roles.length > 0) {
