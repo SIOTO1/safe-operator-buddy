@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, addDays, addMonths, subMonths, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, parseISO, isBefore, startOfDay, getDay } from "date-fns";
 import { CalendarDays, Plus, MapPin, Clock, ChevronLeft, ChevronRight, Calendar, Trash2 } from "lucide-react";
 import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
@@ -33,6 +34,7 @@ interface Event {
 }
 
 const SchedulingPage = () => {
+  const navigate = useNavigate();
   const { user, role, companyId } = useAuth();
   const isOwner = role === "owner";
   const isManager = role === "manager";
@@ -289,6 +291,7 @@ const SchedulingPage = () => {
                               "bg-card border-border",
                               isOwner && "cursor-grab active:cursor-grabbing"
                             )}
+                            onClick={() => navigate(`/dashboard/scheduling/${ev.id}`)}
                           >
                             <p className="font-medium truncate">{ev.event_name}</p>
                             {(ev.start_time || ev.end_time) && (

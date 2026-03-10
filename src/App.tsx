@@ -23,6 +23,7 @@ import InterviewGuidePage from "./pages/InterviewGuidePage";
 import DriverManagementPage from "./pages/DriverManagementPage";
 import DifficultConversationsPage from "./pages/DifficultConversationsPage";
 import SchedulingPage from "./pages/SchedulingPage";
+import EventDetailPage from "./pages/EventDetailPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="conversations" element={<DifficultConversationsPage />} />
               <Route path="crew" element={<CrewPage />} />
               <Route path="scheduling" element={<SchedulingPage />} />
+              <Route path="scheduling/:eventId" element={<EventDetailPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
               <Route path="deliveries" element={<DeliverySchedulePage />} />
