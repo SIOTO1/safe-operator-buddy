@@ -140,7 +140,7 @@ const LeadDetailPage = () => {
   if (leadLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
   if (!lead) return <div className="p-6 text-muted-foreground">Lead not found.</div>;
 
-  const stageInfo = PIPELINE_STAGES.find((s) => s.value === lead.status);
+  const stageInfo = PIPELINE_STAGES.find((s) => s.value === lead.stage);
 
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
