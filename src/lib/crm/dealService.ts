@@ -1,11 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Deal } from "@/types/crm";
 
-export async function getDeals(): Promise<Deal[]> {
-  const { data, error } = await supabase
+export async function getDeals(workspaceId?: string | null): Promise<Deal[]> {
+  let query = supabase
     .from("crm_deals" as any)
     .select("*")
     .order("created_at", { ascending: false });
+  if (workspaceId) {
+    query = query.eq("workspace_id", workspaceId);
+  }
+  const { data, error } = await query;
   if (error) throw error;
   return (data as unknown) as Deal[];
 }

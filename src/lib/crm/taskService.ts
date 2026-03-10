@@ -1,11 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Task } from "@/types/crm";
 
-export async function getTasks(): Promise<Task[]> {
-  const { data, error } = await supabase
+export async function getTasks(workspaceId?: string | null): Promise<Task[]> {
+  let query = supabase
     .from("crm_tasks" as any)
     .select("*")
     .order("due_date", { ascending: true });
+  if (workspaceId) {
+    query = query.eq("workspace_id", workspaceId);
+  }
+  const { data, error } = await query;
   if (error) throw error;
   return (data as unknown) as Task[];
 }

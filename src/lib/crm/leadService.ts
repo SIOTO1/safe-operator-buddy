@@ -1,11 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Lead, PipelineStage } from "@/types/crm";
+import type { Lead } from "@/types/crm";
 
-export async function getLeads(): Promise<Lead[]> {
-  const { data, error } = await supabase
+export async function getLeads(workspaceId?: string | null): Promise<Lead[]> {
+  let query = supabase
     .from("crm_leads" as any)
     .select("*")
     .order("created_at", { ascending: false });
+  if (workspaceId) {
+    query = query.eq("workspace_id", workspaceId);
+  }
+  const { data, error } = await query;
   if (error) throw error;
   return (data as unknown) as Lead[];
 }
