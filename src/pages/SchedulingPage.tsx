@@ -303,6 +303,11 @@ const SchedulingPage = () => {
                                 {ev.city || ev.location_address}
                               </p>
                             )}
+                            <WeatherSafetyBadge
+                              eventLocation={formatLocation(ev)}
+                              eventDate={ev.event_date}
+                              compact
+                            />
                             {canManage && (
                               <Button
                                 variant="ghost" size="icon" className="h-4 w-4 mt-1"
