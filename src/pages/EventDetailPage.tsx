@@ -110,6 +110,28 @@ const EventDetailPage = () => {
     }
   }, [eventId]);
 
+  // Fetch how many units of each product are already assigned to events on the same date
+  const fetchDateAllocations = useCallback(async (eventDate: string) => {
+    if (!eventId) return;
+    // Get all events on the same date (excluding current event)
+    const { data: sameDay } = await supabase
+      .from("events")
+      .select("id")
+      .eq("event_date", eventDate)
+      .neq("id", eventId);
+    if (!sameDay || sameDay.length === 0) { setDateAllocations({}); return; }
+    const eventIds = sameDay.map(e => e.id);
+    const { data: allocations } = await supabase
+      .from("event_products")
+      .select("product_id, quantity")
+      .in("event_id", eventIds);
+    const map: Record<string, number> = {};
+    (allocations || []).forEach((a: any) => {
+      map[a.product_id] = (map[a.product_id] || 0) + a.quantity;
+    });
+    setDateAllocations(map);
+  }, [eventId]);
+
   useEffect(() => {
     if (!eventId) return;
     const fetchAll = async () => {
@@ -124,6 +146,10 @@ const EventDetailPage = () => {
         setEvent(eventRes.data as EventDetail);
         setEquipment((equipRes.data || []) as EventEquipment[]);
         setCatalogProducts((productsRes.data || []) as CatalogProduct[]);
+        // Fetch allocations for event date
+        if (eventRes.data?.event_date) {
+          fetchDateAllocations(eventRes.data.event_date);
+        }
       } catch (err) {
         console.error(err);
         toast.error("Failed to load event");
@@ -133,7 +159,7 @@ const EventDetailPage = () => {
     };
     fetchAll();
     fetchEventProducts();
-  }, [eventId, fetchEventProducts]);
+  }, [eventId, fetchEventProducts, fetchDateAllocations]);
 
   const handleDelete = async () => {
     if (!confirm("Delete this event? This cannot be undone.")) return;
