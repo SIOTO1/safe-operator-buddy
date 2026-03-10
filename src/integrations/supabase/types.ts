@@ -135,6 +135,54 @@ export type Database = {
         }
         Relationships: []
       }
+      contracts: {
+        Row: {
+          contract_text: string
+          created_at: string
+          event_id: string | null
+          id: string
+          quote_id: string | null
+          signature_image: string | null
+          signed_at: string | null
+          signed_by: string | null
+        }
+        Insert: {
+          contract_text?: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          quote_id?: string | null
+          signature_image?: string | null
+          signed_at?: string | null
+          signed_by?: string | null
+        }
+        Update: {
+          contract_text?: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          quote_id?: string | null
+          signature_image?: string | null
+          signed_at?: string | null
+          signed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_availability: {
         Row: {
           available_date: string
