@@ -13,6 +13,8 @@ import {
   type QuoteItem,
   type QuoteStatus,
 } from "@/lib/crm/quoteService";
+import { createContract } from "@/lib/crm/contractService";
+import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +51,7 @@ const QuoteDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { companyId } = useCrmPermissions();
+  const { orgName } = useOrgSettings();
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
@@ -234,14 +237,61 @@ const QuoteDetailPage = () => {
         if (epError) throw epError;
       }
 
+      // 5. Generate contract text
+      const productLines = items
+        .map((i) => `  • ${i.product_name} × ${i.quantity} — $${(i.unit_price * i.quantity).toFixed(2)}`)
+        .join("\n");
+
+      const contractText = `RENTAL AGREEMENT
+
+${orgName || "Company"} — Rental Contract
+Date: ${format(new Date(), "MMMM d, yyyy")}
+${leadName ? `Customer: ${leadName}` : ""}
+Quote: ${quote.title}
+
+RENTAL ITEMS:
+${productLines}
+
+TOTAL: $${total.toFixed(2)}
+
+TERMS & CONDITIONS:
+
+1. RENTAL PERIOD: Equipment will be delivered and set up at the agreed-upon location and time. The client is responsible for ensuring access to the setup area.
+
+2. PAYMENT: Full payment of $${total.toFixed(2)} is due prior to the event date. A non-refundable deposit may be required at the time of booking.
+
+3. CANCELLATION: Cancellations made less than 48 hours before the event are non-refundable. Cancellations made more than 48 hours in advance will receive a full refund minus any deposit.
+
+4. SAFETY: The client agrees to follow all safety guidelines provided by the operator. A responsible adult (18+) must supervise all equipment at all times during use.
+
+5. DAMAGES: The client is responsible for any damage to the rented equipment beyond normal wear and tear. Repair or replacement costs will be billed to the client.
+
+6. WEATHER: In the event of unsafe weather conditions (high winds, lightning, etc.), the operator reserves the right to deflate or remove equipment without refund.
+
+7. LIABILITY: The client agrees to indemnify, defend, and hold harmless ${orgName || "the Company"}, its owners, employees, and agents from any claims, damages, or liabilities arising from the use of the rented equipment.
+
+8. ASSUMPTION OF RISK: The client acknowledges that the use of rental equipment involves inherent risks, including but not limited to falls, collisions, and other injuries. The client assumes all such risks on behalf of themselves and their guests.
+
+By signing below, the client acknowledges they have read, understood, and agree to all terms and conditions outlined in this Rental Agreement.`;
+
+      // 6. Create contract record
+      const contractRecord = await createContract({
+        quote_id: id!,
+        event_id: event.id,
+        contract_text: contractText,
+        signed_by: null,
+        signed_at: null,
+        signature_image: null,
+      });
+
       // Invalidate caches
       queryClient.invalidateQueries({ queryKey: ["crm-quote", id] });
       queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
 
-      toast.success("Quote accepted! Event created. Redirecting to contracts…");
+      toast.success("Quote accepted! Contract created. Redirecting…");
 
-      // 5. Redirect to contracts page
-      navigate("/dashboard/contracts");
+      // 7. Redirect to contract signing page
+      navigate(`/dashboard/crm/contracts/${contractRecord.id}`);
     } catch (err) {
       console.error("Accept quote error:", err);
       toast.error("Failed to accept quote");
