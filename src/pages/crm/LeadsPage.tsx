@@ -42,7 +42,7 @@ const LeadsPage = () => {
   // Sales Reps only see their assigned leads
   const visibleLeads = can("view_all_leads")
     ? leads
-    : leads.filter((l) => l.owner === userId);
+    : leads.filter((l) => l.assigned_to === userId);
 
   const filtered = visibleLeads
     .filter((l) => sourceFilter === "all" || (l.source || "").toLowerCase() === sourceFilter.toLowerCase())
