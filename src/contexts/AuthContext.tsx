@@ -22,8 +22,10 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   profile: null,
   companyId: null,
+  workspaceId: null,
   loading: true,
   signOut: async () => {},
+  setWorkspaceId: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
