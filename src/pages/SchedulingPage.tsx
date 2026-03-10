@@ -76,7 +76,7 @@ const SchedulingPage = () => {
       const startDate = format(weekStart, "yyyy-MM-dd");
       const endDate = format(addDays(weekStart, 6), "yyyy-MM-dd");
       const { data, error } = await supabase
-        .from("events" as any).select("*")
+        .from("events").select("*")
         .gte("event_date", startDate).lte("event_date", endDate)
         .order("event_date");
       if (error) throw error;
