@@ -19,7 +19,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Building2, Mail, Phone, Plus, DollarSign } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Building2, Mail, Phone, Plus, DollarSign, CalendarPlus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -31,6 +33,9 @@ const LeadDetailPage = () => {
   const queryClient = useQueryClient();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskForm, setTaskForm] = useState({ title: "", description: "", due_date: "" });
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [convertForm, setConvertForm] = useState({ event_name: "", event_date: "", location: "", notes: "" });
+  const [converting, setConverting] = useState(false);
 
   const { data: lead, isLoading: leadLoading } = useQuery({
     queryKey: ["crm-lead", id],
@@ -138,6 +143,33 @@ const LeadDetailPage = () => {
     } as any);
   };
 
+  const handleConvertToEvent = async () => {
+    if (!convertForm.event_name || !convertForm.event_date || !user) return;
+    setConverting(true);
+    try {
+      const { data, error } = await supabase.from("events").insert({
+        title: convertForm.event_name,
+        event_date: convertForm.event_date,
+        location: convertForm.location || null,
+        notes: [
+          lead?.name ? `Customer: ${lead.name}` : "",
+          lead?.phone ? `Phone: ${lead.phone}` : "",
+          lead?.email ? `Email: ${lead.email}` : "",
+          convertForm.notes,
+        ].filter(Boolean).join("\n"),
+        created_by: user.id,
+      }).select("id").single();
+      if (error) throw error;
+      toast.success("Event created from lead");
+      setConvertOpen(false);
+      navigate(`/dashboard/scheduling`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create event");
+    } finally {
+      setConverting(false);
+    }
+  };
+
   if (leadLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
   if (!lead) return <div className="p-6 text-muted-foreground">Lead not found.</div>;
 
@@ -174,6 +206,46 @@ const LeadDetailPage = () => {
             {stageInfo?.label || lead.stage}
           </Badge>
         )}
+        <Dialog open={convertOpen} onOpenChange={(o) => {
+          setConvertOpen(o);
+          if (o) setConvertForm({
+            event_name: `${lead.name} Event`,
+            event_date: "",
+            location: "",
+            notes: lead.notes || "",
+          });
+        }}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <CalendarPlus size={14} className="mr-1.5" />Convert to Event
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader><DialogTitle>Convert Lead to Event</DialogTitle></DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <Label>Event Name <span className="text-destructive">*</span></Label>
+                <Input value={convertForm.event_name} onChange={(e) => setConvertForm({ ...convertForm, event_name: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Event Date <span className="text-destructive">*</span></Label>
+                <Input type="date" value={convertForm.event_date} onChange={(e) => setConvertForm({ ...convertForm, event_date: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Location / Address</Label>
+                <Input value={convertForm.location} onChange={(e) => setConvertForm({ ...convertForm, location: e.target.value })} placeholder="Event address" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Notes</Label>
+                <Textarea value={convertForm.notes} onChange={(e) => setConvertForm({ ...convertForm, notes: e.target.value })} rows={3} />
+              </div>
+              <p className="text-xs text-muted-foreground">Customer info ({lead.name}, {lead.email}, {lead.phone || "no phone"}) will be included in event notes.</p>
+              <Button onClick={handleConvertToEvent} className="w-full" disabled={converting || !convertForm.event_name || !convertForm.event_date}>
+                {converting ? "Creating…" : "Create Event"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Lead Info */}
