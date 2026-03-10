@@ -13,9 +13,6 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
 }
-  loading: boolean;
-  signOut: () => Promise<void>;
-}
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
@@ -44,7 +41,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ]);
 
       if (roles && roles.length > 0) {
-        // Priority: owner > manager > crew
         const roleOrder: AppRole[] = ["owner", "manager", "crew"];
         const userRole = roleOrder.find(r => roles.some(ur => ur.role === r)) || "crew";
         setRole(userRole);
@@ -65,12 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Use setTimeout to avoid Supabase auth deadlock
           setTimeout(() => fetchUserData(session.user.id), 0);
         } else {
           setRole(null);
           setProfile(null);
-        }
         }
         setLoading(false);
       }
