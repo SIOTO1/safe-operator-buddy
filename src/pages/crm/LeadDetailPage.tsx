@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getLeadById, updateLead } from "@/lib/crm/leadService";
 import { getNotesByLeadId, createNote, deleteNote } from "@/lib/crm/noteService";
 import { getTasksByLeadId, createTask, updateTask } from "@/lib/crm/taskService";
 import { getDealsByLeadId } from "@/lib/crm/dealService";
+import { getActivityForLead } from "@/lib/crm/activityService";
 import { useAuth } from "@/contexts/AuthContext";
 import { PIPELINE_STAGES } from "@/types/crm";
 import NotesTimeline from "@/components/crm/NotesTimeline";
 import TaskList from "@/components/crm/TaskList";
+import ActivityTimeline, { type TimelineEvent } from "@/components/crm/ActivityTimeline";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,11 +54,43 @@ const LeadDetailPage = () => {
     enabled: !!id,
   });
 
+  const { data: activityLogs = [] } = useQuery({
+    queryKey: ["crm-activity", id],
+    queryFn: () => getActivityForLead(id!),
+    enabled: !!id,
+  });
+
+  // Merge all sources into a unified timeline
+  const timelineEvents = useMemo<TimelineEvent[]>(() => {
+    const events: TimelineEvent[] = [];
+
+    notes.forEach((n) =>
+      events.push({ id: `note-${n.id}`, type: "note", description: n.content, timestamp: n.created_at })
+    );
+    tasks.forEach((t) =>
+      events.push({ id: `task-${t.id}`, type: "task", description: `${t.title}${t.status === "done" ? " (completed)" : ""}`, timestamp: t.due_date || "" })
+    );
+    deals.forEach((d) =>
+      events.push({ id: `deal-${d.id}`, type: "deal", description: `${d.title} — $${d.value?.toLocaleString() ?? 0}`, timestamp: d.created_at })
+    );
+    activityLogs.forEach((a) =>
+      events.push({ id: a.id, type: a.type, description: a.description, timestamp: a.timestamp })
+    );
+
+    return events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }, [notes, tasks, deals, activityLogs]);
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["crm-notes", id] });
+    queryClient.invalidateQueries({ queryKey: ["crm-tasks", id] });
+    queryClient.invalidateQueries({ queryKey: ["crm-activity", id] });
+  };
+
   const addNoteMutation = useMutation({
     mutationFn: (content: string) =>
       createNote({ lead_id: id!, user_id: user?.id || "", content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["crm-notes", id] });
+      invalidateAll();
       toast.success("Note added");
     },
     onError: () => toast.error("Failed to add note"),
@@ -65,7 +99,7 @@ const LeadDetailPage = () => {
   const deleteNoteMutation = useMutation({
     mutationFn: deleteNote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["crm-notes", id] });
+      invalidateAll();
       toast.success("Note deleted");
     },
   });
@@ -73,7 +107,7 @@ const LeadDetailPage = () => {
   const createTaskMutation = useMutation({
     mutationFn: createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["crm-tasks", id] });
+      invalidateAll();
       setTaskDialogOpen(false);
       setTaskForm({ title: "", description: "", due_date: "" });
       toast.success("Task created");
@@ -84,7 +118,7 @@ const LeadDetailPage = () => {
   const toggleTaskMutation = useMutation({
     mutationFn: (task: { id: string; status: string }) =>
       updateTask(task.id, { status: task.status === "done" ? "todo" : "done" }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["crm-tasks", id] }),
+    onSuccess: () => invalidateAll(),
   });
 
   const updateStageMutation = useMutation({
@@ -92,6 +126,7 @@ const LeadDetailPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-lead", id] });
       queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-activity", id] });
       toast.success("Status updated");
     },
   });
@@ -255,6 +290,14 @@ const LeadDetailPage = () => {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Activity Timeline */}
+      <Card>
+        <CardHeader><CardTitle className="text-base">Activity Timeline</CardTitle></CardHeader>
+        <CardContent>
+          <ActivityTimeline events={timelineEvents} />
         </CardContent>
       </Card>
     </div>
