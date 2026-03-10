@@ -59,7 +59,8 @@ const LeadsPage = () => {
       company: form.company || undefined,
       source: form.source || undefined,
       status: form.status,
-    });
+      company_id: companyId,
+    } as any);
   };
 
   return (

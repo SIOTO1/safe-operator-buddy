@@ -182,7 +182,7 @@ const CrmDashboardPage = () => {
   const handleGenerateLeads = async () => {
     setGenerating(true);
     try {
-      const leads = generateFakeLeads(50);
+      const leads = generateFakeLeads(50).map((l) => ({ ...l, company_id: companyId }));
       for (let i = 0; i < leads.length; i += 25) {
         const batch = leads.slice(i, i + 25);
         const { error } = await supabase.from("crm_leads" as any).insert(batch as any);

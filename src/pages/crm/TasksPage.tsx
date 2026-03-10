@@ -47,7 +47,8 @@ const TasksPage = () => {
       status: "todo",
       lead_id: "",
       assigned_to: form.assigned_to || user?.id || "",
-    });
+      company_id: companyId,
+    } as any);
   };
 
   return (

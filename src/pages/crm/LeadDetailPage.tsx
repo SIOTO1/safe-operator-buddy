@@ -133,7 +133,8 @@ const LeadDetailPage = () => {
       due_date: taskForm.due_date || "",
       assigned_to: user?.id || "",
       status: "todo",
-    });
+      company_id: companyId,
+    } as any);
   };
 
   if (leadLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
