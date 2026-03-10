@@ -15,11 +15,11 @@ import { toast } from "sonner";
 const TasksPage = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { can, companyId } = useCrmPermissions();
+  const { can, companyId, workspaceId } = useCrmPermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", due_date: "", assigned_to: "" });
 
-  const { data: tasks = [], isLoading } = useQuery({ queryKey: ["crm-tasks"], queryFn: getTasks });
+  const { data: tasks = [], isLoading } = useQuery({ queryKey: ["crm-tasks", workspaceId], queryFn: () => getTasks(workspaceId) });
 
   const createMutation = useMutation({
     mutationFn: createTask,
