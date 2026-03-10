@@ -289,7 +289,7 @@ const SchedulingPage = () => {
                             )}
                             onClick={() => navigate(`/dashboard/scheduling/${ev.id}`)}
                           >
-                            <p className="font-medium truncate">{ev.event_name}</p>
+                            <p className="font-medium truncate">{ev.title}</p>
                             {(ev.start_time || ev.end_time) && (
                               <p className="text-muted-foreground flex items-center gap-1 mt-0.5">
                                 <Clock size={10} />
