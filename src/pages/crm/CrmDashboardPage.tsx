@@ -124,7 +124,10 @@ const CrmDashboardPage = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">CRM Dashboard</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">CRM Dashboard</h1>
+          <Badge variant="outline" className="text-xs">{crmRoleLabel}</Badge>
+        </div>
         {isAdmin && (
           <Button
             variant="outline"

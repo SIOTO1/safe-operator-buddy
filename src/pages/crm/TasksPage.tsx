@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getTasks, createTask, updateTask } from "@/lib/crm/taskService";
+import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import TaskList from "@/components/crm/TaskList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 const TasksPage = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { can } = useCrmPermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", due_date: "", assigned_to: "" });
 
@@ -52,20 +54,22 @@ const TasksPage = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">CRM Tasks</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus size={16} className="mr-2" />Add Task</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>New Task</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <div><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-              <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-              <div><Label>Due Date</Label><Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} /></div>
-              <Button onClick={handleCreate} className="w-full" disabled={createMutation.isPending}>Create Task</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {can("create_tasks") && (
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus size={16} className="mr-2" />Add Task</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>New Task</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                <div><Label>Due Date</Label><Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} /></div>
+                <Button onClick={handleCreate} className="w-full" disabled={createMutation.isPending}>Create Task</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {isLoading ? (
