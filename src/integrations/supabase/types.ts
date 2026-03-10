@@ -546,6 +546,41 @@ export type Database = {
           },
         ]
       }
+      event_equipment: {
+        Row: {
+          created_at: string
+          equipment_name: string
+          event_id: string
+          id: string
+          notes: string | null
+          quantity: number
+        }
+        Insert: {
+          created_at?: string
+          equipment_name: string
+          event_id: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+        }
+        Update: {
+          created_at?: string
+          equipment_name?: string
+          event_id?: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_equipment_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
