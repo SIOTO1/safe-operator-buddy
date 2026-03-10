@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 const LEAD_SOURCES = ["Website", "Phone Inquiry", "Training Inquiry", "Certification Inquiry", "Referral", "Manual Entry", "Other"] as const;
 
-const emptyForm = { name: "", email: "", phone: "", company: "", source: "", status: "new" };
+const emptyForm = { name: "", email: "", phone: "", company: "", source: "", stage: "new" };
 
 const LeadsPage = () => {
   const queryClient = useQueryClient();
@@ -42,7 +42,7 @@ const LeadsPage = () => {
   // Sales Reps only see their assigned leads
   const visibleLeads = can("view_all_leads")
     ? leads
-    : leads.filter((l) => l.owner === userId);
+    : leads.filter((l) => l.assigned_to === userId);
 
   const filtered = visibleLeads
     .filter((l) => sourceFilter === "all" || (l.source || "").toLowerCase() === sourceFilter.toLowerCase())
@@ -58,7 +58,8 @@ const LeadsPage = () => {
       phone: form.phone || undefined,
       company: form.company || undefined,
       source: form.source || undefined,
-      status: form.status,
+      stage: form.stage,
+      assigned_to: userId,
       company_id: companyId,
     } as any);
   };

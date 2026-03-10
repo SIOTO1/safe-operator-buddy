@@ -18,7 +18,7 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
         <div className="flex items-start justify-between">
           <CardTitle className="text-base font-semibold">{lead.name}</CardTitle>
           <Badge variant="secondary" className="text-xs capitalize">
-            {lead.status}
+            {lead.stage}
           </Badge>
         </div>
       </CardHeader>

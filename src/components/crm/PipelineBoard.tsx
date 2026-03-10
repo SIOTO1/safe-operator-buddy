@@ -25,7 +25,7 @@ const PipelineBoard = ({ leads, onLeadClick, onStageDrop }: PipelineBoardProps) 
   return (
     <div className="flex gap-4 overflow-x-auto pb-4 min-h-[500px]">
       {PIPELINE_STAGES.map((stage) => {
-        const stageLeads = leads.filter((l) => l.status === stage.value);
+        const stageLeads = leads.filter((l) => l.stage === stage.value);
         return (
           <div
             key={stage.value}

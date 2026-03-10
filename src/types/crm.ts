@@ -5,16 +5,21 @@ export type Lead = {
   phone: string;
   company?: string;
   source?: string;
-  status: string;
-  owner?: string;
+  stage: string;
+  assigned_to?: string;
+  company_id?: string;
+  value?: number;
+  notes?: string;
   created_at: string;
+  updated_at?: string;
 };
 
 export type Note = {
   id: string;
   lead_id: string;
-  user_id: string;
+  created_by: string;
   content: string;
+  company_id?: string;
   created_at: string;
 };
 
@@ -26,6 +31,11 @@ export type Task = {
   description?: string;
   due_date: string;
   status: string;
+  priority?: string;
+  created_by?: string;
+  company_id?: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type Deal = {
@@ -38,7 +48,9 @@ export type Deal = {
   assigned_to?: string;
   created_by?: string;
   notes?: string;
+  company_id?: string;
   created_at: string;
+  updated_at?: string;
 };
 
 export type PipelineStage = "new" | "contacted" | "qualified" | "proposal" | "negotiation" | "won" | "lost";

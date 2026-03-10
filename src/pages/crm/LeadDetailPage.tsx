@@ -115,7 +115,7 @@ const LeadDetailPage = () => {
   });
 
   const updateStageMutation = useMutation({
-    mutationFn: (stage: string) => updateLead(id!, { status: stage }),
+    mutationFn: (stage: string) => updateLead(id!, { stage }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-lead", id] });
       queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
@@ -140,7 +140,7 @@ const LeadDetailPage = () => {
   if (leadLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
   if (!lead) return <div className="p-6 text-muted-foreground">Lead not found.</div>;
 
-  const stageInfo = PIPELINE_STAGES.find((s) => s.value === lead.status);
+  const stageInfo = PIPELINE_STAGES.find((s) => s.value === lead.stage);
 
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
@@ -158,7 +158,7 @@ const LeadDetailPage = () => {
           )}
         </div>
         {can("update_lead_status") ? (
-          <Select value={lead.status} onValueChange={(v) => updateStageMutation.mutate(v)}>
+          <Select value={lead.stage} onValueChange={(v) => updateStageMutation.mutate(v)}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
@@ -170,7 +170,7 @@ const LeadDetailPage = () => {
           </Select>
         ) : (
           <Badge variant="secondary" className={stageInfo?.color ? `${stageInfo.color} text-white` : ""}>
-            {stageInfo?.label || lead.status}
+            {stageInfo?.label || lead.stage}
           </Badge>
         )}
       </div>
@@ -200,7 +200,7 @@ const LeadDetailPage = () => {
             <div className="text-sm">
               <span className="text-muted-foreground">Status:</span>{" "}
               <Badge variant="secondary" className={stageInfo?.color ? `${stageInfo.color} text-white` : ""}>
-                {stageInfo?.label || lead.status}
+                {stageInfo?.label || lead.stage}
               </Badge>
             </div>
             <div className="text-sm text-muted-foreground">

@@ -41,8 +41,8 @@ export async function updateLead(id: string, updates: Partial<Lead>): Promise<Le
   return (data as unknown) as Lead;
 }
 
-export async function updateLeadStage(id: string, status: string): Promise<Lead> {
-  return updateLead(id, { status });
+export async function updateLeadStage(id: string, stage: string): Promise<Lead> {
+  return updateLead(id, { stage });
 }
 
 export async function deleteLead(id: string): Promise<void> {
