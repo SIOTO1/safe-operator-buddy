@@ -88,6 +88,7 @@ const EventDetailPage = () => {
   const [selectedProductId, setSelectedProductId] = useState("");
   const [productQty, setProductQty] = useState("1");
   const [addingProduct, setAddingProduct] = useState(false);
+  const [dateAllocations, setDateAllocations] = useState<Record<string, number>>({});
 
   const fetchEventProducts = useCallback(async () => {
     if (!eventId) return;
