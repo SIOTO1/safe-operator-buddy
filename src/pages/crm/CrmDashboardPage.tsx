@@ -107,7 +107,7 @@ const CrmDashboardPage = () => {
     }
   };
 
-  const isAdmin = role === "owner";
+  const isAdmin = can("generate_test_data");
 
   const stats = [
     { label: "Leads Today", value: data?.leadsToday ?? 0, icon: Users, color: "text-primary" },
