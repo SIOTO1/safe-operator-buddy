@@ -157,6 +157,7 @@ const DashboardLayout = () => {
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden">
             <Menu size={20} />
           </button>
+          <WorkspaceSwitcher />
           <div className="flex-1" />
           <div className="flex items-center gap-2 text-sm">
             {crewMode && (
