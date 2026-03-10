@@ -249,9 +249,16 @@ const EventDetailPage = () => {
     ? getInflatableSafetyLevel(weatherData.wind_speed || 0, weatherData.wind_gust || null)
     : null;
 
-  // Products already assigned — exclude from dropdown
+  // Products already assigned — exclude from dropdown; compute available qty
   const assignedProductIds = new Set(eventProducts.map(ep => ep.product_id));
-  const availableProducts = catalogProducts.filter(p => !assignedProductIds.has(p.id));
+  const availableProducts = catalogProducts
+    .filter(p => !assignedProductIds.has(p.id))
+    .map(p => {
+      const allocated = dateAllocations[p.id] || 0;
+      const availableQty = p.quantity_available - allocated;
+      return { ...p, availableQty };
+    })
+    .filter(p => p.availableQty > 0);
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
