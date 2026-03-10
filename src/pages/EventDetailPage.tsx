@@ -185,7 +185,7 @@ const EventDetailPage = () => {
       const alreadyAllocated = dateAllocations[selectedProductId] || 0;
       const available = product.quantity_available - alreadyAllocated;
       if (qty > available) {
-        toast.error(`Only ${available} of ${product.name} available on this date (${alreadyAllocated} assigned to other events)`);
+        toast.error(`Not enough inventory available for this product on the selected date. Only ${available} of ${product.name} available (${alreadyAllocated} assigned to other events).`);
         return;
       }
     }
