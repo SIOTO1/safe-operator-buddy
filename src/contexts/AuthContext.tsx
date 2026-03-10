@@ -71,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setRole(null);
           setProfile(null);
         }
+        }
         setLoading(false);
       }
     );
