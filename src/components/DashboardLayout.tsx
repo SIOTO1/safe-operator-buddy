@@ -64,28 +64,48 @@ const DashboardLayout = () => {
             </button>
           </div>
 
-          <nav className="flex-1 p-3 space-y-1">
-            {navItems.filter(item => {
-              if (item.ownerOnly) return role === "owner";
-              if ((item as any).minRole === "manager") return role === "owner" || role === "manager";
-              return true;
-            }).map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                onClick={() => setSidebarOpen(false)}
-                className={({ isActive }) => cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-              >
-                <item.icon size={18} />
-                {item.label}
-              </NavLink>
-            ))}
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+            {(() => {
+              const filtered = navItems.filter(item => {
+                if (item.ownerOnly) return role === "owner";
+                if ((item as any).minRole === "manager") return role === "owner" || role === "manager";
+                return true;
+              });
+              const mainItems = filtered.filter((i) => !(i as any).section);
+              const crmItems = filtered.filter((i) => (i as any).section === "CRM");
+
+              const renderItem = (item: typeof navItems[0]) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) => cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon size={18} />
+                  {item.label}
+                </NavLink>
+              );
+
+              return (
+                <>
+                  {mainItems.map(renderItem)}
+                  {crmItems.length > 0 && (
+                    <>
+                      <div className="pt-3 pb-1 px-3">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">CRM</span>
+                      </div>
+                      {crmItems.map(renderItem)}
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </nav>
 
           {/* Crew Mode Toggle */}

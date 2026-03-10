@@ -65,6 +65,9 @@ const App = () => (
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
+              <Route path="crm/leads" element={<LeadsPage />} />
+              <Route path="crm/pipeline" element={<PipelinePage />} />
+              <Route path="crm/tasks" element={<TasksPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
