@@ -58,7 +58,7 @@ const LeadsPage = () => {
       phone: form.phone || undefined,
       company: form.company || undefined,
       source: form.source || undefined,
-      status: form.status,
+      stage: form.stage,
       company_id: companyId,
     } as any);
   };

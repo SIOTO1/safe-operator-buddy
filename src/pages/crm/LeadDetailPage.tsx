@@ -200,7 +200,7 @@ const LeadDetailPage = () => {
             <div className="text-sm">
               <span className="text-muted-foreground">Status:</span>{" "}
               <Badge variant="secondary" className={stageInfo?.color ? `${stageInfo.color} text-white` : ""}>
-                {stageInfo?.label || lead.status}
+                {stageInfo?.label || lead.stage}
               </Badge>
             </div>
             <div className="text-sm text-muted-foreground">
