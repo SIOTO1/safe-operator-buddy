@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { format, addDays, addMonths, subMonths, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, parseISO, isBefore, startOfDay, getDay } from "date-fns";
 import { CalendarDays, Plus, MapPin, Clock, ChevronLeft, ChevronRight, Calendar, Trash2 } from "lucide-react";
+import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -302,6 +303,11 @@ const SchedulingPage = () => {
                                 {ev.city || ev.location_address}
                               </p>
                             )}
+                            <WeatherSafetyBadge
+                              eventLocation={formatLocation(ev)}
+                              eventDate={ev.event_date}
+                              compact
+                            />
                             {canManage && (
                               <Button
                                 variant="ghost" size="icon" className="h-4 w-4 mt-1"
