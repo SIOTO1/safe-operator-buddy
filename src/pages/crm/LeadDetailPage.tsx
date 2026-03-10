@@ -87,7 +87,7 @@ const LeadDetailPage = () => {
 
   const addNoteMutation = useMutation({
     mutationFn: (content: string) =>
-      createNote({ lead_id: id!, user_id: user?.id || "", content }),
+      createNote({ lead_id: id!, user_id: user?.id || "", content, company_id: companyId } as any),
     onSuccess: () => { invalidateAll(); toast.success("Note added"); },
     onError: () => toast.error("Failed to add note"),
   });
