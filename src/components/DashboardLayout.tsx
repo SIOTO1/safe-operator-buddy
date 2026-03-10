@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
+import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
 
 const navItems = [
   { to: "/dashboard", icon: BarChart3, label: "Dashboard", end: true },
@@ -156,6 +157,7 @@ const DashboardLayout = () => {
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden">
             <Menu size={20} />
           </button>
+          <WorkspaceSwitcher />
           <div className="flex-1" />
           <div className="flex items-center gap-2 text-sm">
             {crewMode && (

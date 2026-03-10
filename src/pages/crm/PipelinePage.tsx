@@ -7,8 +7,8 @@ import { Navigate } from "react-router-dom";
 
 const PipelinePage = () => {
   const queryClient = useQueryClient();
-  const { can } = useCrmPermissions();
-  const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads"], queryFn: getLeads });
+  const { can, workspaceId } = useCrmPermissions();
+  const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads", workspaceId], queryFn: () => getLeads(workspaceId) });
 
   const stageMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => updateLeadStage(id, status),

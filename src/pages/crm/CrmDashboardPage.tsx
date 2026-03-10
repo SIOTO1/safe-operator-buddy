@@ -45,13 +45,15 @@ function generateFakeLeads(count: number) {
 }
 
 // ── Data fetching ────────────────────────────────────────────
-async function getCrmAnalytics() {
+async function getCrmAnalytics(workspaceId?: string | null) {
+  const addWsFilter = (query: any) => workspaceId ? query.eq("workspace_id", workspaceId) : query;
+
   const [leadsRes, tasksRes, dealsRes, notesRes, activityRes] = await Promise.all([
-    supabase.from("crm_leads" as any).select("*").order("created_at", { ascending: false }),
-    supabase.from("crm_tasks" as any).select("*"),
-    supabase.from("crm_deals" as any).select("*"),
-    supabase.from("crm_notes" as any).select("*, crm_leads(name)" as any).order("created_at", { ascending: false }).limit(10),
-    supabase.from("crm_activity_log" as any).select("*").order("created_at", { ascending: false }),
+    addWsFilter(supabase.from("crm_leads" as any).select("*").order("created_at", { ascending: false })),
+    addWsFilter(supabase.from("crm_tasks" as any).select("*")),
+    addWsFilter(supabase.from("crm_deals" as any).select("*")),
+    addWsFilter(supabase.from("crm_notes" as any).select("*, crm_leads(name)" as any).order("created_at", { ascending: false }).limit(10)),
+    addWsFilter(supabase.from("crm_activity_log" as any).select("*").order("created_at", { ascending: false })),
   ]);
 
   if (leadsRes.error) throw leadsRes.error;
@@ -169,14 +171,14 @@ const PIE_COLORS = [
 ];
 
 const CrmDashboardPage = () => {
-  const { can, crmRoleLabel, companyId } = useCrmPermissions();
+  const { can, crmRoleLabel, companyId, workspaceId } = useCrmPermissions();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["crm-dashboard"],
-    queryFn: getCrmAnalytics,
+    queryKey: ["crm-dashboard", workspaceId],
+    queryFn: () => getCrmAnalytics(workspaceId),
   });
 
   const handleGenerateLeads = async () => {
