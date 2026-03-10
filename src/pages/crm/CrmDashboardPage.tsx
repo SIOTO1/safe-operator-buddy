@@ -1,9 +1,38 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, ListTodo, DollarSign, CalendarClock, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, ListTodo, DollarSign, CalendarClock, MessageSquare, FlaskConical } from "lucide-react";
 import { format, isToday, addDays, isAfter, isBefore } from "date-fns";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+
+const FIRST_NAMES = ["James","Maria","Robert","Linda","John","Patricia","Michael","Jennifer","David","Elizabeth","William","Barbara","Richard","Susan","Joseph","Jessica","Thomas","Sarah","Christopher","Karen","Charles","Lisa","Daniel","Nancy","Matthew","Betty","Anthony","Margaret","Mark","Sandra","Donald","Ashley","Steven","Dorothy","Andrew","Kimberly","Paul","Emily","Joshua","Donna","Kenneth","Michelle","Kevin","Carol","Brian","Amanda","George","Melissa","Timothy","Deborah"];
+const LAST_NAMES = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin","Lee","Perez","Thompson","White","Harris","Sanchez","Clark","Ramirez","Lewis","Robinson","Walker","Young","Allen","King","Wright","Scott","Torres","Nguyen","Hill","Flores","Green","Adams","Nelson","Baker","Hall","Rivera","Campbell","Mitchell","Carter"];
+const COMPANIES = ["Acme Corp","Globex Inc","Initech","Umbrella Co","Stark Industries","Wayne Enterprises","Oscorp","Cyberdyne Systems","Soylent Corp","Massive Dynamic","Aperture Science","Black Mesa","Tyrell Corp","Weyland-Yutani","Abstergo Industries","Vault-Tec","Momcorp","Planet Express","Prestige Worldwide","Dunder Mifflin"];
+const SOURCES = ["Website","Training Inquiry","Certification Inquiry","Referral","Manual Entry"];
+
+function randomPick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateFakeLeads(count: number) {
+  return Array.from({ length: count }, () => {
+    const first = randomPick(FIRST_NAMES);
+    const last = randomPick(LAST_NAMES);
+    const company = randomPick(COMPANIES);
+    return {
+      name: `${first} ${last}`,
+      email: `${first.toLowerCase()}.${last.toLowerCase()}${Math.floor(Math.random() * 999)}@example.com`,
+      phone: `555-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+      company,
+      source: randomPick(SOURCES),
+      stage: "new",
+    };
+  });
+}
 
 async function getCrmStats() {
   const [leadsRes, tasksRes, dealsRes, notesRes] = await Promise.all([
@@ -47,10 +76,37 @@ async function getCrmStats() {
 }
 
 const CrmDashboardPage = () => {
+  const { role } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [generating, setGenerating] = useState(false);
+
   const { data, isLoading } = useQuery({
     queryKey: ["crm-dashboard"],
     queryFn: getCrmStats,
   });
+
+  const handleGenerateLeads = async () => {
+    setGenerating(true);
+    try {
+      const leads = generateFakeLeads(50);
+      // Insert in batches of 25
+      for (let i = 0; i < leads.length; i += 25) {
+        const batch = leads.slice(i, i + 25);
+        const { error } = await supabase.from("crm_leads" as any).insert(batch as any);
+        if (error) throw error;
+      }
+      toast({ title: "Success", description: "50 test leads generated." });
+      queryClient.invalidateQueries({ queryKey: ["crm-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const isAdmin = role === "owner";
 
   const stats = [
     { label: "Leads Today", value: data?.leadsToday ?? 0, icon: Users, color: "text-primary" },
@@ -66,7 +122,20 @@ const CrmDashboardPage = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">CRM Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">CRM Dashboard</h1>
+        {isAdmin && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenerateLeads}
+            disabled={generating}
+          >
+            <FlaskConical size={16} />
+            {generating ? "Generating..." : "Generate Test Leads"}
+          </Button>
+        )}
+      </div>
 
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
