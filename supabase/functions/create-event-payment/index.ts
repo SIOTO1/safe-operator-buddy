@@ -32,11 +32,14 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Find or skip customer
+    // Find or create Stripe customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId: string | undefined;
+    let customerId: string;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+    } else {
+      const newCustomer = await stripe.customers.create({ email: user.email });
+      customerId = newCustomer.id;
     }
 
     const amountInCents = Math.round(amount * 100);
