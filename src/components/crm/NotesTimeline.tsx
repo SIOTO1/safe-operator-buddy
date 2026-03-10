@@ -7,7 +7,7 @@ import { format } from "date-fns";
 
 interface NotesTimelineProps {
   notes: Note[];
-  onAddNote: (content: string) => void;
+  onAddNote?: (content: string) => void;
   onDeleteNote?: (id: string) => void;
   isLoading?: boolean;
 }
