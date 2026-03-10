@@ -103,31 +103,9 @@ const QuotesPage = () => {
               <SelectItem value="expired">Expired</SelectItem>
             </SelectContent>
           </Select>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus size={16} className="mr-1.5" />New Quote</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader><DialogTitle>Create Quote</DialogTitle></DialogHeader>
-              <div className="space-y-4 pt-2">
-                <div className="space-y-1.5">
-                  <Label>Title <span className="text-destructive">*</span></Label>
-                  <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Birthday Party Package" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Total Amount ($)</Label>
-                  <Input type="number" min="0" step="0.01" value={form.total_amount} onChange={(e) => setForm({ ...form, total_amount: e.target.value })} placeholder="0.00" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Notes</Label>
-                  <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Optional notes…" />
-                </div>
-                <Button onClick={handleCreate} className="w-full" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Creating…" : "Create Quote"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => navigate("/dashboard/quotes/create")}>
+            <Plus size={16} className="mr-1.5" />New Quote
+          </Button>
         </div>
       </div>
 

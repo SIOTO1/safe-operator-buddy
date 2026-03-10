@@ -83,6 +83,7 @@ const App = () => (
               <Route path="crm/pipeline" element={<PipelinePage />} />
               <Route path="crm/tasks" element={<TasksPage />} />
               <Route path="crm/quotes" element={<QuotesPage />} />
+              <Route path="quotes/create" element={<QuoteBuilderPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
