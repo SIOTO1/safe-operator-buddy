@@ -365,7 +365,7 @@ const SchedulingPage = () => {
                   <div className="mt-0.5 space-y-0.5">
                     {dayEvents.slice(0, 3).map((ev) => (
                       <div key={ev.id} className="text-[10px] bg-primary/10 text-primary rounded px-1 py-0.5 truncate">
-                        {ev.event_name}
+                        {ev.title}
                       </div>
                     ))}
                     {dayEvents.length > 3 && (
