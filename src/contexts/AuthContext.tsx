@@ -94,8 +94,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(null);
   };
 
+  const setWorkspaceId = async (workspaceId: string | null) => {
+    if (!user) return;
+    await supabase.from("profiles").update({ selected_workspace_id: workspaceId } as any).eq("user_id", user.id);
+    setProfile((prev) => prev ? { ...prev, selected_workspace_id: workspaceId } : prev);
+  };
+
   return (
-    <AuthContext.Provider value={{ session, user, role, profile, companyId: profile?.company_id ?? null, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, role, profile, companyId: profile?.company_id ?? null, workspaceId: (profile as any)?.selected_workspace_id ?? null, loading, signOut, setWorkspaceId }}>
       {children}
     </AuthContext.Provider>
   );
