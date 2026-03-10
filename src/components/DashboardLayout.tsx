@@ -24,6 +24,7 @@ const navItems = [
   { to: "/dashboard/bookings", icon: Inbox, label: "Bookings", minRole: "manager" as const },
   { to: "/dashboard/equipment", icon: Package, label: "Equipment", minRole: "manager" as const },
   { to: "/dashboard/deliveries", icon: MapPin, label: "Delivery Schedule" },
+  { to: "/dashboard/routes", icon: Route, label: "Route Planning", minRole: "manager" as const },
   { to: "/dashboard/crm/leads", icon: Contact, label: "Leads", section: "CRM" },
   { to: "/dashboard/crm/pipeline", icon: Kanban, label: "Pipeline", section: "CRM" },
   { to: "/dashboard/crm/tasks", icon: ListTodo, label: "Tasks", section: "CRM" },
