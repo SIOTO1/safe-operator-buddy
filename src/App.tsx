@@ -26,6 +26,7 @@ import SchedulingPage from "./pages/SchedulingPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
+import DeliverySchedulePage from "./pages/DeliverySchedulePage";
 import LeadsPage from "./pages/crm/LeadsPage";
 import LeadDetailPage from "./pages/crm/LeadDetailPage";
 import PipelinePage from "./pages/crm/PipelinePage";
