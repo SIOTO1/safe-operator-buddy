@@ -16,7 +16,7 @@ const NotesTimeline = ({ notes, onAddNote, onDeleteNote, isLoading }: NotesTimel
   const [newNote, setNewNote] = useState("");
 
   const handleSubmit = () => {
-    if (!newNote.trim()) return;
+    if (!newNote.trim() || !onAddNote) return;
     onAddNote(newNote.trim());
     setNewNote("");
   };
