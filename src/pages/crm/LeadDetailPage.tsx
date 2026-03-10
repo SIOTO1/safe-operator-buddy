@@ -158,7 +158,7 @@ const LeadDetailPage = () => {
           )}
         </div>
         {can("update_lead_status") ? (
-          <Select value={lead.status} onValueChange={(v) => updateStageMutation.mutate(v)}>
+          <Select value={lead.stage} onValueChange={(v) => updateStageMutation.mutate(v)}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
