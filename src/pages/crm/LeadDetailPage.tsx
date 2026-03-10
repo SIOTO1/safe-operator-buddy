@@ -350,9 +350,53 @@ const LeadDetailPage = () => {
               <div className="space-y-3">
                 {deals.map((deal) => (
                   <div key={deal.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{deal.title}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{deal.stage}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Select
+                          value={deal.stage}
+                          onValueChange={async (newStage) => {
+                            try {
+                              await updateDeal(deal.id, { stage: newStage });
+                              queryClient.invalidateQueries({ queryKey: ["crm-deals", id] });
+                              queryClient.invalidateQueries({ queryKey: ["crm-activity", id] });
+                              toast.success("Deal stage updated");
+
+                              if (newStage === "won" && lead && user) {
+                                const { data: evt, error } = await supabase.from("events").insert({
+                                  title: `${deal.title} — ${lead.name}`,
+                                  event_date: deal.expected_close_date || new Date().toISOString().split("T")[0],
+                                  location: null,
+                                  notes: [
+                                    `Deal: ${deal.title} ($${deal.value?.toLocaleString() ?? 0})`,
+                                    `Customer: ${lead.name}`,
+                                    lead.email ? `Email: ${lead.email}` : "",
+                                    lead.phone ? `Phone: ${lead.phone}` : "",
+                                    lead.notes || "",
+                                  ].filter(Boolean).join("\n"),
+                                  created_by: user.id,
+                                }).select("id").single();
+
+                                if (!error && evt) {
+                                  toast.success("Event created from closed deal — redirecting…");
+                                  navigate("/dashboard/scheduling");
+                                }
+                              }
+                            } catch {
+                              toast.error("Failed to update deal");
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-6 text-[11px] w-32 px-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {["new", "qualified", "proposal", "negotiation", "won", "lost"].map((s) => (
+                              <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <div className="flex items-center gap-1 text-sm font-semibold text-primary">
                       <DollarSign size={14} />
