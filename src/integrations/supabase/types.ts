@@ -475,6 +475,124 @@ export type Database = {
           },
         ]
       }
+      delivery_routes: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string
+          driver_id: string | null
+          id: string
+          name: string
+          notes: string | null
+          route_date: string
+          status: string
+          updated_at: string
+          vehicle_id: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by: string
+          driver_id?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          route_date: string
+          status?: string
+          updated_at?: string
+          vehicle_id?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string
+          driver_id?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          route_date?: string
+          status?: string
+          updated_at?: string
+          vehicle_id?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_routes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_routes_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_routes_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_routes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          license_number: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          license_number?: string | null
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          license_number?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment_catalog: {
         Row: {
           created_at: string
@@ -710,6 +828,57 @@ export type Database = {
           },
         ]
       }
+      route_stops: {
+        Row: {
+          address: string | null
+          created_at: string
+          event_id: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          notes: string | null
+          route_id: string
+          stop_order: number
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          route_id: string
+          stop_order?: number
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          route_id?: string
+          stop_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_stops_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_stops_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -727,6 +896,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vehicles: {
+        Row: {
+          capacity_notes: string | null
+          company_id: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          license_plate: string | null
+          name: string
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          capacity_notes?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          license_plate?: string | null
+          name: string
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capacity_notes?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          license_plate?: string | null
+          name?: string
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workspaces: {
         Row: {
