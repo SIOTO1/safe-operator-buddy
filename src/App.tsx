@@ -27,6 +27,7 @@ import EventDetailPage from "./pages/EventDetailPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
+import ProductCatalogPage from "./pages/ProductCatalogPage";
 import DeliverySchedulePage from "./pages/DeliverySchedulePage";
 import RoutePlanningPage from "./pages/RoutePlanningPage";
 import LeadsPage from "./pages/crm/LeadsPage";
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="scheduling/:eventId" element={<EventDetailPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
+              <Route path="products" element={<ProductCatalogPage />} />
               <Route path="deliveries" element={<DeliverySchedulePage />} />
               <Route path="routes" element={<RoutePlanningPage />} />
               <Route path="crm" element={<CrmDashboardPage />} />

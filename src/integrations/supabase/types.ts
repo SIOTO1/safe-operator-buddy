@@ -827,6 +827,66 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: Database["public"]["Enums"]["product_category"]
+          company_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          price: number | null
+          quantity_available: number
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["product_category"]
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          price?: number | null
+          quantity_available?: number
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["product_category"]
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          price?: number | null
+          quantity_available?: number
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           company_id: string | null
@@ -1034,6 +1094,16 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "manager" | "crew"
+      product_category:
+        | "inflatables"
+        | "slides"
+        | "foam_machines"
+        | "tents"
+        | "tables"
+        | "chairs"
+        | "generators"
+        | "concessions"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1162,6 +1232,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "manager", "crew"],
+      product_category: [
+        "inflatables",
+        "slides",
+        "foam_machines",
+        "tents",
+        "tables",
+        "chairs",
+        "generators",
+        "concessions",
+        "other",
+      ],
     },
   },
 } as const
