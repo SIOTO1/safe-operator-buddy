@@ -100,6 +100,8 @@ const LeadDetailPage = () => {
     queryClient.invalidateQueries({ queryKey: ["crm-notes", id] });
     queryClient.invalidateQueries({ queryKey: ["crm-tasks", id] });
     queryClient.invalidateQueries({ queryKey: ["crm-activity", id] });
+    queryClient.invalidateQueries({ queryKey: ["crm-quotes-lead", id] });
+    queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
   };
 
   const addNoteMutation = useMutation({
