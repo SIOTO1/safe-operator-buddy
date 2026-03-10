@@ -162,6 +162,7 @@ const DashboardLayout = () => {
           </button>
           <WorkspaceSwitcher />
           <div className="flex-1" />
+          <NotificationBell />
           <div className="flex items-center gap-2 text-sm">
             {crewMode && (
               <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
