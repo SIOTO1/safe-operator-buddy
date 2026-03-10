@@ -81,6 +81,7 @@ const App = () => (
               <Route path="crm/leads/:id" element={<LeadDetailPage />} />
               <Route path="crm/pipeline" element={<PipelinePage />} />
               <Route path="crm/tasks" element={<TasksPage />} />
+              <Route path="crm/quotes" element={<QuotesPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />

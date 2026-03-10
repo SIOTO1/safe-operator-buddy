@@ -30,6 +30,7 @@ const navItems = [
   { to: "/dashboard/crm/leads", icon: Contact, label: "Leads", section: "CRM" },
   { to: "/dashboard/crm/pipeline", icon: Kanban, label: "Pipeline", section: "CRM" },
   { to: "/dashboard/crm/tasks", icon: ListTodo, label: "Tasks", section: "CRM" },
+  { to: "/dashboard/crm/quotes", icon: Receipt, label: "Quotes", section: "CRM" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
 ];
 
