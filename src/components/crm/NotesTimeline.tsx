@@ -23,17 +23,19 @@ const NotesTimeline = ({ notes, onAddNote, onDeleteNote, isLoading }: NotesTimel
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <Textarea
-          placeholder="Add a note..."
-          value={newNote}
-          onChange={(e) => setNewNote(e.target.value)}
-          className="min-h-[80px]"
-        />
-        <Button size="icon" onClick={handleSubmit} disabled={!newNote.trim() || isLoading}>
-          <Send size={16} />
-        </Button>
-      </div>
+      {onAddNote && (
+        <div className="flex gap-2">
+          <Textarea
+            placeholder="Add a note..."
+            value={newNote}
+            onChange={(e) => setNewNote(e.target.value)}
+            className="min-h-[80px]"
+          />
+          <Button size="icon" onClick={handleSubmit} disabled={!newNote.trim() || isLoading}>
+            <Send size={16} />
+          </Button>
+        </div>
+      )}
 
       <div className="space-y-3">
         {notes.length === 0 && (
