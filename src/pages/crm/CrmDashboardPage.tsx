@@ -171,14 +171,14 @@ const PIE_COLORS = [
 ];
 
 const CrmDashboardPage = () => {
-  const { can, crmRoleLabel, companyId } = useCrmPermissions();
+  const { can, crmRoleLabel, companyId, workspaceId } = useCrmPermissions();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["crm-dashboard"],
-    queryFn: getCrmAnalytics,
+    queryKey: ["crm-dashboard", workspaceId],
+    queryFn: () => getCrmAnalytics(workspaceId),
   });
 
   const handleGenerateLeads = async () => {
