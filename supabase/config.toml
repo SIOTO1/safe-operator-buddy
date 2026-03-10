@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.charge-remaining-balance]
 verify_jwt = false
+
+[functions.process-email-queue]
+verify_jwt = false
