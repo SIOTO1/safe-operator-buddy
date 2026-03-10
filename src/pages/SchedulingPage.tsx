@@ -148,7 +148,7 @@ const SchedulingPage = () => {
   const handleDeleteEvent = async (eventId: string) => {
     if (!confirm("Delete this event? This cannot be undone.")) return;
     try {
-      const { error } = await supabase.from("events" as any).delete().eq("id", eventId);
+      const { error } = await supabase.from("events").delete().eq("id", eventId);
       if (error) throw error;
       toast.success("Event deleted");
       fetchData();
