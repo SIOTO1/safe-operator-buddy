@@ -8,7 +8,11 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   role: AppRole | null;
-  profile: { display_name: string | null; email: string | null } | null;
+  profile: { display_name: string | null; email: string | null; company_id: string | null } | null;
+  companyId: string | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
+}
   loading: boolean;
   signOut: () => Promise<void>;
 }
