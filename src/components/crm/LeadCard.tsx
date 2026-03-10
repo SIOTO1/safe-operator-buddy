@@ -39,6 +39,12 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
             <span>{lead.phone}</span>
           </div>
         )}
+        {lead.source && (
+          <div className="flex items-center gap-2">
+            <Globe size={14} />
+            <span>{lead.source}</span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
