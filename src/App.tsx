@@ -27,6 +27,7 @@ import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
 import LeadsPage from "./pages/crm/LeadsPage";
+import LeadDetailPage from "./pages/crm/LeadDetailPage";
 import PipelinePage from "./pages/crm/PipelinePage";
 import TasksPage from "./pages/crm/TasksPage";
 import NotFound from "./pages/NotFound";
