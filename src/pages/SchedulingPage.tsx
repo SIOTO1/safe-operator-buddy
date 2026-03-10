@@ -161,7 +161,7 @@ const SchedulingPage = () => {
 
   const handleRescheduleEvent = async (eventId: string, newDate: string) => {
     try {
-      const { error } = await supabase.from("events" as any).update({ event_date: newDate } as any).eq("id", eventId);
+      const { error } = await supabase.from("events").update({ event_date: newDate }).eq("id", eventId);
       if (error) throw error;
       toast.success("Event rescheduled!");
       fetchData();
