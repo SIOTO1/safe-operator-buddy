@@ -13,6 +13,8 @@ import {
   type QuoteItem,
   type QuoteStatus,
 } from "@/lib/crm/quoteService";
+import { createContract } from "@/lib/crm/contractService";
+import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
