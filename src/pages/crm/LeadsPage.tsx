@@ -59,6 +59,7 @@ const LeadsPage = () => {
       company: form.company || undefined,
       source: form.source || undefined,
       stage: form.stage,
+      assigned_to: userId,
       company_id: companyId,
     } as any);
   };
