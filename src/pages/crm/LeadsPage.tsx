@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getLeads, createLead } from "@/lib/crm/leadService";
 import LeadCard from "@/components/crm/LeadCard";
@@ -16,6 +17,7 @@ const emptyForm = { name: "", email: "", phone: "", company: "", source: "", sta
 
 const LeadsPage = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -106,7 +108,7 @@ const LeadsPage = () => {
         <p className="text-muted-foreground">Loading...</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} />)}
+          {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onClick={(l) => navigate(`/dashboard/crm/leads/${l.id}`)} />)}
           {filtered.length === 0 && <p className="text-muted-foreground col-span-full text-center py-8">No leads found.</p>}
         </div>
       )}
