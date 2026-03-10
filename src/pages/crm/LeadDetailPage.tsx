@@ -70,6 +70,15 @@ const LeadDetailPage = () => {
     enabled: !!id,
   });
 
+  const { data: quotes = [] } = useQuery({
+    queryKey: ["crm-quotes-lead", id],
+    queryFn: async () => {
+      const all = await getQuotes();
+      return all.filter((q) => q.lead_id === id);
+    },
+    enabled: !!id,
+  });
+
   const timelineEvents = useMemo<TimelineEvent[]>(() => {
     const events: TimelineEvent[] = [];
     notes.forEach((n) =>
