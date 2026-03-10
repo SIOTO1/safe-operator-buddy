@@ -185,8 +185,7 @@ const SchedulingPage = () => {
   const today = startOfDay(new Date());
 
   const formatLocation = (ev: Event) => {
-    const parts = [ev.location_address, ev.city, ev.state, ev.zip].filter(Boolean);
-    return parts.join(", ") || null;
+    return ev.location || null;
   };
 
   return (
