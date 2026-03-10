@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag } from "lucide-react";
+import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,6 +30,7 @@ const navItems = [
   { to: "/dashboard/crm/leads", icon: Contact, label: "Leads", section: "CRM" },
   { to: "/dashboard/crm/pipeline", icon: Kanban, label: "Pipeline", section: "CRM" },
   { to: "/dashboard/crm/tasks", icon: ListTodo, label: "Tasks", section: "CRM" },
+  { to: "/dashboard/crm/quotes", icon: Receipt, label: "Quotes", section: "CRM" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
 ];
 

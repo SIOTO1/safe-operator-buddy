@@ -6,6 +6,7 @@ import { getNotesByLeadId, createNote, deleteNote } from "@/lib/crm/noteService"
 import { getTasksByLeadId, createTask, updateTask } from "@/lib/crm/taskService";
 import { getDealsByLeadId, updateDeal } from "@/lib/crm/dealService";
 import { getActivityForLead } from "@/lib/crm/activityService";
+import { getQuotes, createQuote, type Quote, type QuoteStatus } from "@/lib/crm/quoteService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import { PIPELINE_STAGES } from "@/types/crm";
@@ -20,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Building2, Mail, Phone, Plus, DollarSign, CalendarPlus } from "lucide-react";
+import { ArrowLeft, Building2, Mail, Phone, Plus, DollarSign, CalendarPlus, Receipt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -36,6 +37,8 @@ const LeadDetailPage = () => {
   const [convertOpen, setConvertOpen] = useState(false);
   const [convertForm, setConvertForm] = useState({ event_name: "", event_date: "", location: "", notes: "" });
   const [converting, setConverting] = useState(false);
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+  const [quoteForm, setQuoteForm] = useState({ title: "", total_amount: "", notes: "" });
 
   const { data: lead, isLoading: leadLoading } = useQuery({
     queryKey: ["crm-lead", id],
@@ -67,6 +70,15 @@ const LeadDetailPage = () => {
     enabled: !!id,
   });
 
+  const { data: quotes = [] } = useQuery({
+    queryKey: ["crm-quotes-lead", id],
+    queryFn: async () => {
+      const all = await getQuotes();
+      return all.filter((q) => q.lead_id === id);
+    },
+    enabled: !!id,
+  });
+
   const timelineEvents = useMemo<TimelineEvent[]>(() => {
     const events: TimelineEvent[] = [];
     notes.forEach((n) =>
@@ -88,6 +100,8 @@ const LeadDetailPage = () => {
     queryClient.invalidateQueries({ queryKey: ["crm-notes", id] });
     queryClient.invalidateQueries({ queryKey: ["crm-tasks", id] });
     queryClient.invalidateQueries({ queryKey: ["crm-activity", id] });
+    queryClient.invalidateQueries({ queryKey: ["crm-quotes-lead", id] });
+    queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
   };
 
   const addNoteMutation = useMutation({
@@ -141,6 +155,31 @@ const LeadDetailPage = () => {
       company_id: companyId,
       workspace_id: workspaceId,
     } as any);
+  };
+
+  const createQuoteMutation = useMutation({
+    mutationFn: createQuote,
+    onSuccess: () => {
+      invalidateAll();
+      setQuoteDialogOpen(false);
+      setQuoteForm({ title: "", total_amount: "", notes: "" });
+      toast.success("Quote created");
+    },
+    onError: () => toast.error("Failed to create quote"),
+  });
+
+  const handleCreateQuote = () => {
+    if (!quoteForm.title) return toast.error("Title is required");
+    createQuoteMutation.mutate({
+      title: quoteForm.title,
+      total_amount: quoteForm.total_amount ? parseFloat(quoteForm.total_amount) : 0,
+      notes: quoteForm.notes || null,
+      status: "draft" as QuoteStatus,
+      lead_id: id!,
+      company_id: companyId ?? null,
+      workspace_id: workspaceId ?? null,
+      created_by: user?.id || "",
+    });
   };
 
   const handleConvertToEvent = async () => {
@@ -409,6 +448,58 @@ const LeadDetailPage = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Quotes */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Quotes</CardTitle>
+          <Dialog open={quoteDialogOpen} onOpenChange={setQuoteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline"><Receipt size={14} className="mr-1" />New Quote</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader><DialogTitle>Create Quote for {lead.name}</DialogTitle></DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1.5">
+                  <Label>Title <span className="text-destructive">*</span></Label>
+                  <Input value={quoteForm.title} onChange={(e) => setQuoteForm({ ...quoteForm, title: e.target.value })} placeholder="e.g. Birthday Party Package" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Total Amount ($)</Label>
+                  <Input type="number" min="0" step="0.01" value={quoteForm.total_amount} onChange={(e) => setQuoteForm({ ...quoteForm, total_amount: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Notes</Label>
+                  <Textarea value={quoteForm.notes} onChange={(e) => setQuoteForm({ ...quoteForm, notes: e.target.value })} rows={3} />
+                </div>
+                <Button onClick={handleCreateQuote} className="w-full" disabled={createQuoteMutation.isPending}>
+                  {createQuoteMutation.isPending ? "Creating…" : "Create Quote"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          {quotes.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No quotes for this lead yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {quotes.map((q) => (
+                <div key={q.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{q.title}</p>
+                    <Badge variant="secondary" className="mt-1 capitalize text-xs">{q.status}</Badge>
+                  </div>
+                  <div className="flex items-center gap-1 text-sm font-semibold text-primary">
+                    <DollarSign size={14} />
+                    {(q.total_amount ?? 0).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Activity Timeline */}
       <Card>
