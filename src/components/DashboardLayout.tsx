@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
+import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
 
 const navItems = [
   { to: "/dashboard", icon: BarChart3, label: "Dashboard", end: true },
