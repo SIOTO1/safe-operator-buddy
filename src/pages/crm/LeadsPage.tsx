@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
-const LEAD_SOURCES = ["Website", "Phone Inquiry", "Referral", "Training Inquiry", "Other"] as const;
+const LEAD_SOURCES = ["Website", "Phone Inquiry", "Training Inquiry", "Certification Inquiry", "Referral", "Manual Entry", "Other"] as const;
 
 const emptyForm = { name: "", email: "", phone: "", company: "", source: "", status: "new" };
 
