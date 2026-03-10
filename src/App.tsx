@@ -36,6 +36,7 @@ import PipelinePage from "./pages/crm/PipelinePage";
 import TasksPage from "./pages/crm/TasksPage";
 import CrmDashboardPage from "./pages/crm/CrmDashboardPage";
 import QuotesPage from "./pages/crm/QuotesPage";
+import QuoteBuilderPage from "./pages/crm/QuoteBuilderPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
