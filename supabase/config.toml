@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.check-weather-alerts]
 verify_jwt = false
+
+[functions.create-event-payment]
+verify_jwt = false
+
+[functions.verify-payment]
+verify_jwt = false
