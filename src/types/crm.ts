@@ -8,6 +8,7 @@ export type Lead = {
   stage: string;
   assigned_to?: string;
   company_id?: string;
+  workspace_id?: string;
   value?: number;
   notes?: string;
   created_at: string;
@@ -20,6 +21,7 @@ export type Note = {
   created_by: string;
   content: string;
   company_id?: string;
+  workspace_id?: string;
   created_at: string;
 };
 
@@ -34,6 +36,7 @@ export type Task = {
   priority?: string;
   created_by?: string;
   company_id?: string;
+  workspace_id?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -49,6 +52,7 @@ export type Deal = {
   created_by?: string;
   notes?: string;
   company_id?: string;
+  workspace_id?: string;
   created_at: string;
   updated_at?: string;
 };

@@ -61,6 +61,7 @@ const LeadsPage = () => {
       stage: form.stage,
       assigned_to: userId,
       company_id: companyId,
+      workspace_id: workspaceId,
     } as any);
   };
 

@@ -63,7 +63,7 @@ function appRoleToCrmRole(role: string | null): CrmRole {
 }
 
 export function useCrmPermissions() {
-  const { role, user, companyId } = useAuth();
+  const { role, user, companyId, workspaceId } = useAuth();
   const crmRole = appRoleToCrmRole(role);
   const permissions = ROLE_PERMISSIONS[crmRole];
 
@@ -75,5 +75,6 @@ export function useCrmPermissions() {
     can,
     userId: user?.id ?? null,
     companyId,
+    workspaceId,
   };
 }

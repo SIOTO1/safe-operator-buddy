@@ -134,6 +134,7 @@ const LeadDetailPage = () => {
       assigned_to: user?.id || "",
       status: "todo",
       company_id: companyId,
+      workspace_id: workspaceId,
     } as any);
   };
 
