@@ -37,6 +37,8 @@ const LeadDetailPage = () => {
   const [convertOpen, setConvertOpen] = useState(false);
   const [convertForm, setConvertForm] = useState({ event_name: "", event_date: "", location: "", notes: "" });
   const [converting, setConverting] = useState(false);
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false);
+  const [quoteForm, setQuoteForm] = useState({ title: "", total_amount: "", notes: "" });
 
   const { data: lead, isLoading: leadLoading } = useQuery({
     queryKey: ["crm-lead", id],
