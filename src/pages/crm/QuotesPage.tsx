@@ -1,16 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
-import { getQuotes, createQuote, updateQuote, deleteQuote, type Quote, type QuoteStatus } from "@/lib/crm/quoteService";
+import { getQuotes, updateQuote, deleteQuote, type QuoteStatus } from "@/lib/crm/quoteService";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Trash2, FileText, DollarSign } from "lucide-react";
 import { toast } from "sonner";
