@@ -1,16 +1,16 @@
-import { CrmTask } from "@/types/crm";
+import { Task } from "@/types/crm";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface TaskListProps {
-  tasks: CrmTask[];
-  onToggleStatus: (task: CrmTask) => void;
-  onSelectTask?: (task: CrmTask) => void;
+  tasks: Task[];
+  onToggleStatus: (task: Task) => void;
+  onSelectTask?: (task: Task) => void;
 }
 
-const priorityColors: Record<string, string> = {
+const priorityMap: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
   medium: "bg-accent text-accent-foreground",
   high: "bg-destructive text-destructive-foreground",
@@ -34,10 +34,7 @@ const TaskList = ({ tasks, onToggleStatus, onSelectTask }: TaskListProps) => {
         >
           <Checkbox
             checked={task.status === "done"}
-            onCheckedChange={(e) => {
-              e && onToggleStatus(task);
-              if (!e) onToggleStatus(task);
-            }}
+            onCheckedChange={() => onToggleStatus(task)}
             onClick={(e) => e.stopPropagation()}
             className="mt-0.5"
           />
@@ -49,9 +46,6 @@ const TaskList = ({ tasks, onToggleStatus, onSelectTask }: TaskListProps) => {
               <p className="text-xs text-muted-foreground mt-0.5 truncate">{task.description}</p>
             )}
             <div className="flex items-center gap-2 mt-1.5">
-              <Badge className={cn("text-xs", priorityColors[task.priority])} variant="secondary">
-                {task.priority}
-              </Badge>
               {task.due_date && (
                 <span className="text-xs text-muted-foreground">
                   Due {format(new Date(task.due_date), "MMM d")}

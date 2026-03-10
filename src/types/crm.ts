@@ -1,57 +1,47 @@
-export type PipelineStage = "new" | "contacted" | "qualified" | "proposal" | "negotiation" | "won" | "lost";
-
-export interface Lead {
+export type Lead = {
   id: string;
   name: string;
   email: string;
-  phone: string | null;
-  company: string | null;
-  stage: PipelineStage;
-  value: number | null;
-  source: string | null;
-  notes: string | null;
-  assigned_to: string | null;
+  phone: string;
+  company?: string;
+  source?: string;
+  status: string;
+  owner?: string;
   created_at: string;
-  updated_at: string;
-}
+};
 
-export interface LeadNote {
+export type Note = {
   id: string;
   lead_id: string;
+  user_id: string;
   content: string;
-  created_by: string;
   created_at: string;
-}
+};
 
-export interface CrmTask {
+export type Task = {
   id: string;
-  lead_id: string | null;
+  lead_id: string;
+  assigned_to: string;
   title: string;
-  description: string | null;
-  due_date: string | null;
-  priority: "low" | "medium" | "high";
-  status: "todo" | "in_progress" | "done";
-  assigned_to: string | null;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-}
+  description?: string;
+  due_date: string;
+  status: string;
+};
 
-export type DealStage = "new" | "contacted" | "qualified" | "proposal" | "negotiation" | "won" | "lost";
-
-export interface Deal {
+export type Deal = {
   id: string;
-  lead_id: string | null;
+  lead_id: string;
   title: string;
-  value: number | null;
-  stage: DealStage;
-  expected_close_date: string | null;
-  assigned_to: string | null;
-  created_by: string;
-  notes: string | null;
+  value: number;
+  stage: string;
+  expected_close_date?: string;
+  assigned_to?: string;
+  created_by?: string;
+  notes?: string;
   created_at: string;
-  updated_at: string;
-}
+};
+
+export type PipelineStage = "new" | "contacted" | "qualified" | "proposal" | "negotiation" | "won" | "lost";
 
 export const PIPELINE_STAGES: { value: PipelineStage; label: string; color: string }[] = [
   { value: "new", label: "New", color: "bg-blue-500" },

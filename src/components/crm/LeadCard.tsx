@@ -1,7 +1,7 @@
 import { Lead, PIPELINE_STAGES } from "@/types/crm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Mail, Phone, DollarSign } from "lucide-react";
+import { Building2, Mail, Phone } from "lucide-react";
 
 interface LeadCardProps {
   lead: Lead;
@@ -9,8 +9,6 @@ interface LeadCardProps {
 }
 
 const LeadCard = ({ lead, onClick }: LeadCardProps) => {
-  const stage = PIPELINE_STAGES.find((s) => s.value === lead.stage);
-
   return (
     <Card
       className="cursor-pointer hover:shadow-md transition-shadow border-border"
@@ -20,7 +18,7 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
         <div className="flex items-start justify-between">
           <CardTitle className="text-base font-semibold">{lead.name}</CardTitle>
           <Badge variant="secondary" className="text-xs capitalize">
-            {stage?.label ?? lead.stage}
+            {lead.status}
           </Badge>
         </div>
       </CardHeader>
@@ -39,12 +37,6 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
           <div className="flex items-center gap-2">
             <Phone size={14} />
             <span>{lead.phone}</span>
-          </div>
-        )}
-        {lead.value != null && (
-          <div className="flex items-center gap-2 text-foreground font-medium">
-            <DollarSign size={14} />
-            <span>{lead.value.toLocaleString()}</span>
           </div>
         )}
       </CardContent>
