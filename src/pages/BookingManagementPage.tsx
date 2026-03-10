@@ -72,23 +72,21 @@ const BookingManagementPage = () => {
 
   const handleApprove = async (booking: BookingRequest) => {
     try {
-      const { data: eventData, error: eventError } = await supabase.from("events").insert({
-        title: `${booking.customer_name} - ${booking.equipment[0] || "Rental"}`,
+      const { data: eventData, error: eventError } = await supabase.from("events" as any).insert({
+        event_name: `${booking.customer_name} - ${booking.equipment[0] || "Rental"}`,
         event_date: booking.event_date,
         start_time: booking.event_time || null,
         end_time: booking.event_end_time || null,
-        location: booking.event_location,
+        location_address: booking.event_location,
         notes: `Customer: ${booking.customer_name}\nEmail: ${booking.customer_email}${booking.customer_phone ? `\nPhone: ${booking.customer_phone}` : ""}\nGuests: ${booking.guest_count || "N/A"}\nEquipment: ${booking.equipment.join(", ")}${booking.special_requests ? `\nNotes: ${booking.special_requests}` : ""}`,
-        crew_needed: 2,
-        created_by: user!.id,
-      }).select("id").single();
+      } as any).select("id").single();
       if (eventError) throw eventError;
 
       const { error: updateError } = await supabase.from("booking_requests").update({
         status: "approved",
         reviewed_by: user!.id,
         reviewed_at: new Date().toISOString(),
-        event_id: eventData.id,
+        event_id: (eventData as any).id,
       }).eq("id", booking.id);
       if (updateError) throw updateError;
       toast.success("Booking approved! Event created on schedule.");
