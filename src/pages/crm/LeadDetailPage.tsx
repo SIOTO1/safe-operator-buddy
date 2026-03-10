@@ -157,6 +157,31 @@ const LeadDetailPage = () => {
     } as any);
   };
 
+  const createQuoteMutation = useMutation({
+    mutationFn: createQuote,
+    onSuccess: () => {
+      invalidateAll();
+      setQuoteDialogOpen(false);
+      setQuoteForm({ title: "", total_amount: "", notes: "" });
+      toast.success("Quote created");
+    },
+    onError: () => toast.error("Failed to create quote"),
+  });
+
+  const handleCreateQuote = () => {
+    if (!quoteForm.title) return toast.error("Title is required");
+    createQuoteMutation.mutate({
+      title: quoteForm.title,
+      total_amount: quoteForm.total_amount ? parseFloat(quoteForm.total_amount) : 0,
+      notes: quoteForm.notes || null,
+      status: "draft" as QuoteStatus,
+      lead_id: id!,
+      company_id: companyId ?? null,
+      workspace_id: workspaceId ?? null,
+      created_by: user?.id || "",
+    });
+  };
+
   const handleConvertToEvent = async () => {
     if (!convertForm.event_name || !convertForm.event_date || !user) return;
     setConverting(true);
