@@ -925,6 +925,70 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          contract_id: string | null
+          created_at: string
+          event_id: string | null
+          id: string
+          payment_method: string | null
+          payment_status: string
+          payment_type: string
+          quote_id: string | null
+          stripe_session_id: string | null
+          transaction_id: string | null
+        }
+        Insert: {
+          amount?: number
+          contract_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          payment_method?: string | null
+          payment_status?: string
+          payment_type?: string
+          quote_id?: string | null
+          stripe_session_id?: string | null
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          contract_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          payment_method?: string | null
+          payment_status?: string
+          payment_type?: string
+          quote_id?: string | null
+          stripe_session_id?: string | null
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: Database["public"]["Enums"]["product_category"]
