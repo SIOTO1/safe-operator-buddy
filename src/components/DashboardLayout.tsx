@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
+import NotificationBell from "@/components/NotificationBell";
 
 const navItems = [
   { to: "/dashboard", icon: BarChart3, label: "Dashboard", end: true },
@@ -161,6 +162,7 @@ const DashboardLayout = () => {
           </button>
           <WorkspaceSwitcher />
           <div className="flex-1" />
+          <NotificationBell />
           <div className="flex items-center gap-2 text-sm">
             {crewMode && (
               <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
