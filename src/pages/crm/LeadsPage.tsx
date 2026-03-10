@@ -36,9 +36,11 @@ const LeadsPage = () => {
     onError: () => toast.error("Failed to create lead"),
   });
 
-  const filtered = leads.filter((l) =>
-    [l.name, l.email, l.company].some((f) => f?.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filtered = leads
+    .filter((l) => sourceFilter === "all" || (l.source || "").toLowerCase() === sourceFilter.toLowerCase())
+    .filter((l) =>
+      [l.name, l.email, l.company].some((f) => f?.toLowerCase().includes(search.toLowerCase()))
+    );
 
   const handleCreate = () => {
     if (!form.name) return toast.error("Name is required");
