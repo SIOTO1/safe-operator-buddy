@@ -37,6 +37,7 @@ import TasksPage from "./pages/crm/TasksPage";
 import CrmDashboardPage from "./pages/crm/CrmDashboardPage";
 import QuotesPage from "./pages/crm/QuotesPage";
 import QuoteBuilderPage from "./pages/crm/QuoteBuilderPage";
+import QuoteDetailPage from "./pages/crm/QuoteDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,7 @@ const App = () => (
               <Route path="crm/pipeline" element={<PipelinePage />} />
               <Route path="crm/tasks" element={<TasksPage />} />
               <Route path="crm/quotes" element={<QuotesPage />} />
+              <Route path="crm/quotes/:id" element={<QuoteDetailPage />} />
               <Route path="quotes/create" element={<QuoteBuilderPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
