@@ -72,6 +72,7 @@ const App = () => (
               <Route path="scheduling/:eventId" element={<EventDetailPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
+              <Route path="products" element={<ProductCatalogPage />} />
               <Route path="deliveries" element={<DeliverySchedulePage />} />
               <Route path="routes" element={<RoutePlanningPage />} />
               <Route path="crm" element={<CrmDashboardPage />} />
