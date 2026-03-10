@@ -87,6 +87,7 @@ serve(async (req) => {
       payment_status: "pending",
       payment_method: "stripe",
       stripe_session_id: session.id,
+      stripe_customer_id: customerId,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
