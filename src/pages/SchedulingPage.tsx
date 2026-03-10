@@ -124,18 +124,18 @@ const SchedulingPage = () => {
   const handleCreateEvent = async () => {
     if (!newEvent.event_name || !selectedDate) return;
     try {
-      const { error } = await supabase.from("events" as any).insert({
-        event_name: newEvent.event_name,
+      // Build full location string from address parts
+      const locationParts = [newEvent.location_address, newEvent.city, newEvent.state, newEvent.zip].filter(Boolean);
+      const fullLocation = locationParts.length > 0 ? locationParts.join(", ") : null;
+      const { error } = await supabase.from("events").insert({
+        title: newEvent.event_name,
         event_date: format(selectedDate, "yyyy-MM-dd"),
         start_time: newEvent.start_time || null,
         end_time: newEvent.end_time || null,
-        location_address: newEvent.location_address || null,
-        city: newEvent.city || null,
-        state: newEvent.state || null,
-        zip: newEvent.zip || null,
+        location: fullLocation,
         notes: newEvent.notes || null,
-        company_id: companyId,
-      } as any);
+        created_by: user!.id,
+      });
       if (error) throw error;
       toast.success("Event created!");
       setCreateEventOpen(false);
