@@ -748,6 +748,7 @@ export type Database = {
           id: string
           location: string | null
           notes: string | null
+          quote_id: string | null
           start_time: string | null
           title: string
           updated_at: string
@@ -761,6 +762,7 @@ export type Database = {
           id?: string
           location?: string | null
           notes?: string | null
+          quote_id?: string | null
           start_time?: string | null
           title: string
           updated_at?: string
@@ -774,11 +776,20 @@ export type Database = {
           id?: string
           location?: string | null
           notes?: string | null
+          quote_id?: string | null
           start_time?: string | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {

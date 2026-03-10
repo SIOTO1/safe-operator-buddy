@@ -22,7 +22,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Trash2, DollarSign, ShoppingCart, Save, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Plus, Trash2, DollarSign, ShoppingCart, Save, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -44,6 +55,7 @@ const QuoteDetailPage = () => {
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<QuoteStatus>("draft");
   const [saving, setSaving] = useState(false);
+  const [accepting, setAccepting] = useState(false);
 
   const { data: quote, isLoading: quoteLoading } = useQuery({
     queryKey: ["crm-quote", id],
@@ -87,10 +99,6 @@ const QuoteDetailPage = () => {
   // --- Mutations ---
   const addItemMutation = useMutation({
     mutationFn: (product: { id: string; name: string; price: number }) => {
-      const existing = items.find((i) => i.product_id === product.id);
-      if (existing) {
-        // Can't easily increment via addQuoteItem – just add another line
-      }
       return addQuoteItem({
         quote_id: id!,
         product_id: product.id,
@@ -130,7 +138,6 @@ const QuoteDetailPage = () => {
   };
 
   const recalcTotal = async () => {
-    // Refetch items then update quote total
     const freshItems = await getQuoteItems(id!);
     const newTotal = freshItems.reduce((s, i) => s + i.unit_price * i.quantity, 0);
     await updateQuote(id!, { total_amount: newTotal });
@@ -153,6 +160,96 @@ const QuoteDetailPage = () => {
     }
   };
 
+  const handleAcceptQuote = async () => {
+    if (!quote || !user) return;
+    setAccepting(true);
+    try {
+      // 1. Update quote status to accepted
+      await updateQuote(id!, { status: "accepted", total_amount: total });
+
+      // 2. Get lead info if linked
+      let leadName = "";
+      let leadNotes = "";
+      if (quote.lead_id) {
+        const { data: lead } = await supabase
+          .from("crm_leads" as any)
+          .select("name, email, phone")
+          .eq("id", quote.lead_id)
+          .single();
+        if (lead) {
+          const l = lead as any;
+          leadName = l.name || "";
+          leadNotes = [
+            l.name && `Customer: ${l.name}`,
+            l.email && `Email: ${l.email}`,
+            l.phone && `Phone: ${l.phone}`,
+          ].filter(Boolean).join("\n");
+        }
+      }
+
+      // Build product summary for event notes
+      const productSummary = items
+        .map((i) => `${i.product_name} x${i.quantity} ($${(i.unit_price * i.quantity).toFixed(2)})`)
+        .join("\n");
+
+      const eventNotes = [
+        leadNotes,
+        `\nQuote: ${quote.title} — $${total.toFixed(2)}`,
+        `\nProducts:\n${productSummary}`,
+        quote.notes && `\nNotes: ${quote.notes}`,
+      ].filter(Boolean).join("\n");
+
+      // 3. Create event linked to quote
+      const eventTitle = leadName
+        ? `${leadName} — ${quote.title}`
+        : quote.title || "Event from Quote";
+
+      const { data: event, error: eventError } = await supabase
+        .from("events")
+        .insert({
+          title: eventTitle,
+          event_date: new Date().toISOString().split("T")[0],
+          created_by: user.id,
+          notes: eventNotes,
+          quote_id: id,
+        } as any)
+        .select()
+        .single();
+
+      if (eventError) throw eventError;
+
+      // 4. Populate event_products from quote_items
+      const eventProducts = items
+        .filter((i) => i.product_id)
+        .map((i) => ({
+          event_id: event.id,
+          product_id: i.product_id!,
+          quantity: i.quantity,
+        }));
+
+      if (eventProducts.length > 0) {
+        const { error: epError } = await supabase
+          .from("event_products")
+          .insert(eventProducts);
+        if (epError) throw epError;
+      }
+
+      // Invalidate caches
+      queryClient.invalidateQueries({ queryKey: ["crm-quote", id] });
+      queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
+
+      toast.success("Quote accepted! Event created. Redirecting to contracts…");
+
+      // 5. Redirect to contracts page
+      navigate("/dashboard/contracts");
+    } catch (err) {
+      console.error("Accept quote error:", err);
+      toast.error("Failed to accept quote");
+    } finally {
+      setAccepting(false);
+    }
+  };
+
   if (quoteLoading || itemsLoading) {
     return (
       <div className="flex items-center justify-center p-12 text-muted-foreground">
@@ -164,6 +261,8 @@ const QuoteDetailPage = () => {
   if (!quote) {
     return <div className="p-6 text-muted-foreground">Quote not found.</div>;
   }
+
+  const isAccepted = quote.status === "accepted";
 
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
@@ -269,8 +368,8 @@ const QuoteDetailPage = () => {
           </Card>
         </div>
 
-        {/* Right: Line Items Summary */}
-        <div>
+        {/* Right: Line Items Summary + Accept */}
+        <div className="space-y-6">
           <Card>
             <CardHeader><CardTitle className="text-base">Line Items</CardTitle></CardHeader>
             <CardContent>
@@ -321,6 +420,53 @@ const QuoteDetailPage = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Accept Quote Action */}
+          {!isAccepted && items.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                  size="lg"
+                  disabled={accepting}
+                >
+                  <CheckCircle2 size={18} className="mr-2" />
+                  {accepting ? "Processing…" : "Accept Quote"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Accept this quote?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will mark the quote as <strong>Accepted</strong>, automatically create an event with
+                    all {items.length} product{items.length !== 1 ? "s" : ""} (${total.toFixed(2)} total),
+                    and redirect you to the contracts page.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleAcceptQuote}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    Accept & Create Event
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
+          {isAccepted && (
+            <Card className="border-emerald-500/30 bg-emerald-500/5">
+              <CardContent className="p-4 flex items-center gap-3">
+                <CheckCircle2 size={20} className="text-emerald-600 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Quote Accepted</p>
+                  <p className="text-xs text-muted-foreground">An event has been created for this quote.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
