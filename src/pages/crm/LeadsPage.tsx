@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
-const LEAD_SOURCES = ["Website", "Phone Inquiry", "Referral", "Training Inquiry", "Other"] as const;
+const LEAD_SOURCES = ["Website", "Phone Inquiry", "Training Inquiry", "Certification Inquiry", "Referral", "Manual Entry", "Other"] as const;
 
 const emptyForm = { name: "", email: "", phone: "", company: "", source: "", status: "new" };
 
@@ -19,6 +19,7 @@ const LeadsPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
@@ -35,9 +36,11 @@ const LeadsPage = () => {
     onError: () => toast.error("Failed to create lead"),
   });
 
-  const filtered = leads.filter((l) =>
-    [l.name, l.email, l.company].some((f) => f?.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filtered = leads
+    .filter((l) => sourceFilter === "all" || (l.source || "").toLowerCase() === sourceFilter.toLowerCase())
+    .filter((l) =>
+      [l.name, l.email, l.company].some((f) => f?.toLowerCase().includes(search.toLowerCase()))
+    );
 
   const handleCreate = () => {
     if (!form.name) return toast.error("Name is required");
@@ -99,9 +102,22 @@ const LeadsPage = () => {
         </Dialog>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Search leads..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative max-w-sm flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="Search leads..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+        <Select value={sourceFilter} onValueChange={setSourceFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filter by source" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Sources</SelectItem>
+            {LEAD_SOURCES.map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (

@@ -1,7 +1,7 @@
 import { Lead, PIPELINE_STAGES } from "@/types/crm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Mail, Phone } from "lucide-react";
+import { Building2, Mail, Phone, Globe } from "lucide-react";
 
 interface LeadCardProps {
   lead: Lead;
@@ -37,6 +37,12 @@ const LeadCard = ({ lead, onClick }: LeadCardProps) => {
           <div className="flex items-center gap-2">
             <Phone size={14} />
             <span>{lead.phone}</span>
+          </div>
+        )}
+        {lead.source && (
+          <div className="flex items-center gap-2">
+            <Globe size={14} />
+            <span>{lead.source}</span>
           </div>
         )}
       </CardContent>
