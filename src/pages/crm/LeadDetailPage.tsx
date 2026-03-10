@@ -33,6 +33,9 @@ const LeadDetailPage = () => {
   const queryClient = useQueryClient();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskForm, setTaskForm] = useState({ title: "", description: "", due_date: "" });
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [convertForm, setConvertForm] = useState({ event_name: "", event_date: "", location: "", notes: "" });
+  const [converting, setConverting] = useState(false);
 
   const { data: lead, isLoading: leadLoading } = useQuery({
     queryKey: ["crm-lead", id],
