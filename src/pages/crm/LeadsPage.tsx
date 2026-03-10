@@ -20,7 +20,7 @@ const emptyForm = { name: "", email: "", phone: "", company: "", source: "", sta
 const LeadsPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { can, crmRoleLabel, userId, companyId } = useCrmPermissions();
+  const { can, crmRoleLabel, userId, companyId, workspaceId } = useCrmPermissions();
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
