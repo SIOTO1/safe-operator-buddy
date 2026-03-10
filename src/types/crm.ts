@@ -37,6 +37,22 @@ export interface CrmTask {
   updated_at: string;
 }
 
+export type DealStage = "new" | "contacted" | "qualified" | "proposal" | "negotiation" | "won" | "lost";
+
+export interface Deal {
+  id: string;
+  lead_id: string | null;
+  title: string;
+  value: number | null;
+  stage: DealStage;
+  expected_close_date: string | null;
+  assigned_to: string | null;
+  created_by: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export const PIPELINE_STAGES: { value: PipelineStage; label: string; color: string }[] = [
   { value: "new", label: "New", color: "bg-blue-500" },
   { value: "contacted", label: "Contacted", color: "bg-sky-500" },
