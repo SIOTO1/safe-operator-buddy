@@ -6,6 +6,7 @@ import { getNotesByLeadId, createNote, deleteNote } from "@/lib/crm/noteService"
 import { getTasksByLeadId, createTask, updateTask } from "@/lib/crm/taskService";
 import { getDealsByLeadId, updateDeal } from "@/lib/crm/dealService";
 import { getActivityForLead } from "@/lib/crm/activityService";
+import { getQuotes, createQuote, type Quote, type QuoteStatus } from "@/lib/crm/quoteService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import { PIPELINE_STAGES } from "@/types/crm";
