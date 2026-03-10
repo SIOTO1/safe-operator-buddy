@@ -374,12 +374,13 @@ const EventDetailPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {availableProducts.length === 0 ? (
-                        <SelectItem value="_none" disabled>No products available</SelectItem>
+                        <SelectItem value="_none" disabled>No products available on this date</SelectItem>
                       ) : (
                         availableProducts.map(p => (
                           <SelectItem key={p.id} value={p.id}>
                             {p.name} — {CATEGORIES_MAP[p.category] || p.category}
                             {p.price != null ? ` ($${p.price})` : ""}
+                            {` • ${p.availableQty} avail.`}
                           </SelectItem>
                         ))
                       )}
