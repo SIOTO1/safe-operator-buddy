@@ -27,6 +27,7 @@ import EventDetailPage from "./pages/EventDetailPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
+import ProductCatalogPage from "./pages/ProductCatalogPage";
 import DeliverySchedulePage from "./pages/DeliverySchedulePage";
 import RoutePlanningPage from "./pages/RoutePlanningPage";
 import LeadsPage from "./pages/crm/LeadsPage";
