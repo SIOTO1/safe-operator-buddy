@@ -9,7 +9,7 @@ const PipelinePage = () => {
   const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads"], queryFn: getLeads });
 
   const stageMutation = useMutation({
-    mutationFn: ({ id, stage }: { id: string; stage: PipelineStage }) => updateLeadStage(id, stage),
+    mutationFn: ({ id, status }: { id: string; status: string }) => updateLeadStage(id, status),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["crm-leads"] }),
     onError: () => toast.error("Failed to update stage"),
   });
@@ -22,7 +22,7 @@ const PipelinePage = () => {
       ) : (
         <PipelineBoard
           leads={leads}
-          onStageDrop={(leadId, newStage) => stageMutation.mutate({ id: leadId, stage: newStage })}
+          onStageDrop={(leadId, newStage) => stageMutation.mutate({ id: leadId, status: newStage })}
         />
       )}
     </div>

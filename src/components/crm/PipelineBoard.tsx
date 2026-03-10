@@ -22,20 +22,16 @@ const PipelineBoard = ({ leads, onLeadClick, onStageDrop }: PipelineBoardProps) 
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
   return (
     <div className="flex gap-4 overflow-x-auto pb-4 min-h-[500px]">
       {PIPELINE_STAGES.map((stage) => {
-        const stageLeads = leads.filter((l) => l.stage === stage.value);
+        const stageLeads = leads.filter((l) => l.status === stage.value);
         return (
           <div
             key={stage.value}
             className="flex-shrink-0 w-72 flex flex-col rounded-lg border border-border bg-muted/30"
             onDrop={(e) => handleDrop(e, stage.value)}
-            onDragOver={handleDragOver}
+            onDragOver={(e) => e.preventDefault()}
           >
             <div className="flex items-center gap-2 p-3 border-b border-border">
               <div className={cn("w-2.5 h-2.5 rounded-full", stage.color)} />
@@ -57,9 +53,7 @@ const PipelineBoard = ({ leads, onLeadClick, onStageDrop }: PipelineBoardProps) 
                   </div>
                 ))}
                 {stageLeads.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-8">
-                    No leads
-                  </p>
+                  <p className="text-xs text-muted-foreground text-center py-8">No leads</p>
                 )}
               </div>
             </ScrollArea>

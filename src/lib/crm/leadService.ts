@@ -20,7 +20,7 @@ export async function getLeadById(id: string): Promise<Lead> {
   return (data as unknown) as Lead;
 }
 
-export async function createLead(lead: Omit<Lead, "id" | "created_at" | "updated_at">): Promise<Lead> {
+export async function createLead(lead: Omit<Lead, "id" | "created_at">): Promise<Lead> {
   const { data, error } = await supabase
     .from("crm_leads" as any)
     .insert(lead as any)
@@ -33,7 +33,7 @@ export async function createLead(lead: Omit<Lead, "id" | "created_at" | "updated
 export async function updateLead(id: string, updates: Partial<Lead>): Promise<Lead> {
   const { data, error } = await supabase
     .from("crm_leads" as any)
-    .update({ ...updates, updated_at: new Date().toISOString() } as any)
+    .update(updates as any)
     .eq("id", id)
     .select()
     .single();
@@ -41,8 +41,8 @@ export async function updateLead(id: string, updates: Partial<Lead>): Promise<Le
   return (data as unknown) as Lead;
 }
 
-export async function updateLeadStage(id: string, stage: PipelineStage): Promise<Lead> {
-  return updateLead(id, { stage });
+export async function updateLeadStage(id: string, status: string): Promise<Lead> {
+  return updateLead(id, { status });
 }
 
 export async function deleteLead(id: string): Promise<void> {

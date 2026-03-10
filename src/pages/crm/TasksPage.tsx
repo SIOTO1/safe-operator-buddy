@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -16,7 +15,7 @@ const TasksPage = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", due_date: "", priority: "medium" as "low" | "medium" | "high" });
+  const [form, setForm] = useState({ title: "", description: "", due_date: "", assigned_to: "" });
 
   const { data: tasks = [], isLoading } = useQuery({ queryKey: ["crm-tasks"], queryFn: getTasks });
 
@@ -25,7 +24,7 @@ const TasksPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-tasks"] });
       setDialogOpen(false);
-      setForm({ title: "", description: "", due_date: "", priority: "medium" });
+      setForm({ title: "", description: "", due_date: "", assigned_to: "" });
       toast.success("Task created");
     },
     onError: () => toast.error("Failed to create task"),
@@ -41,13 +40,11 @@ const TasksPage = () => {
     if (!form.title) return toast.error("Title is required");
     createMutation.mutate({
       title: form.title,
-      description: form.description || null,
-      due_date: form.due_date || null,
-      priority: form.priority,
+      description: form.description || undefined,
+      due_date: form.due_date || new Date().toISOString(),
       status: "todo",
-      lead_id: null,
-      assigned_to: null,
-      created_by: user?.id || "",
+      lead_id: "",
+      assigned_to: form.assigned_to || user?.id || "",
     });
   };
 
@@ -65,16 +62,6 @@ const TasksPage = () => {
               <div><Label>Title *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
               <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
               <div><Label>Due Date</Label><Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} /></div>
-              <div><Label>Priority</Label>
-                <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v as any })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
               <Button onClick={handleCreate} className="w-full" disabled={createMutation.isPending}>Create Task</Button>
             </div>
           </DialogContent>

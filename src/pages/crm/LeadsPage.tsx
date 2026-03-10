@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getLeads, createLead, deleteLead } from "@/lib/crm/leadService";
+import { getLeads, createLead } from "@/lib/crm/leadService";
 import LeadCard from "@/components/crm/LeadCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PIPELINE_STAGES, PipelineStage } from "@/types/crm";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,7 +13,7 @@ const LeadsPage = () => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", stage: "new" as PipelineStage, value: "", source: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", source: "", status: "new" });
 
   const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads"], queryFn: getLeads });
 
@@ -24,7 +22,7 @@ const LeadsPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
       setDialogOpen(false);
-      setForm({ name: "", email: "", phone: "", company: "", stage: "new", value: "", source: "" });
+      setForm({ name: "", email: "", phone: "", company: "", source: "", status: "new" });
       toast.success("Lead created");
     },
     onError: () => toast.error("Failed to create lead"),
@@ -39,13 +37,10 @@ const LeadsPage = () => {
     createMutation.mutate({
       name: form.name,
       email: form.email,
-      phone: form.phone || null,
-      company: form.company || null,
-      stage: form.stage,
-      value: form.value ? Number(form.value) : null,
-      source: form.source || null,
-      notes: null,
-      assigned_to: null,
+      phone: form.phone,
+      company: form.company || undefined,
+      source: form.source || undefined,
+      status: form.status,
     });
   };
 
@@ -64,13 +59,6 @@ const LeadsPage = () => {
               <div><Label>Email *</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
               <div><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
               <div><Label>Company</Label><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} /></div>
-              <div><Label>Stage</Label>
-                <Select value={form.stage} onValueChange={(v) => setForm({ ...form, stage: v as PipelineStage })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{PIPELINE_STAGES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div><Label>Value ($)</Label><Input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} /></div>
               <div><Label>Source</Label><Input value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} /></div>
               <Button onClick={handleCreate} className="w-full" disabled={createMutation.isPending}>Create Lead</Button>
             </div>
