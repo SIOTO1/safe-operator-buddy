@@ -20,12 +20,10 @@ const STATUS_COLORS: Record<QuoteStatus, string> = {
 };
 
 const QuotesPage = () => {
-  const { user } = useAuth();
-  const { companyId, workspaceId } = useCrmPermissions();
+  const { companyId } = useCrmPermissions();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", total_amount: "", notes: "" });
+  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const { data: quotes = [], isLoading } = useQuery({
