@@ -34,6 +34,7 @@ interface Event {
 }
 
 const SchedulingPage = () => {
+  const navigate = useNavigate();
   const { user, role, companyId } = useAuth();
   const isOwner = role === "owner";
   const isManager = role === "manager";
