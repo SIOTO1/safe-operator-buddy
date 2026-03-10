@@ -51,7 +51,7 @@ const NotificationBell = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications" },
         (payload) => {
-          const newNotif = payload.new as unknown as Notification;
+          const newNotif = payload.new as unknown as AppNotification;
           if (newNotif.user_id === user?.id) {
             setNotifications((prev) => [newNotif, ...prev].slice(0, 20));
           }
