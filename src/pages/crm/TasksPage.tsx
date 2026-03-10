@@ -48,6 +48,7 @@ const TasksPage = () => {
       lead_id: "",
       assigned_to: form.assigned_to || user?.id || "",
       company_id: companyId,
+      workspace_id: workspaceId,
     } as any);
   };
 
