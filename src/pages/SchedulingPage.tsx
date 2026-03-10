@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, addDays, addMonths, subMonths, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, parseISO, isBefore, startOfDay, getDay } from "date-fns";
 import { CalendarDays, Plus, MapPin, Clock, ChevronLeft, ChevronRight, Calendar, Trash2 } from "lucide-react";
 import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
