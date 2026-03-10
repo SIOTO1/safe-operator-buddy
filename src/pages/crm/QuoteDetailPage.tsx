@@ -51,6 +51,7 @@ const QuoteDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { companyId } = useCrmPermissions();
+  const { orgName } = useOrgSettings();
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
