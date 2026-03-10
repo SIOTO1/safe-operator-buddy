@@ -37,7 +37,7 @@ const NotificationBell = () => {
       .order("created_at", { ascending: false })
       .limit(20);
     if (!error && data) {
-      setNotifications(data as unknown as Notification[]);
+      setNotifications(data as unknown as AppNotification[]);
     }
   };
 
