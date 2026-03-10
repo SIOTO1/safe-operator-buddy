@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 const LEAD_SOURCES = ["Website", "Phone Inquiry", "Training Inquiry", "Certification Inquiry", "Referral", "Manual Entry", "Other"] as const;
 
-const emptyForm = { name: "", email: "", phone: "", company: "", source: "", status: "new" };
+const emptyForm = { name: "", email: "", phone: "", company: "", source: "", stage: "new" };
 
 const LeadsPage = () => {
   const queryClient = useQueryClient();
