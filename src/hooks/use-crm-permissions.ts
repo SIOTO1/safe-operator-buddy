@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useMemo } from "react";
 
 export type CrmPermission =
   | "view_all_leads"
