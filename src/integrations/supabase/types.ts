@@ -144,6 +144,56 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_deals: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string
+          expected_close_date: string | null
+          id: string
+          lead_id: string | null
+          notes: string | null
+          stage: string
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by: string
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          stage?: string
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string
+          expected_close_date?: string | null
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          stage?: string
+          title?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_leads: {
         Row: {
           assigned_to: string | null
