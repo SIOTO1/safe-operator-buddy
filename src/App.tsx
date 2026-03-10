@@ -26,6 +26,7 @@ import SchedulingPage from "./pages/SchedulingPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
+import DeliverySchedulePage from "./pages/DeliverySchedulePage";
 import LeadsPage from "./pages/crm/LeadsPage";
 import LeadDetailPage from "./pages/crm/LeadDetailPage";
 import PipelinePage from "./pages/crm/PipelinePage";
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
+              <Route path="deliveries" element={<DeliverySchedulePage />} />
               <Route path="crm" element={<CrmDashboardPage />} />
               <Route path="crm/leads" element={<LeadsPage />} />
               <Route path="crm/leads/:id" element={<LeadDetailPage />} />
