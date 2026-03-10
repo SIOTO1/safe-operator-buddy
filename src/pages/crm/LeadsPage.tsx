@@ -26,7 +26,7 @@ const LeadsPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
-  const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads"], queryFn: getLeads });
+  const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads", workspaceId], queryFn: () => getLeads(workspaceId) });
 
   const createMutation = useMutation({
     mutationFn: createLead,
