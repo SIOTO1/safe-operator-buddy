@@ -15,7 +15,7 @@ import { toast } from "sonner";
 const TasksPage = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { can } = useCrmPermissions();
+  const { can, companyId } = useCrmPermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", due_date: "", assigned_to: "" });
 
