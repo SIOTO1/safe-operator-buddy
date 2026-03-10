@@ -19,14 +19,11 @@ import { toast } from "sonner";
 
 interface Event {
   id: string;
-  event_name: string;
+  title: string;
   event_date: string;
   start_time: string | null;
   end_time: string | null;
-  location_address: string | null;
-  city: string | null;
-  state: string | null;
-  zip: string | null;
+  location: string | null;
   notes: string | null;
   company_id: string | null;
   workspace_id: string | null;
