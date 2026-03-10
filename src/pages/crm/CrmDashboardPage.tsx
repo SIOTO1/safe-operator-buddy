@@ -77,7 +77,7 @@ async function getCrmStats() {
 }
 
 const CrmDashboardPage = () => {
-  const { role } = useAuth();
+  const { can, crmRoleLabel } = useCrmPermissions();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState(false);
