@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Clock, Users, FileText, Trash2, BookOpen } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Users, FileText, Trash2, BookOpen, Plus, Package, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +37,31 @@ interface EventEquipment {
   notes: string | null;
 }
 
+interface EventProduct {
+  id: string;
+  product_id: string;
+  quantity: number;
+  product_name: string;
+  product_category: string;
+  product_price: number | null;
+  product_image_url: string | null;
+}
+
+interface CatalogProduct {
+  id: string;
+  name: string;
+  category: string;
+  price: number | null;
+  image_url: string | null;
+  quantity_available: number;
+}
+
+const CATEGORIES_MAP: Record<string, string> = {
+  inflatables: "Inflatables", slides: "Slides", foam_machines: "Foam Machines",
+  tents: "Tents", tables: "Tables", chairs: "Chairs", generators: "Generators",
+  concessions: "Concessions", other: "Other",
+};
+
 const SAFETY_TRAINING_LINKS = [
   { label: "Bounce House Setup SOP", sopId: "st-001", description: "Anchoring, inflation, and wind safety" },
   { label: "Tent Anchoring & Wind Safety", sopId: "safety-002", description: "Stakes vs. weights, wind thresholds" },
@@ -51,21 +78,51 @@ const EventDetailPage = () => {
 
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [equipment, setEquipment] = useState<EventEquipment[]>([]);
+  const [eventProducts, setEventProducts] = useState<EventProduct[]>([]);
+  const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
+  // Add product form state
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [productQty, setProductQty] = useState("1");
+  const [addingProduct, setAddingProduct] = useState(false);
+
+  const fetchEventProducts = useCallback(async () => {
+    if (!eventId) return;
+    const { data, error } = await supabase
+      .from("event_products")
+      .select("id, product_id, quantity, products(name, category, price, image_url)")
+      .eq("event_id", eventId)
+      .order("created_at") as any;
+    if (!error && data) {
+      setEventProducts(data.map((ep: any) => ({
+        id: ep.id,
+        product_id: ep.product_id,
+        quantity: ep.quantity,
+        product_name: ep.products?.name || "Unknown",
+        product_category: ep.products?.category || "other",
+        product_price: ep.products?.price,
+        product_image_url: ep.products?.image_url,
+      })));
+    }
+  }, [eventId]);
+
   useEffect(() => {
     if (!eventId) return;
-    const fetchEvent = async () => {
+    const fetchAll = async () => {
       setLoading(true);
       try {
-        const [eventRes, equipRes] = await Promise.all([
+        const [eventRes, equipRes, productsRes] = await Promise.all([
           supabase.from("events").select("*").eq("id", eventId).single(),
           supabase.from("event_equipment").select("*").eq("event_id", eventId).order("created_at"),
+          supabase.from("products").select("id, name, category, price, image_url, quantity_available").eq("is_active", true).order("name"),
         ]);
         if (eventRes.error) throw eventRes.error;
         setEvent(eventRes.data as EventDetail);
         setEquipment((equipRes.data || []) as EventEquipment[]);
+        setCatalogProducts((productsRes.data || []) as CatalogProduct[]);
       } catch (err) {
         console.error(err);
         toast.error("Failed to load event");
@@ -73,8 +130,9 @@ const EventDetailPage = () => {
         setLoading(false);
       }
     };
-    fetchEvent();
-  }, [eventId]);
+    fetchAll();
+    fetchEventProducts();
+  }, [eventId, fetchEventProducts]);
 
   const handleDelete = async () => {
     if (!confirm("Delete this event? This cannot be undone.")) return;
@@ -87,6 +145,42 @@ const EventDetailPage = () => {
       console.error(err);
       toast.error("Failed to delete event");
     }
+  };
+
+  const handleAddProduct = async () => {
+    if (!selectedProductId || !eventId) return;
+    const qty = parseInt(productQty) || 1;
+    if (qty < 1) { toast.error("Quantity must be at least 1"); return; }
+    setAddingProduct(true);
+    try {
+      const { error } = await supabase.from("event_products").insert({
+        event_id: eventId,
+        product_id: selectedProductId,
+        quantity: qty,
+      } as any);
+      if (error) throw error;
+      toast.success("Product assigned");
+      setSelectedProductId("");
+      setProductQty("1");
+      setShowAddProduct(false);
+      fetchEventProducts();
+    } catch (err: any) {
+      if (err?.code === "23505") {
+        toast.error("This product is already assigned to this event");
+      } else {
+        console.error(err);
+        toast.error("Failed to assign product");
+      }
+    } finally {
+      setAddingProduct(false);
+    }
+  };
+
+  const handleRemoveProduct = async (epId: string) => {
+    const { error } = await supabase.from("event_products").delete().eq("id", epId);
+    if (error) { toast.error("Failed to remove"); return; }
+    toast.success("Product removed");
+    fetchEventProducts();
   };
 
   if (loading) {
@@ -113,6 +207,10 @@ const EventDetailPage = () => {
   const safetyLevel = weatherData?.available
     ? getInflatableSafetyLevel(weatherData.wind_speed || 0, weatherData.wind_gust || null)
     : null;
+
+  // Products already assigned — exclude from dropdown
+  const assignedProductIds = new Set(eventProducts.map(ep => ep.product_id));
+  const availableProducts = catalogProducts.filter(p => !assignedProductIds.has(p.id));
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
@@ -184,7 +282,7 @@ const EventDetailPage = () => {
             </CardContent>
           </Card>
 
-          {/* Equipment */}
+          {/* Legacy Equipment */}
           {equipment.length > 0 && (
             <Card>
               <CardHeader>
@@ -205,6 +303,94 @@ const EventDetailPage = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Event Products */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Package size={16} /> Event Equipment
+              </CardTitle>
+              {canManage && (
+                <Button variant="outline" size="sm" onClick={() => setShowAddProduct(!showAddProduct)}>
+                  <Plus size={14} className="mr-1" /> Assign Product
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Add product form */}
+              {showAddProduct && canManage && (
+                <div className="flex flex-col sm:flex-row gap-2 p-3 rounded-lg border border-border bg-muted/30">
+                  <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select a product..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableProducts.length === 0 ? (
+                        <SelectItem value="_none" disabled>No products available</SelectItem>
+                      ) : (
+                        availableProducts.map(p => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name} — {CATEGORIES_MAP[p.category] || p.category}
+                            {p.price != null ? ` ($${p.price})` : ""}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={productQty}
+                    onChange={e => setProductQty(e.target.value)}
+                    className="w-20"
+                    placeholder="Qty"
+                  />
+                  <Button size="sm" onClick={handleAddProduct} disabled={!selectedProductId || addingProduct}>
+                    {addingProduct ? "Adding..." : "Add"}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowAddProduct(false)}>
+                    <X size={14} />
+                  </Button>
+                </div>
+              )}
+
+              {/* Assigned products list */}
+              {eventProducts.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No products assigned to this event yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {eventProducts.map(ep => (
+                    <div key={ep.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                      <div className="flex items-center gap-3">
+                        {ep.product_image_url ? (
+                          <img src={ep.product_image_url} alt={ep.product_name} className="w-9 h-9 rounded-md object-cover shrink-0" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-md bg-muted flex items-center justify-center shrink-0">
+                            <Package size={14} className="text-muted-foreground" />
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-medium">{ep.product_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {CATEGORIES_MAP[ep.product_category] || ep.product_category}
+                            {ep.product_price != null && ` • $${ep.product_price.toFixed(2)}/ea`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">×{ep.quantity}</Badge>
+                        {canManage && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemoveProduct(ep.id)}>
+                            <Trash2 size={13} className="text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right: Safety Status */}
@@ -244,7 +430,6 @@ const EventDetailPage = () => {
 
               <Separator />
 
-              {/* Safety Training Resources */}
               <div>
                 <p className="text-sm font-medium mb-2 flex items-center gap-1.5">
                   <BookOpen size={14} /> SIOTO Safety Training
@@ -263,7 +448,6 @@ const EventDetailPage = () => {
                 </div>
               </div>
 
-              {/* Wind threshold reference */}
               <div className="rounded-md border border-border/60 p-3 bg-muted/30">
                 <p className="text-xs font-medium mb-2">Wind Safety Thresholds</p>
                 <div className="space-y-1 text-[11px]">

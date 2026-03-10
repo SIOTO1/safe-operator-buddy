@@ -699,6 +699,45 @@ export type Database = {
           },
         ]
       }
+      event_products: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          product_id: string
+          quantity: number
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          product_id: string
+          quantity?: number
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_products_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
