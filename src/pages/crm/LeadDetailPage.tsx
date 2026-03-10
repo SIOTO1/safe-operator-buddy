@@ -115,7 +115,7 @@ const LeadDetailPage = () => {
   });
 
   const updateStageMutation = useMutation({
-    mutationFn: (stage: string) => updateLead(id!, { status: stage }),
+    mutationFn: (stage: string) => updateLead(id!, { stage }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crm-lead", id] });
       queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
