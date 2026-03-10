@@ -221,14 +221,17 @@ const QuoteDetailPage = () => {
 
       if (eventError) throw eventError;
 
-      // 4. Populate event_products from quote_items
-      const eventProducts = items
-        .filter((i) => i.product_id)
-        .map((i) => ({
-          event_id: event.id,
-          product_id: i.product_id!,
-          quantity: i.quantity,
-        }));
+      // 4. Populate event_products from quote_items (consolidate duplicates)
+      const productMap = new Map<string, number>();
+      items.filter((i) => i.product_id).forEach((i) => {
+        const existing = productMap.get(i.product_id!) || 0;
+        productMap.set(i.product_id!, existing + i.quantity);
+      });
+      const eventProducts = Array.from(productMap.entries()).map(([product_id, quantity]) => ({
+        event_id: event.id,
+        product_id,
+        quantity,
+      }));
 
       if (eventProducts.length > 0) {
         const { error: epError } = await supabase
