@@ -299,7 +299,7 @@ const SchedulingPage = () => {
                             {formatLocation(ev) && (
                               <p className="text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
                                 <MapPin size={10} />
-                                {ev.city || ev.location_address}
+                                {ev.location}
                               </p>
                             )}
                             <WeatherSafetyBadge
