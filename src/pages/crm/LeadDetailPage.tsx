@@ -170,7 +170,7 @@ const LeadDetailPage = () => {
           </Select>
         ) : (
           <Badge variant="secondary" className={stageInfo?.color ? `${stageInfo.color} text-white` : ""}>
-            {stageInfo?.label || lead.status}
+            {stageInfo?.label || lead.stage}
           </Badge>
         )}
       </div>
