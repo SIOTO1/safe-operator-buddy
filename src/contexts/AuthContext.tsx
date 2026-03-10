@@ -8,10 +8,12 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   role: AppRole | null;
-  profile: { display_name: string | null; email: string | null; company_id: string | null } | null;
+  profile: { display_name: string | null; email: string | null; company_id: string | null; selected_workspace_id: string | null } | null;
   companyId: string | null;
+  workspaceId: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  setWorkspaceId: (id: string | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
