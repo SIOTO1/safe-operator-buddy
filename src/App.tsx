@@ -67,6 +67,7 @@ const App = () => (
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
               <Route path="crm/leads" element={<LeadsPage />} />
+              <Route path="crm/leads/:id" element={<LeadDetailPage />} />
               <Route path="crm/pipeline" element={<PipelinePage />} />
               <Route path="crm/tasks" element={<TasksPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
