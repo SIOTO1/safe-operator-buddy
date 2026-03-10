@@ -17,6 +17,7 @@ const emptyForm = { name: "", email: "", phone: "", company: "", source: "", sta
 
 const LeadsPage = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
