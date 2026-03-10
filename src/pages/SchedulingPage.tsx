@@ -19,14 +19,11 @@ import { toast } from "sonner";
 
 interface Event {
   id: string;
-  event_name: string;
+  title: string;
   event_date: string;
   start_time: string | null;
   end_time: string | null;
-  location_address: string | null;
-  city: string | null;
-  state: string | null;
-  zip: string | null;
+  location: string | null;
   notes: string | null;
   company_id: string | null;
   workspace_id: string | null;
@@ -79,7 +76,7 @@ const SchedulingPage = () => {
       const startDate = format(weekStart, "yyyy-MM-dd");
       const endDate = format(addDays(weekStart, 6), "yyyy-MM-dd");
       const { data, error } = await supabase
-        .from("events" as any).select("*")
+        .from("events").select("*")
         .gte("event_date", startDate).lte("event_date", endDate)
         .order("event_date");
       if (error) throw error;
@@ -97,7 +94,7 @@ const SchedulingPage = () => {
       const mStart = format(monthDays[0], "yyyy-MM-dd");
       const mEnd = format(monthDays[monthDays.length - 1], "yyyy-MM-dd");
       const { data, error } = await supabase
-        .from("events" as any).select("*")
+        .from("events").select("*")
         .gte("event_date", mStart).lte("event_date", mEnd)
         .order("event_date");
       if (error) throw error;
@@ -124,18 +121,18 @@ const SchedulingPage = () => {
   const handleCreateEvent = async () => {
     if (!newEvent.event_name || !selectedDate) return;
     try {
-      const { error } = await supabase.from("events" as any).insert({
-        event_name: newEvent.event_name,
+      // Build full location string from address parts
+      const locationParts = [newEvent.location_address, newEvent.city, newEvent.state, newEvent.zip].filter(Boolean);
+      const fullLocation = locationParts.length > 0 ? locationParts.join(", ") : null;
+      const { error } = await supabase.from("events").insert({
+        title: newEvent.event_name,
         event_date: format(selectedDate, "yyyy-MM-dd"),
         start_time: newEvent.start_time || null,
         end_time: newEvent.end_time || null,
-        location_address: newEvent.location_address || null,
-        city: newEvent.city || null,
-        state: newEvent.state || null,
-        zip: newEvent.zip || null,
+        location: fullLocation,
         notes: newEvent.notes || null,
-        company_id: companyId,
-      } as any);
+        created_by: user!.id,
+      });
       if (error) throw error;
       toast.success("Event created!");
       setCreateEventOpen(false);
@@ -151,7 +148,7 @@ const SchedulingPage = () => {
   const handleDeleteEvent = async (eventId: string) => {
     if (!confirm("Delete this event? This cannot be undone.")) return;
     try {
-      const { error } = await supabase.from("events" as any).delete().eq("id", eventId);
+      const { error } = await supabase.from("events").delete().eq("id", eventId);
       if (error) throw error;
       toast.success("Event deleted");
       fetchData();
@@ -164,7 +161,7 @@ const SchedulingPage = () => {
 
   const handleRescheduleEvent = async (eventId: string, newDate: string) => {
     try {
-      const { error } = await supabase.from("events" as any).update({ event_date: newDate } as any).eq("id", eventId);
+      const { error } = await supabase.from("events").update({ event_date: newDate }).eq("id", eventId);
       if (error) throw error;
       toast.success("Event rescheduled!");
       fetchData();
@@ -188,8 +185,7 @@ const SchedulingPage = () => {
   const today = startOfDay(new Date());
 
   const formatLocation = (ev: Event) => {
-    const parts = [ev.location_address, ev.city, ev.state, ev.zip].filter(Boolean);
-    return parts.join(", ") || null;
+    return ev.location || null;
   };
 
   return (
@@ -293,7 +289,7 @@ const SchedulingPage = () => {
                             )}
                             onClick={() => navigate(`/dashboard/scheduling/${ev.id}`)}
                           >
-                            <p className="font-medium truncate">{ev.event_name}</p>
+                            <p className="font-medium truncate">{ev.title}</p>
                             {(ev.start_time || ev.end_time) && (
                               <p className="text-muted-foreground flex items-center gap-1 mt-0.5">
                                 <Clock size={10} />
@@ -303,7 +299,7 @@ const SchedulingPage = () => {
                             {formatLocation(ev) && (
                               <p className="text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
                                 <MapPin size={10} />
-                                {ev.city || ev.location_address}
+                                {ev.location}
                               </p>
                             )}
                             <WeatherSafetyBadge
@@ -369,7 +365,7 @@ const SchedulingPage = () => {
                   <div className="mt-0.5 space-y-0.5">
                     {dayEvents.slice(0, 3).map((ev) => (
                       <div key={ev.id} className="text-[10px] bg-primary/10 text-primary rounded px-1 py-0.5 truncate">
-                        {ev.event_name}
+                        {ev.title}
                       </div>
                     ))}
                     {dayEvents.length > 3 && (
