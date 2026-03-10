@@ -178,6 +178,18 @@ const EventDetailPage = () => {
     if (!selectedProductId || !eventId) return;
     const qty = parseInt(productQty) || 1;
     if (qty < 1) { toast.error("Quantity must be at least 1"); return; }
+
+    // Check availability
+    const product = catalogProducts.find(p => p.id === selectedProductId);
+    if (product) {
+      const alreadyAllocated = dateAllocations[selectedProductId] || 0;
+      const available = product.quantity_available - alreadyAllocated;
+      if (qty > available) {
+        toast.error(`Only ${available} of ${product.name} available on this date (${alreadyAllocated} assigned to other events)`);
+        return;
+      }
+    }
+
     setAddingProduct(true);
     try {
       const { error } = await supabase.from("event_products").insert({
@@ -191,6 +203,7 @@ const EventDetailPage = () => {
       setProductQty("1");
       setShowAddProduct(false);
       fetchEventProducts();
+      if (event?.event_date) fetchDateAllocations(event.event_date);
     } catch (err: any) {
       if (err?.code === "23505") {
         toast.error("This product is already assigned to this event");
@@ -208,6 +221,7 @@ const EventDetailPage = () => {
     if (error) { toast.error("Failed to remove"); return; }
     toast.success("Product removed");
     fetchEventProducts();
+    if (event?.event_date) fetchDateAllocations(event.event_date);
   };
 
   if (loading) {
