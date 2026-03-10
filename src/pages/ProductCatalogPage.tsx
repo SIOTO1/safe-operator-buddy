@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Pencil, Trash2, Package, Upload, X, Search, Filter } from "lucide-react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -39,18 +38,6 @@ interface Product {
   is_active: boolean;
   created_at: string;
 }
-
-const categoryColors: Record<CategoryValue, string> = {
-  inflatables: "bg-chart-1/15 text-chart-1 border-chart-1/30",
-  slides: "bg-chart-2/15 text-chart-2 border-chart-2/30",
-  foam_machines: "bg-chart-3/15 text-chart-3 border-chart-3/30",
-  tents: "bg-chart-4/15 text-chart-4 border-chart-4/30",
-  tables: "bg-chart-5/15 text-chart-5 border-chart-5/30",
-  chairs: "bg-primary/15 text-primary border-primary/30",
-  generators: "bg-accent/30 text-accent-foreground border-accent/50",
-  concessions: "bg-secondary text-secondary-foreground border-border",
-  other: "bg-muted text-muted-foreground border-border",
-};
 
 const ProductCatalogPage = () => {
   const { user, companyId, workspaceId } = useAuth();
@@ -183,12 +170,6 @@ const ProductCatalogPage = () => {
     fetchProducts();
   };
 
-  const handleToggleActive = async (p: Product) => {
-    const { error } = await supabase.from("products").update({ is_active: !p.is_active } as any).eq("id", p.id);
-    if (error) { toast.error("Failed to update"); return; }
-    fetchProducts();
-  };
-
   const getCategoryLabel = (val: string) => CATEGORIES.find(c => c.value === val)?.label || val;
 
   return (
@@ -243,37 +224,54 @@ const ProductCatalogPage = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((p, i) => (
-            <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card className={`overflow-hidden ${!p.is_active ? "opacity-60" : ""}`}>
-                {p.image_url ? (
-                  <img src={p.image_url} alt={p.name} className="w-full h-40 object-cover" />
-                ) : (
-                  <div className="w-full h-40 bg-muted flex items-center justify-center">
-                    <Package size={32} className="text-muted-foreground" />
-                  </div>
-                )}
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-sm truncate">{p.name}</h3>
-                      {p.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{p.description}</p>}
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product Name</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Qty Available</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map(p => (
+                <TableRow key={p.id} className={!p.is_active ? "opacity-60" : ""}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      {p.image_url ? (
+                        <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                          <Package size={16} className="text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{p.name}</p>
+                        {p.description && (
+                          <p className="text-xs text-muted-foreground truncate max-w-[200px]">{p.description}</p>
+                        )}
+                      </div>
                     </div>
-                    {p.price != null && (
-                      <span className="text-sm font-bold text-primary shrink-0">${p.price.toFixed(2)}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className={`text-[10px] border ${categoryColors[p.category]}`}>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary" className="text-xs">
                       {getCategoryLabel(p.category)}
                     </Badge>
-                    <Badge variant="outline" className="text-[10px]">Qty: {p.quantity_available}</Badge>
-                    {!p.is_active && <Badge variant="secondary" className="text-[10px]">Inactive</Badge>}
-                  </div>
-                  <div className="flex items-center justify-between pt-1 border-t border-border">
-                    <Switch checked={p.is_active} onCheckedChange={() => handleToggleActive(p)} />
-                    <div className="flex gap-1">
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {p.price != null ? `$${p.price.toFixed(2)}` : "—"}
+                  </TableCell>
+                  <TableCell>{p.quantity_available}</TableCell>
+                  <TableCell>
+                    <Badge variant={p.is_active ? "default" : "secondary"} className="text-xs">
+                      {p.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(p)}>
                         <Pencil size={14} />
                       </Button>
@@ -281,12 +279,12 @@ const ProductCatalogPage = () => {
                         <Trash2 size={14} className="text-destructive" />
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
       )}
 
       {/* Add/Edit Dialog */}
