@@ -87,6 +87,7 @@ const App = () => (
               <Route path="crm/quotes" element={<QuotesPage />} />
               <Route path="crm/quotes/:id" element={<QuoteDetailPage />} />
               <Route path="quotes/create" element={<QuoteBuilderPage />} />
+              <Route path="crm/contracts/:id" element={<ContractSigningPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
