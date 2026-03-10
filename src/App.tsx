@@ -30,6 +30,7 @@ import LeadsPage from "./pages/crm/LeadsPage";
 import LeadDetailPage from "./pages/crm/LeadDetailPage";
 import PipelinePage from "./pages/crm/PipelinePage";
 import TasksPage from "./pages/crm/TasksPage";
+import CrmDashboardPage from "./pages/crm/CrmDashboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
