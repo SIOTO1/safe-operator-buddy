@@ -449,6 +449,58 @@ const LeadDetailPage = () => {
         </Card>
       )}
 
+      {/* Quotes */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Quotes</CardTitle>
+          <Dialog open={quoteDialogOpen} onOpenChange={setQuoteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline"><Receipt size={14} className="mr-1" />New Quote</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader><DialogTitle>Create Quote for {lead.name}</DialogTitle></DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1.5">
+                  <Label>Title <span className="text-destructive">*</span></Label>
+                  <Input value={quoteForm.title} onChange={(e) => setQuoteForm({ ...quoteForm, title: e.target.value })} placeholder="e.g. Birthday Party Package" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Total Amount ($)</Label>
+                  <Input type="number" min="0" step="0.01" value={quoteForm.total_amount} onChange={(e) => setQuoteForm({ ...quoteForm, total_amount: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Notes</Label>
+                  <Textarea value={quoteForm.notes} onChange={(e) => setQuoteForm({ ...quoteForm, notes: e.target.value })} rows={3} />
+                </div>
+                <Button onClick={handleCreateQuote} className="w-full" disabled={createQuoteMutation.isPending}>
+                  {createQuoteMutation.isPending ? "Creating…" : "Create Quote"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent>
+          {quotes.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No quotes for this lead yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {quotes.map((q) => (
+                <div key={q.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{q.title}</p>
+                    <Badge variant="secondary" className="mt-1 capitalize text-xs">{q.status}</Badge>
+                  </div>
+                  <div className="flex items-center gap-1 text-sm font-semibold text-primary">
+                    <DollarSign size={14} />
+                    {(q.total_amount ?? 0).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Activity Timeline */}
       <Card>
         <CardHeader><CardTitle className="text-base">Activity Timeline</CardTitle></CardHeader>
