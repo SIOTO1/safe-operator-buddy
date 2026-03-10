@@ -13,25 +13,46 @@ interface ActivityTimelineProps {
   events: TimelineEvent[];
 }
 
-const iconMap = {
+const iconMap: Record<string, typeof MessageSquare> = {
   note: MessageSquare,
+  note_added: MessageSquare,
   task: ListTodo,
+  task_created: ListTodo,
+  task_completed: ListTodo,
   deal: DollarSign,
+  deal_created: DollarSign,
+  deal_updated: DollarSign,
   status_change: ArrowRightLeft,
+  lead_status_changed: ArrowRightLeft,
+  lead_created: ArrowRightLeft,
 };
 
 const labelMap: Record<string, string> = {
   note: "Note",
+  note_added: "Note Added",
   task: "Task",
+  task_created: "Task Created",
+  task_completed: "Task Completed",
   deal: "Deal",
+  deal_created: "Deal Created",
+  deal_updated: "Deal Updated",
   status_change: "Status Change",
+  lead_status_changed: "Status Change",
+  lead_created: "Lead Created",
 };
 
 const colorMap: Record<string, string> = {
   note: "bg-primary/10 text-primary",
+  note_added: "bg-primary/10 text-primary",
   task: "bg-accent text-accent-foreground",
+  task_created: "bg-accent text-accent-foreground",
+  task_completed: "bg-accent text-accent-foreground",
   deal: "bg-chart-4/20 text-chart-4",
+  deal_created: "bg-chart-4/20 text-chart-4",
+  deal_updated: "bg-chart-4/20 text-chart-4",
   status_change: "bg-secondary text-secondary-foreground",
+  lead_status_changed: "bg-secondary text-secondary-foreground",
+  lead_created: "bg-secondary text-secondary-foreground",
 };
 
 const ActivityTimeline = ({ events }: ActivityTimelineProps) => {
