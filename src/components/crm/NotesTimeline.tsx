@@ -7,7 +7,7 @@ import { format } from "date-fns";
 
 interface NotesTimelineProps {
   notes: Note[];
-  onAddNote: (content: string) => void;
+  onAddNote?: (content: string) => void;
   onDeleteNote?: (id: string) => void;
   isLoading?: boolean;
 }
@@ -16,24 +16,26 @@ const NotesTimeline = ({ notes, onAddNote, onDeleteNote, isLoading }: NotesTimel
   const [newNote, setNewNote] = useState("");
 
   const handleSubmit = () => {
-    if (!newNote.trim()) return;
+    if (!newNote.trim() || !onAddNote) return;
     onAddNote(newNote.trim());
     setNewNote("");
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <Textarea
-          placeholder="Add a note..."
-          value={newNote}
-          onChange={(e) => setNewNote(e.target.value)}
-          className="min-h-[80px]"
-        />
-        <Button size="icon" onClick={handleSubmit} disabled={!newNote.trim() || isLoading}>
-          <Send size={16} />
-        </Button>
-      </div>
+      {onAddNote && (
+        <div className="flex gap-2">
+          <Textarea
+            placeholder="Add a note..."
+            value={newNote}
+            onChange={(e) => setNewNote(e.target.value)}
+            className="min-h-[80px]"
+          />
+          <Button size="icon" onClick={handleSubmit} disabled={!newNote.trim() || isLoading}>
+            <Send size={16} />
+          </Button>
+        </div>
+      )}
 
       <div className="space-y-3">
         {notes.length === 0 && (

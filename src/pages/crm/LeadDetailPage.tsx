@@ -7,6 +7,7 @@ import { getTasksByLeadId, createTask, updateTask } from "@/lib/crm/taskService"
 import { getDealsByLeadId } from "@/lib/crm/dealService";
 import { getActivityForLead } from "@/lib/crm/activityService";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import { PIPELINE_STAGES } from "@/types/crm";
 import NotesTimeline from "@/components/crm/NotesTimeline";
 import TaskList from "@/components/crm/TaskList";
@@ -26,6 +27,7 @@ const LeadDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { can } = useCrmPermissions();
   const queryClient = useQueryClient();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskForm, setTaskForm] = useState({ title: "", description: "", due_date: "" });
@@ -60,10 +62,8 @@ const LeadDetailPage = () => {
     enabled: !!id,
   });
 
-  // Merge all sources into a unified timeline
   const timelineEvents = useMemo<TimelineEvent[]>(() => {
     const events: TimelineEvent[] = [];
-
     notes.forEach((n) =>
       events.push({ id: `note-${n.id}`, type: "note", description: n.content, timestamp: n.created_at })
     );
@@ -76,7 +76,6 @@ const LeadDetailPage = () => {
     activityLogs.forEach((a) =>
       events.push({ id: a.id, type: a.type, description: a.description, timestamp: a.timestamp })
     );
-
     return events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [notes, tasks, deals, activityLogs]);
 
@@ -89,19 +88,13 @@ const LeadDetailPage = () => {
   const addNoteMutation = useMutation({
     mutationFn: (content: string) =>
       createNote({ lead_id: id!, user_id: user?.id || "", content }),
-    onSuccess: () => {
-      invalidateAll();
-      toast.success("Note added");
-    },
+    onSuccess: () => { invalidateAll(); toast.success("Note added"); },
     onError: () => toast.error("Failed to add note"),
   });
 
   const deleteNoteMutation = useMutation({
     mutationFn: deleteNote,
-    onSuccess: () => {
-      invalidateAll();
-      toast.success("Note deleted");
-    },
+    onSuccess: () => { invalidateAll(); toast.success("Note deleted"); },
   });
 
   const createTaskMutation = useMutation({
@@ -143,13 +136,8 @@ const LeadDetailPage = () => {
     });
   };
 
-  if (leadLoading) {
-    return <div className="p-6 text-muted-foreground">Loading...</div>;
-  }
-
-  if (!lead) {
-    return <div className="p-6 text-muted-foreground">Lead not found.</div>;
-  }
+  if (leadLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
+  if (!lead) return <div className="p-6 text-muted-foreground">Lead not found.</div>;
 
   const stageInfo = PIPELINE_STAGES.find((s) => s.value === lead.status);
 
@@ -168,16 +156,22 @@ const LeadDetailPage = () => {
             </p>
           )}
         </div>
-        <Select value={lead.status} onValueChange={(v) => updateStageMutation.mutate(v)}>
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {PIPELINE_STAGES.map((s) => (
-              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {can("update_lead_status") ? (
+          <Select value={lead.status} onValueChange={(v) => updateStageMutation.mutate(v)}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PIPELINE_STAGES.map((s) => (
+                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Badge variant="secondary" className={stageInfo?.color ? `${stageInfo.color} text-white` : ""}>
+            {stageInfo?.label || lead.status}
+          </Badge>
+        )}
       </div>
 
       {/* Lead Info */}
@@ -220,12 +214,16 @@ const LeadDetailPage = () => {
         <Card>
           <CardHeader><CardTitle className="text-base">Notes</CardTitle></CardHeader>
           <CardContent>
-            <NotesTimeline
-              notes={notes}
-              onAddNote={(content) => addNoteMutation.mutate(content)}
-              onDeleteNote={(noteId) => deleteNoteMutation.mutate(noteId)}
-              isLoading={addNoteMutation.isPending}
-            />
+            {can("add_notes") ? (
+              <NotesTimeline
+                notes={notes}
+                onAddNote={(content) => addNoteMutation.mutate(content)}
+                onDeleteNote={(noteId) => deleteNoteMutation.mutate(noteId)}
+                isLoading={addNoteMutation.isPending}
+              />
+            ) : (
+              <NotesTimeline notes={notes} isLoading={false} />
+            )}
           </CardContent>
         </Card>
 
@@ -233,65 +231,66 @@ const LeadDetailPage = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Tasks</CardTitle>
-            <Dialog open={taskDialogOpen} onOpenChange={setTaskDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline"><Plus size={14} className="mr-1" />Add Task</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader><DialogTitle>New Task</DialogTitle></DialogHeader>
-                <div className="space-y-4 pt-2">
-                  <div className="space-y-1.5">
-                    <Label>Title <span className="text-destructive">*</span></Label>
-                    <Input value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} />
+            {can("create_tasks") && (
+              <Dialog open={taskDialogOpen} onOpenChange={setTaskDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline"><Plus size={14} className="mr-1" />Add Task</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader><DialogTitle>New Task</DialogTitle></DialogHeader>
+                  <div className="space-y-4 pt-2">
+                    <div className="space-y-1.5">
+                      <Label>Title <span className="text-destructive">*</span></Label>
+                      <Input value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Description</Label>
+                      <Input value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Due Date</Label>
+                      <Input type="date" value={taskForm.due_date} onChange={(e) => setTaskForm({ ...taskForm, due_date: e.target.value })} />
+                    </div>
+                    <Button onClick={handleCreateTask} className="w-full" disabled={createTaskMutation.isPending}>
+                      {createTaskMutation.isPending ? "Creating..." : "Create Task"}
+                    </Button>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label>Description</Label>
-                    <Input value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Due Date</Label>
-                    <Input type="date" value={taskForm.due_date} onChange={(e) => setTaskForm({ ...taskForm, due_date: e.target.value })} />
-                  </div>
-                  <Button onClick={handleCreateTask} className="w-full" disabled={createTaskMutation.isPending}>
-                    {createTaskMutation.isPending ? "Creating..." : "Create Task"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+            )}
           </CardHeader>
           <CardContent>
-            <TaskList
-              tasks={tasks}
-              onToggleStatus={(task) => toggleTaskMutation.mutate(task)}
-            />
+            <TaskList tasks={tasks} onToggleStatus={(task) => toggleTaskMutation.mutate(task)} />
           </CardContent>
         </Card>
       </div>
 
-      {/* Deals */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Deals</CardTitle></CardHeader>
-        <CardContent>
-          {deals.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No deals linked to this lead.</p>
-          ) : (
-            <div className="space-y-3">
-              {deals.map((deal) => (
-                <div key={deal.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
-                  <div>
-                    <p className="text-sm font-medium">{deal.title}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{deal.stage}</p>
+      {/* Deals — only visible to Admin & Sales Manager */}
+      {can("manage_deals") && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Deals</CardTitle></CardHeader>
+          <CardContent>
+            {deals.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No deals linked to this lead.</p>
+            ) : (
+              <div className="space-y-3">
+                {deals.map((deal) => (
+                  <div key={deal.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
+                    <div>
+                      <p className="text-sm font-medium">{deal.title}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{deal.stage}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm font-semibold text-primary">
+                      <DollarSign size={14} />
+                      {deal.value?.toLocaleString() ?? "—"}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-sm font-semibold text-primary">
-                    <DollarSign size={14} />
-                    {deal.value?.toLocaleString() ?? "—"}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Activity Timeline */}
       <Card>

@@ -8,6 +8,7 @@ import { Users, ListTodo, DollarSign, CalendarClock, MessageSquare, FlaskConical
 import { format, isToday, addDays, isAfter, isBefore } from "date-fns";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 
 const FIRST_NAMES = ["James","Maria","Robert","Linda","John","Patricia","Michael","Jennifer","David","Elizabeth","William","Barbara","Richard","Susan","Joseph","Jessica","Thomas","Sarah","Christopher","Karen","Charles","Lisa","Daniel","Nancy","Matthew","Betty","Anthony","Margaret","Mark","Sandra","Donald","Ashley","Steven","Dorothy","Andrew","Kimberly","Paul","Emily","Joshua","Donna","Kenneth","Michelle","Kevin","Carol","Brian","Amanda","George","Melissa","Timothy","Deborah"];
 const LAST_NAMES = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin","Lee","Perez","Thompson","White","Harris","Sanchez","Clark","Ramirez","Lewis","Robinson","Walker","Young","Allen","King","Wright","Scott","Torres","Nguyen","Hill","Flores","Green","Adams","Nelson","Baker","Hall","Rivera","Campbell","Mitchell","Carter"];
@@ -76,7 +77,7 @@ async function getCrmStats() {
 }
 
 const CrmDashboardPage = () => {
-  const { role } = useAuth();
+  const { can, crmRoleLabel } = useCrmPermissions();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState(false);
@@ -106,7 +107,7 @@ const CrmDashboardPage = () => {
     }
   };
 
-  const isAdmin = role === "owner";
+  const isAdmin = can("generate_test_data");
 
   const stats = [
     { label: "Leads Today", value: data?.leadsToday ?? 0, icon: Users, color: "text-primary" },
@@ -123,7 +124,10 @@ const CrmDashboardPage = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">CRM Dashboard</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">CRM Dashboard</h1>
+          <Badge variant="outline" className="text-xs">{crmRoleLabel}</Badge>
+        </div>
         {isAdmin && (
           <Button
             variant="outline"

@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getLeads, updateLeadStage } from "@/lib/crm/leadService";
+import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import PipelineBoard from "@/components/crm/PipelineBoard";
-import { PipelineStage } from "@/types/crm";
 import { toast } from "sonner";
+import { Navigate } from "react-router-dom";
 
 const PipelinePage = () => {
   const queryClient = useQueryClient();
+  const { can } = useCrmPermissions();
   const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads"], queryFn: getLeads });
 
   const stageMutation = useMutation({
@@ -13,6 +15,11 @@ const PipelinePage = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["crm-leads"] }),
     onError: () => toast.error("Failed to update stage"),
   });
+
+  // Sales Reps cannot access the pipeline view
+  if (!can("view_pipeline")) {
+    return <Navigate to="/dashboard/crm/leads" replace />;
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -22,7 +29,10 @@ const PipelinePage = () => {
       ) : (
         <PipelineBoard
           leads={leads}
-          onStageDrop={(leadId, newStage) => stageMutation.mutate({ id: leadId, status: newStage })}
+          onStageDrop={can("edit_lead")
+            ? (leadId, newStage) => stageMutation.mutate({ id: leadId, status: newStage })
+            : undefined
+          }
         />
       )}
     </div>
