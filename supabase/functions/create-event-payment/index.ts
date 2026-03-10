@@ -32,18 +32,23 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Find or skip customer
+    // Find or create Stripe customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId: string | undefined;
+    let customerId: string;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+    } else {
+      const newCustomer = await stripe.customers.create({ email: user.email });
+      customerId = newCustomer.id;
     }
 
     const amountInCents = Math.round(amount * 100);
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      payment_intent_data: {
+        setup_future_usage: "off_session",
+      },
       line_items: [
         {
           price_data: {
@@ -82,6 +87,7 @@ serve(async (req) => {
       payment_status: "pending",
       payment_method: "stripe",
       stripe_session_id: session.id,
+      stripe_customer_id: customerId,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

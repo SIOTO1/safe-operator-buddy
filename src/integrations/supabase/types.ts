@@ -936,6 +936,8 @@ export type Database = {
           payment_status: string
           payment_type: string
           quote_id: string | null
+          stripe_customer_id: string | null
+          stripe_payment_method_id: string | null
           stripe_session_id: string | null
           transaction_id: string | null
         }
@@ -949,6 +951,8 @@ export type Database = {
           payment_status?: string
           payment_type?: string
           quote_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_method_id?: string | null
           stripe_session_id?: string | null
           transaction_id?: string | null
         }
@@ -962,6 +966,8 @@ export type Database = {
           payment_status?: string
           payment_type?: string
           quote_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_method_id?: string | null
           stripe_session_id?: string | null
           transaction_id?: string | null
         }
