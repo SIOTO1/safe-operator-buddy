@@ -38,6 +38,7 @@ import CrmDashboardPage from "./pages/crm/CrmDashboardPage";
 import QuotesPage from "./pages/crm/QuotesPage";
 import QuoteBuilderPage from "./pages/crm/QuoteBuilderPage";
 import QuoteDetailPage from "./pages/crm/QuoteDetailPage";
+import ContractSigningPage from "./pages/crm/ContractSigningPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
