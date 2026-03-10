@@ -143,6 +143,33 @@ const LeadDetailPage = () => {
     } as any);
   };
 
+  const handleConvertToEvent = async () => {
+    if (!convertForm.event_name || !convertForm.event_date || !user) return;
+    setConverting(true);
+    try {
+      const { data, error } = await supabase.from("events").insert({
+        title: convertForm.event_name,
+        event_date: convertForm.event_date,
+        location: convertForm.location || null,
+        notes: [
+          lead?.name ? `Customer: ${lead.name}` : "",
+          lead?.phone ? `Phone: ${lead.phone}` : "",
+          lead?.email ? `Email: ${lead.email}` : "",
+          convertForm.notes,
+        ].filter(Boolean).join("\n"),
+        created_by: user.id,
+      }).select("id").single();
+      if (error) throw error;
+      toast.success("Event created from lead");
+      setConvertOpen(false);
+      navigate(`/dashboard/scheduling`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create event");
+    } finally {
+      setConverting(false);
+    }
+  };
+
   if (leadLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;
   if (!lead) return <div className="p-6 text-muted-foreground">Lead not found.</div>;
 
