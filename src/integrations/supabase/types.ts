@@ -980,8 +980,10 @@ export type Database = {
           description: string
           id: string
           product_id: string | null
+          product_name: string
           quantity: number
           quote_id: string
+          total_price: number
           unit_price: number
         }
         Insert: {
@@ -989,8 +991,10 @@ export type Database = {
           description?: string
           id?: string
           product_id?: string | null
+          product_name?: string
           quantity?: number
           quote_id: string
+          total_price?: number
           unit_price?: number
         }
         Update: {
@@ -998,8 +1002,10 @@ export type Database = {
           description?: string
           id?: string
           product_id?: string | null
+          product_name?: string
           quantity?: number
           quote_id?: string
+          total_price?: number
           unit_price?: number
         }
         Relationships: [
