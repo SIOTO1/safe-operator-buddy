@@ -26,6 +26,9 @@ import SchedulingPage from "./pages/SchedulingPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
+import LeadsPage from "./pages/crm/LeadsPage";
+import PipelinePage from "./pages/crm/PipelinePage";
+import TasksPage from "./pages/crm/TasksPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +65,9 @@ const App = () => (
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
+              <Route path="crm/leads" element={<LeadsPage />} />
+              <Route path="crm/pipeline" element={<PipelinePage />} />
+              <Route path="crm/tasks" element={<TasksPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
