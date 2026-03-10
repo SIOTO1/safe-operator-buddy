@@ -291,6 +291,7 @@ const SchedulingPage = () => {
                               "bg-card border-border",
                               isOwner && "cursor-grab active:cursor-grabbing"
                             )}
+                            onClick={() => navigate(`/dashboard/scheduling/${ev.id}`)}
                           >
                             <p className="font-medium truncate">{ev.event_name}</p>
                             {(ev.start_time || ev.end_time) && (
