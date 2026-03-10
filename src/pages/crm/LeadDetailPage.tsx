@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getLeadById, updateLead } from "@/lib/crm/leadService";
 import { getNotesByLeadId, createNote, deleteNote } from "@/lib/crm/noteService";
 import { getTasksByLeadId, createTask, updateTask } from "@/lib/crm/taskService";
-import { getDealsByLeadId } from "@/lib/crm/dealService";
+import { getDealsByLeadId, updateDeal } from "@/lib/crm/dealService";
 import { getActivityForLead } from "@/lib/crm/activityService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
