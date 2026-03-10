@@ -206,6 +206,46 @@ const LeadDetailPage = () => {
             {stageInfo?.label || lead.stage}
           </Badge>
         )}
+        <Dialog open={convertOpen} onOpenChange={(o) => {
+          setConvertOpen(o);
+          if (o) setConvertForm({
+            event_name: `${lead.name} Event`,
+            event_date: "",
+            location: "",
+            notes: lead.notes || "",
+          });
+        }}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <CalendarPlus size={14} className="mr-1.5" />Convert to Event
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader><DialogTitle>Convert Lead to Event</DialogTitle></DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <Label>Event Name <span className="text-destructive">*</span></Label>
+                <Input value={convertForm.event_name} onChange={(e) => setConvertForm({ ...convertForm, event_name: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Event Date <span className="text-destructive">*</span></Label>
+                <Input type="date" value={convertForm.event_date} onChange={(e) => setConvertForm({ ...convertForm, event_date: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Location / Address</Label>
+                <Input value={convertForm.location} onChange={(e) => setConvertForm({ ...convertForm, location: e.target.value })} placeholder="Event address" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Notes</Label>
+                <Textarea value={convertForm.notes} onChange={(e) => setConvertForm({ ...convertForm, notes: e.target.value })} rows={3} />
+              </div>
+              <p className="text-xs text-muted-foreground">Customer info ({lead.name}, {lead.email}, {lead.phone || "no phone"}) will be included in event notes.</p>
+              <Button onClick={handleConvertToEvent} className="w-full" disabled={converting || !convertForm.event_name || !convertForm.event_date}>
+                {converting ? "Creating…" : "Create Event"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Lead Info */}
