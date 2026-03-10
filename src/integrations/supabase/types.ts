@@ -117,6 +117,24 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       crew_availability: {
         Row: {
           available_date: string
@@ -146,6 +164,7 @@ export type Database = {
       }
       crm_activity_log: {
         Row: {
+          company_id: string | null
           created_at: string
           description: string
           event_type: string
@@ -154,6 +173,7 @@ export type Database = {
           performed_by: string | null
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           description: string
           event_type: string
@@ -162,6 +182,7 @@ export type Database = {
           performed_by?: string | null
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           description?: string
           event_type?: string
@@ -170,6 +191,13 @@ export type Database = {
           performed_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_activity_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_activity_log_lead_id_fkey"
             columns: ["lead_id"]
@@ -182,6 +210,7 @@ export type Database = {
       crm_deals: {
         Row: {
           assigned_to: string | null
+          company_id: string | null
           created_at: string
           created_by: string
           expected_close_date: string | null
@@ -195,6 +224,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          company_id?: string | null
           created_at?: string
           created_by: string
           expected_close_date?: string | null
@@ -208,6 +238,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          company_id?: string | null
           created_at?: string
           created_by?: string
           expected_close_date?: string | null
@@ -221,6 +252,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "crm_deals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "crm_deals_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
@@ -233,6 +271,7 @@ export type Database = {
         Row: {
           assigned_to: string | null
           company: string | null
+          company_id: string | null
           created_at: string
           email: string
           id: string
@@ -247,6 +286,7 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           company?: string | null
+          company_id?: string | null
           created_at?: string
           email: string
           id?: string
@@ -261,6 +301,7 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           company?: string | null
+          company_id?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -272,10 +313,19 @@ export type Database = {
           updated_at?: string
           value?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_leads_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_notes: {
         Row: {
+          company_id: string | null
           content: string
           created_at: string
           created_by: string
@@ -283,6 +333,7 @@ export type Database = {
           lead_id: string
         }
         Insert: {
+          company_id?: string | null
           content: string
           created_at?: string
           created_by: string
@@ -290,6 +341,7 @@ export type Database = {
           lead_id: string
         }
         Update: {
+          company_id?: string | null
           content?: string
           created_at?: string
           created_by?: string
@@ -297,6 +349,13 @@ export type Database = {
           lead_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_notes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_notes_lead_id_fkey"
             columns: ["lead_id"]
@@ -309,6 +368,7 @@ export type Database = {
       crm_tasks: {
         Row: {
           assigned_to: string | null
+          company_id: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -322,6 +382,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          company_id?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -335,6 +396,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          company_id?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -347,6 +409,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_tasks_lead_id_fkey"
             columns: ["lead_id"]
@@ -510,6 +579,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          company_id: string | null
           created_at: string
           display_name: string | null
           email: string | null
@@ -518,6 +588,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -526,6 +597,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -533,7 +605,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -558,6 +638,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_company_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
