@@ -15,7 +15,7 @@ import { toast } from "sonner";
 const TasksPage = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { can } = useCrmPermissions();
+  const { can, companyId } = useCrmPermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", due_date: "", assigned_to: "" });
 
@@ -47,7 +47,8 @@ const TasksPage = () => {
       status: "todo",
       lead_id: "",
       assigned_to: form.assigned_to || user?.id || "",
-    });
+      company_id: companyId,
+    } as any);
   };
 
   return (

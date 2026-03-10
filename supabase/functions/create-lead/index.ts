@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { name, email, phone, company, source } = body;
+    const { name, email, phone, company, source, company_id } = body;
 
     // Validate required fields
     if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
         company: company?.trim().slice(0, 200) || null,
         source: source || "Website",
         stage: "new",
+        company_id: company_id || null,
       })
       .select()
       .single();

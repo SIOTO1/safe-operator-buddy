@@ -27,7 +27,7 @@ const LeadDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { can } = useCrmPermissions();
+  const { can, companyId } = useCrmPermissions();
   const queryClient = useQueryClient();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [taskForm, setTaskForm] = useState({ title: "", description: "", due_date: "" });
@@ -87,7 +87,7 @@ const LeadDetailPage = () => {
 
   const addNoteMutation = useMutation({
     mutationFn: (content: string) =>
-      createNote({ lead_id: id!, user_id: user?.id || "", content }),
+      createNote({ lead_id: id!, user_id: user?.id || "", content, company_id: companyId } as any),
     onSuccess: () => { invalidateAll(); toast.success("Note added"); },
     onError: () => toast.error("Failed to add note"),
   });
@@ -133,7 +133,8 @@ const LeadDetailPage = () => {
       due_date: taskForm.due_date || "",
       assigned_to: user?.id || "",
       status: "todo",
-    });
+      company_id: companyId,
+    } as any);
   };
 
   if (leadLoading) return <div className="p-6 text-muted-foreground">Loading...</div>;

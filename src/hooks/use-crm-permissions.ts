@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useMemo } from "react";
 
 export type CrmPermission =
   | "view_all_leads"
@@ -62,16 +63,17 @@ function appRoleToCrmRole(role: string | null): CrmRole {
 }
 
 export function useCrmPermissions() {
-  const { role, user } = useAuth();
+  const { role, user, companyId } = useAuth();
   const crmRole = appRoleToCrmRole(role);
   const permissions = ROLE_PERMISSIONS[crmRole];
 
-  const can = (permission: CrmPermission) => permissions.includes(permission);
+  const can = useMemo(() => (permission: CrmPermission) => permissions.includes(permission), [permissions]);
 
   return {
     crmRole,
     crmRoleLabel: crmRole === "admin" ? "Admin" : crmRole === "sales_manager" ? "Sales Manager" : "Sales Rep",
     can,
     userId: user?.id ?? null,
+    companyId,
   };
 }

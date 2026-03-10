@@ -20,7 +20,7 @@ const emptyForm = { name: "", email: "", phone: "", company: "", source: "", sta
 const LeadsPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { can, crmRoleLabel, userId } = useCrmPermissions();
+  const { can, crmRoleLabel, userId, companyId } = useCrmPermissions();
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -59,7 +59,8 @@ const LeadsPage = () => {
       company: form.company || undefined,
       source: form.source || undefined,
       status: form.status,
-    });
+      company_id: companyId,
+    } as any);
   };
 
   return (
