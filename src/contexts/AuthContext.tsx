@@ -8,10 +8,12 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   role: AppRole | null;
-  profile: { display_name: string | null; email: string | null; company_id: string | null } | null;
+  profile: { display_name: string | null; email: string | null; company_id: string | null; selected_workspace_id: string | null } | null;
   companyId: string | null;
+  workspaceId: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  setWorkspaceId: (id: string | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,8 +22,10 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   profile: null,
   companyId: null,
+  workspaceId: null,
   loading: true,
   signOut: async () => {},
+  setWorkspaceId: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -30,14 +34,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
-  const [profile, setProfile] = useState<{ display_name: string | null; email: string | null; company_id: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ display_name: string | null; email: string | null; company_id: string | null; selected_workspace_id: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (userId: string) => {
     try {
       const [{ data: roles }, { data: prof }] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", userId),
-        supabase.from("profiles").select("display_name, email, company_id").eq("user_id", userId).single(),
+        supabase.from("profiles").select("display_name, email, company_id, selected_workspace_id" as any).eq("user_id", userId).single(),
       ]);
 
       if (roles && roles.length > 0) {
@@ -47,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (prof) {
-        setProfile(prof);
+        setProfile(prof as any);
       }
     } catch (err) {
       console.error("Error fetching user data:", err);
@@ -90,8 +94,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(null);
   };
 
+  const setWorkspaceId = async (workspaceId: string | null) => {
+    if (!user) return;
+    await supabase.from("profiles").update({ selected_workspace_id: workspaceId } as any).eq("user_id", user.id);
+    setProfile((prev) => prev ? { ...prev, selected_workspace_id: workspaceId } : prev);
+  };
+
   return (
-    <AuthContext.Provider value={{ session, user, role, profile, companyId: profile?.company_id ?? null, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, role, profile, companyId: profile?.company_id ?? null, workspaceId: (profile as any)?.selected_workspace_id ?? null, loading, signOut, setWorkspaceId }}>
       {children}
     </AuthContext.Provider>
   );

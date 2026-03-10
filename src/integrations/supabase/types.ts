@@ -171,6 +171,7 @@ export type Database = {
           id: string
           lead_id: string
           performed_by: string | null
+          workspace_id: string | null
         }
         Insert: {
           company_id?: string | null
@@ -180,6 +181,7 @@ export type Database = {
           id?: string
           lead_id: string
           performed_by?: string | null
+          workspace_id?: string | null
         }
         Update: {
           company_id?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           id?: string
           lead_id?: string
           performed_by?: string | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -203,6 +206,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activity_log_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -221,6 +231,7 @@ export type Database = {
           title: string
           updated_at: string
           value: number | null
+          workspace_id: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -235,6 +246,7 @@ export type Database = {
           title: string
           updated_at?: string
           value?: number | null
+          workspace_id?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -249,6 +261,7 @@ export type Database = {
           title?: string
           updated_at?: string
           value?: number | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -263,6 +276,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -282,6 +302,7 @@ export type Database = {
           stage: string
           updated_at: string
           value: number | null
+          workspace_id: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -297,6 +318,7 @@ export type Database = {
           stage?: string
           updated_at?: string
           value?: number | null
+          workspace_id?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -312,6 +334,7 @@ export type Database = {
           stage?: string
           updated_at?: string
           value?: number | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -319,6 +342,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -331,6 +361,7 @@ export type Database = {
           created_by: string
           id: string
           lead_id: string
+          workspace_id: string | null
         }
         Insert: {
           company_id?: string | null
@@ -339,6 +370,7 @@ export type Database = {
           created_by: string
           id?: string
           lead_id: string
+          workspace_id?: string | null
         }
         Update: {
           company_id?: string | null
@@ -347,6 +379,7 @@ export type Database = {
           created_by?: string
           id?: string
           lead_id?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -361,6 +394,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_notes_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -379,6 +419,7 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -393,6 +434,7 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -407,6 +449,7 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -421,6 +464,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -584,6 +634,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          selected_workspace_id: string | null
           updated_at: string
           user_id: string
         }
@@ -593,6 +644,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          selected_workspace_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -602,6 +654,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          selected_workspace_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -611,6 +664,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_selected_workspace_id_fkey"
+            columns: ["selected_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -668,6 +728,7 @@ export type Database = {
     }
     Functions: {
       get_user_company_id: { Args: never; Returns: string }
+      get_user_workspace_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
