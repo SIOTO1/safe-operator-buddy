@@ -26,6 +26,9 @@ import SchedulingPage from "./pages/SchedulingPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
+import LeadsPage from "./pages/crm/LeadsPage";
+import PipelinePage from "./pages/crm/PipelinePage";
+import TasksPage from "./pages/crm/TasksPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
