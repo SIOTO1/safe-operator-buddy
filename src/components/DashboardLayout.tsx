@@ -22,6 +22,9 @@ const navItems = [
   { to: "/dashboard/scheduling", icon: CalendarDays, label: "Scheduling" },
   { to: "/dashboard/bookings", icon: Inbox, label: "Bookings", minRole: "manager" as const },
   { to: "/dashboard/equipment", icon: Package, label: "Equipment", minRole: "manager" as const },
+  { to: "/dashboard/crm/leads", icon: Contact, label: "Leads", section: "CRM" },
+  { to: "/dashboard/crm/pipeline", icon: Kanban, label: "Pipeline", section: "CRM" },
+  { to: "/dashboard/crm/tasks", icon: ListTodo, label: "Tasks", section: "CRM" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
 ];
 
