@@ -30,6 +30,7 @@ import LeadsPage from "./pages/crm/LeadsPage";
 import LeadDetailPage from "./pages/crm/LeadDetailPage";
 import PipelinePage from "./pages/crm/PipelinePage";
 import TasksPage from "./pages/crm/TasksPage";
+import CrmDashboardPage from "./pages/crm/CrmDashboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
+              <Route path="crm" element={<CrmDashboardPage />} />
               <Route path="crm/leads" element={<LeadsPage />} />
               <Route path="crm/leads/:id" element={<LeadDetailPage />} />
               <Route path="crm/pipeline" element={<PipelinePage />} />
