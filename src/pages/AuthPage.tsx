@@ -60,7 +60,7 @@ const AuthPage = () => {
 
         <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
           <h2 className="font-display font-bold text-xl text-center mb-6">
-            {isLogin ? "Sign In" : "Create Account"}
+            Sign In
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
