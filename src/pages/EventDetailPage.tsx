@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
+import { PaymentSummary } from "@/components/scheduling/PaymentSummary";
 import type { WeatherData } from "@/components/scheduling/WeatherSafetyBadge";
 import { getInflatableSafetyLevel } from "@/components/scheduling/WeatherSafetyBadge";
 
@@ -28,6 +29,7 @@ interface EventDetail {
   crew_needed: number;
   created_by: string;
   created_at: string;
+  quote_id: string | null;
 }
 
 interface EventEquipment {
@@ -442,8 +444,13 @@ const EventDetailPage = () => {
           </Card>
         </div>
 
-        {/* Right: Safety Status */}
+        {/* Right: Payment & Safety */}
         <div className="space-y-6">
+          <PaymentSummary
+            eventId={event.id}
+            eventDate={event.event_date}
+            quoteId={event.quote_id}
+          />
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
