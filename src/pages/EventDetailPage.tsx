@@ -170,6 +170,25 @@ const EventDetailPage = () => {
     fetchEventProducts();
   }, [eventId, fetchEventProducts, fetchDateAllocations]);
 
+  const handleMarkCompleted = async () => {
+    if (!confirm("Mark this event as completed? A review request email will be sent to the customer.")) return;
+    try {
+      const { error } = await supabase.from("events").update({ status: "completed" } as any).eq("id", eventId!);
+      if (error) throw error;
+
+      // Trigger review request email
+      await supabase.functions.invoke("send-review-request", {
+        body: { event_id: eventId },
+      });
+
+      setEvent(prev => prev ? { ...prev, status: "completed" } : prev);
+      toast.success("Event marked as completed! Review request sent.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update event status");
+    }
+  };
+
   const handleDelete = async () => {
     if (!confirm("Delete this event? This cannot be undone.")) return;
     try {
