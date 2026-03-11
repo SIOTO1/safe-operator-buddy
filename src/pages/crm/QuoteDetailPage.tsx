@@ -177,7 +177,7 @@ const QuoteDetailPage = () => {
       let leadNotes = "";
       if (quote.lead_id) {
         const { data: lead } = await supabase
-          .from("crm_leads" as any)
+          .from("crm_leads")
           .select("name, email, phone")
           .eq("id", quote.lead_id)
           .single();
