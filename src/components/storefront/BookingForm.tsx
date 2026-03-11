@@ -51,11 +51,12 @@ interface BookingFormProps {
   cart: CartItem[];
   selectedDate?: Date;
   cartTotal: number;
+  companySlug?: string;
   onBack: () => void;
   onSuccess: () => void;
 }
 
-export default function BookingForm({ cart, selectedDate, cartTotal, onBack, onSuccess }: BookingFormProps) {
+export default function BookingForm({ cart, selectedDate, cartTotal, companySlug, onBack, onSuccess }: BookingFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof BookingFormData, string>>>({});
@@ -98,30 +99,36 @@ export default function BookingForm({ cart, selectedDate, cartTotal, onBack, onS
 
     setSubmitting(true);
     const eventLocation = `${result.data.event_address}, ${result.data.event_city}, ${result.data.event_state} ${result.data.event_zip}`;
-    const equipment = cart.map((i) => `${i.product.name} (x${i.quantity})`);
+
+    const depositAmount = Math.round(cartTotal * 0.25 * 100) / 100;
 
     try {
-      const { data, error } = await supabase.functions.invoke("submit-booking", {
+      const { data, error } = await supabase.functions.invoke("create-booking-checkout", {
         body: {
           customer_name: result.data.customer_name,
           customer_email: result.data.customer_email,
           customer_phone: result.data.customer_phone || null,
           event_date: result.data.event_date,
-          event_time: result.data.start_time,
-          event_end_time: result.data.end_time,
+          start_time: result.data.start_time,
+          end_time: result.data.end_time,
           event_location: eventLocation,
-          equipment,
-          special_requests: result.data.notes || null,
-          guest_count: null,
+          notes: result.data.notes || null,
+          company_slug: companySlug || "",
+          cart_items: cart.map((i) => ({
+            product_id: i.product.id,
+            product_name: i.product.name,
+            quantity: i.quantity,
+            unit_price: i.product.price || 0,
+          })),
         },
       });
 
-      if (error || (data && data.error)) {
-        toast.error(data?.error || "Failed to submit booking. Please try again.");
-      } else {
-        setSubmitted(true);
-        toast.success("Booking request submitted!");
-        onSuccess();
+      if (error || data?.error) {
+        toast.error(data?.error || "Failed to create checkout. Please try again.");
+      } else if (data?.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+        return; // Don't set submitting false, we're navigating away
       }
     } catch {
       toast.error("An unexpected error occurred. Please try again.");
@@ -155,6 +162,12 @@ export default function BookingForm({ cart, selectedDate, cartTotal, onBack, onS
         <p className="text-muted-foreground text-xs mt-0.5">
           {cart.length} item{cart.length !== 1 ? "s" : ""} · ${cartTotal.toFixed(2)} total
         </p>
+        <div className="mt-2 rounded-lg bg-primary/5 border border-primary/20 p-3">
+          <p className="text-sm font-medium">25% Deposit Required</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Pay <span className="font-semibold text-foreground">${(cartTotal * 0.25).toFixed(2)}</span> now to confirm your booking. The remaining <span className="font-semibold text-foreground">${(cartTotal * 0.75).toFixed(2)}</span> is due before your event.
+          </p>
+        </div>
       </div>
 
       <Separator />
@@ -265,11 +278,11 @@ export default function BookingForm({ cart, selectedDate, cartTotal, onBack, onS
       </div>
 
       <Button className="w-full" size="lg" disabled={submitting} onClick={handleSubmit}>
-        {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Submitting...</> : "Request Booking"}
+        {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Redirecting to Payment...</> : `Pay $${(cartTotal * 0.25).toFixed(2)} Deposit & Book`}
       </Button>
 
       <p className="text-[10px] text-muted-foreground text-center">
-        By submitting, you agree to be contacted regarding this booking request.
+        You'll be redirected to Stripe for secure payment. A 25% deposit is required to confirm your booking.
       </p>
     </div>
   );

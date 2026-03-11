@@ -45,6 +45,7 @@ import CustomerPortalPage from "./pages/CustomerPortalPage";
 import SetupWizardPage from "./pages/SetupWizardPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import StorefrontPage from "./pages/StorefrontPage";
+import BookingSuccessPage from "./pages/BookingSuccessPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/rentals/:slug" element={<StorefrontPage />} />
+            <Route path="/rentals/:slug/booking-success" element={<BookingSuccessPage />} />
 
             {/* Legacy /dashboard redirect → resolves slug and redirects */}
             <Route path="/dashboard/*" element={
