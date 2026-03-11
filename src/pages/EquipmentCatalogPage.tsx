@@ -117,6 +117,7 @@ const EquipmentCatalogPage = () => {
           price: priceVal,
           sort_order: items.length,
           created_by: user!.id,
+          company_id: companyId,
         });
         if (error) throw error;
         toast.success("Equipment added");

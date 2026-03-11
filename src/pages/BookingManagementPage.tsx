@@ -79,6 +79,7 @@ const BookingManagementPage = () => {
         end_time: booking.event_end_time || null,
         location: booking.event_location,
         created_by: user!.id,
+        company_id: companyId,
         notes: `Customer: ${booking.customer_name}\nEmail: ${booking.customer_email}${booking.customer_phone ? `\nPhone: ${booking.customer_phone}` : ""}\nGuests: ${booking.guest_count || "N/A"}\nEquipment: ${booking.equipment.join(", ")}${booking.special_requests ? `\nNotes: ${booking.special_requests}` : ""}`,
       }).select("id").single();
       if (eventError) throw eventError;

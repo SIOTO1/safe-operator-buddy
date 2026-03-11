@@ -417,6 +417,7 @@ const LeadDetailPage = () => {
                                     lead.notes || "",
                                   ].filter(Boolean).join("\n"),
                                   created_by: user.id,
+                                  company_id: companyId,
                                 }).select("id").single();
 
                                 if (!error && evt) {

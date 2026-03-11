@@ -136,6 +136,7 @@ const SetupWizardPage = () => {
         event_date: eventData.date,
         location: eventData.location.trim() || null,
         created_by: user!.id,
+        company_id: companyId,
       });
       if (error) throw error;
       toast.success("Event created!");
