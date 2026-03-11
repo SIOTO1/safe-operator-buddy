@@ -70,6 +70,13 @@ const App = () => (
               </ProtectedRoute>
             } />
 
+            {/* Setup wizard */}
+            <Route path="/app/:slug/setup" element={
+              <ProtectedRoute>
+                <SetupWizardPage />
+              </ProtectedRoute>
+            } />
+
             {/* Slug-based company routes */}
             <Route path="/app/:slug" element={
               <ProtectedRoute>
