@@ -43,6 +43,7 @@ import QuoteDetailPage from "./pages/crm/QuoteDetailPage";
 import ContractSigningPage from "./pages/crm/ContractSigningPage";
 import CustomerPortalPage from "./pages/CustomerPortalPage";
 import SetupWizardPage from "./pages/SetupWizardPage";
+import EmployeesPage from "./pages/EmployeesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -111,6 +112,7 @@ const App = () => (
               <Route path="crm/quotes/:id" element={<QuoteDetailPage />} />
               <Route path="quotes/create" element={<QuoteBuilderPage />} />
               <Route path="crm/contracts/:id" element={<ContractSigningPage />} />
+              <Route path="employees" element={<EmployeesPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
 
