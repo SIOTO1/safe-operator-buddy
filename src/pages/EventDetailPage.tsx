@@ -481,8 +481,6 @@ const EventDetailPage = () => {
             canManage={canManage}
             hasInflatables={eventProducts.some(ep => ep.product_category === "inflatables" || ep.product_category === "slides")}
           />
-        </div>
-
 
           {/* Incident Reports */}
           <IncidentReportSection
