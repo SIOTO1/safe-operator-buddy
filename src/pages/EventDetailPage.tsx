@@ -18,6 +18,7 @@ import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
 import { PaymentSummary } from "@/components/scheduling/PaymentSummary";
 import type { WeatherData } from "@/components/scheduling/WeatherSafetyBadge";
 import { getInflatableSafetyLevel } from "@/components/scheduling/WeatherSafetyBadge";
+import { EventStaffAssignment } from "@/components/scheduling/EventStaffAssignment";
 
 interface EventDetail {
   id: string;
@@ -472,6 +473,13 @@ const EventDetailPage = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Staff Assignments */}
+          <EventStaffAssignment
+            eventId={event.id}
+            canManage={canManage}
+            hasInflatables={eventProducts.some(ep => ep.product_category === "inflatables" || ep.product_category === "slides")}
+          />
         </div>
 
         {/* Right: Payment & Safety */}
