@@ -12,7 +12,7 @@ import {
   startOfMonth, endOfMonth, differenceInHours, subDays,
 } from "date-fns";
 import { useState, useMemo } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,

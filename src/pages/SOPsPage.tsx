@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { sopCategories, sopArticles, type SOPArticle } from "@/lib/sopData";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import jsPDF from "jspdf";
 
 const iconMap: Record<string, React.ComponentType<any>> = {

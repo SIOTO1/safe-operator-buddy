@@ -3,7 +3,7 @@ import { Sparkles, Download, FileText, Briefcase, ClipboardList, Loader2 } from 
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import jsPDF from "jspdf";
 

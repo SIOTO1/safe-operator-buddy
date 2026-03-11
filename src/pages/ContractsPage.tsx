@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { FileText, Download, MapPin, Clock, User, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { contractTemplates, ContractTemplate } from "@/lib/contractTemplates";
 import { mergeContractTemplates } from "@/lib/mergeContracts";

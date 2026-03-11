@@ -13,7 +13,7 @@ import ComplianceReportGenerator from "@/components/compliance/ComplianceReportG
 import { motion } from "framer-motion";
 import { format, addDays, isBefore, differenceInDays } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 type StatusLevel = "green" | "yellow" | "red";
 

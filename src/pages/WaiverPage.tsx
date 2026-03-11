@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { contractTemplates } from "@/lib/contractTemplates";
 import { FileSignature, Download, RotateCcw } from "lucide-react";
 import DatePicker from "@/components/DatePicker";
