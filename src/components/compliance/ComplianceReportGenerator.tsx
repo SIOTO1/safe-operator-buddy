@@ -249,7 +249,7 @@ const ComplianceReportGenerator = () => {
           allInspections.forEach(ins => {
             const isFail = ins.inspection_status === "fail" || ins.inspection_status === "needs_repair";
             addTableRow([
-              (ins.products as any)?.name || "Equipment",
+              ins.products?.name || "Equipment",
               format(new Date(ins.inspection_date), "MMM d, yyyy"),
               ins.inspection_status === "needs_repair" ? "Needs Repair" : ins.inspection_status === "pass" ? "Pass" : "Fail",
               ins.next_due_date ? format(new Date(ins.next_due_date), "MMM d, yyyy") : "—",
