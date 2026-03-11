@@ -41,3 +41,5 @@ project_id = "atdpdxocpjnldajapjyp"
     verify_jwt = false
   [functions.confirm-booking-payment]
     verify_jwt = false
+  [functions.send-event-reminders]
+    verify_jwt = false
