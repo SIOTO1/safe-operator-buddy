@@ -21,7 +21,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Rate limit: 5 reschedule attempts per minute per token
+    // Rate limit
     const { data: allowed } = await supabaseAdmin.rpc("check_rate_limit", {
       _identifier: token,
       _action: "reschedule_event",
@@ -43,7 +43,6 @@ serve(async (req) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (requestedDate < today) throw new Error("Requested date must be in the future");
-
 
     // Verify token
     const { data: portalToken, error: tokenError } = await supabaseAdmin
@@ -68,79 +67,30 @@ serve(async (req) => {
 
     const eventId = portalToken.event_id;
 
-    // Fetch the event and its products
-    const [eventRes, eventProductsRes] = await Promise.all([
-      supabaseAdmin.from("events").select("*").eq("id", eventId).single(),
-      supabaseAdmin.from("event_products").select("product_id, quantity").eq("event_id", eventId),
-    ]);
+    // Use atomic reschedule RPC with row-level locking
+    const { data: result, error: rpcError } = await supabaseAdmin.rpc("atomic_reschedule_event", {
+      _event_id: eventId,
+      _new_date: new_date,
+    });
 
-    if (eventRes.error || !eventRes.data) throw new Error("Event not found");
+    if (rpcError) throw new Error("Failed to reschedule: " + rpcError.message);
 
-    const event = eventRes.data;
-    const eventProducts = eventProductsRes.data || [];
-
-    // Check product availability for the new date
-    // For each product, count how many are already booked on the new date (excluding this event)
-    const unavailableProducts: string[] = [];
-
-    if (eventProducts.length > 0) {
-      const productIds = eventProducts.map((ep: any) => ep.product_id);
-
-      // Get product details
-      const { data: products } = await supabaseAdmin
-        .from("products")
-        .select("id, name, quantity_available")
-        .in("id", productIds);
-
-      // Get all events on the new date (excluding current event)
-      const { data: conflictingEvents } = await supabaseAdmin
-        .from("events")
-        .select("id")
-        .eq("event_date", new_date)
-        .neq("id", eventId);
-
-      if (conflictingEvents && conflictingEvents.length > 0) {
-        const conflictingEventIds = conflictingEvents.map((e: any) => e.id);
-
-        // Get booked quantities for those events
-        const { data: bookedProducts } = await supabaseAdmin
-          .from("event_products")
-          .select("product_id, quantity")
-          .in("event_id", conflictingEventIds);
-
-        // Aggregate booked quantities by product
-        const bookedMap: Record<string, number> = {};
-        (bookedProducts || []).forEach((bp: any) => {
-          bookedMap[bp.product_id] = (bookedMap[bp.product_id] || 0) + bp.quantity;
+    if (result?.error) {
+      if (result.error === "Products unavailable") {
+        return new Response(JSON.stringify({
+          error: "Some products are not available on the requested date",
+          unavailable: result.unavailable,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 409,
         });
-
-        // Check each product this event needs
-        for (const ep of eventProducts) {
-          const product = (products || []).find((p: any) => p.id === ep.product_id);
-          if (!product) continue;
-          const alreadyBooked = bookedMap[ep.product_id] || 0;
-          const available = product.quantity_available - alreadyBooked;
-          if (available < ep.quantity) {
-            unavailableProducts.push(
-              `${product.name} (need ${ep.quantity}, only ${Math.max(0, available)} available)`
-            );
-          }
-        }
       }
+      throw new Error(result.error);
     }
 
-    if (unavailableProducts.length > 0) {
-      return new Response(JSON.stringify({
-        error: "Some products are not available on the requested date",
-        unavailable: unavailableProducts,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 409,
-      });
-    }
+    const oldDate = result.old_date;
 
-    // Check route conflicts — see if there's already a delivery route on this date
-    // that references this event via route_stops
+    // Check route conflicts on new date
     const { data: existingRoutes } = await supabaseAdmin
       .from("delivery_routes")
       .select("id, name")
@@ -148,22 +98,14 @@ serve(async (req) => {
 
     const routeConflict = existingRoutes && existingRoutes.length > 0;
 
-    // Update the event date
-    const oldDate = event.event_date;
-    const { error: updateError } = await supabaseAdmin
+    // Get event title for notifications
+    const { data: event } = await supabaseAdmin
       .from("events")
-      .update({ event_date: new_date })
-      .eq("id", eventId);
+      .select("title, company_id")
+      .eq("id", eventId)
+      .single();
 
-    if (updateError) throw new Error("Failed to update event date");
-
-    // Update the linked booking_request if exists
-    await supabaseAdmin
-      .from("booking_requests")
-      .update({ event_date: new_date })
-      .eq("event_id", eventId);
-
-    // Get the customer name for the notification
+    // Get customer name
     const { data: booking } = await supabaseAdmin
       .from("booking_requests")
       .select("customer_name")
@@ -171,24 +113,38 @@ serve(async (req) => {
       .maybeSingle();
 
     const customerName = booking?.customer_name || "A customer";
+    const eventTitle = event?.title || "Event";
 
-    // Notify all owners/managers via notifications table
-    const { data: ownerRoles } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id")
-      .in("role", ["owner", "manager"]);
+    // Notify owners/managers scoped to this event's company
+    const companyId = event?.company_id;
+    if (companyId) {
+      const { data: companyProfiles } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id")
+        .eq("company_id", companyId);
 
-    if (ownerRoles && ownerRoles.length > 0) {
-      const notifications = ownerRoles.map((r: any) => ({
-        user_id: r.user_id,
-        title: "Event Rescheduled",
-        message: `${customerName} rescheduled "${event.title}" from ${oldDate} to ${new_date}${routeConflict ? ". Note: delivery routes exist on the new date — review may be needed." : ""}`,
-        type: "reschedule",
-        severity: routeConflict ? "warning" : "info",
-        event_id: eventId,
-      }));
+      if (companyProfiles && companyProfiles.length > 0) {
+        const userIds = companyProfiles.map((p: any) => p.user_id);
 
-      await supabaseAdmin.from("notifications").insert(notifications);
+        const { data: ownerRoles } = await supabaseAdmin
+          .from("user_roles")
+          .select("user_id")
+          .in("user_id", userIds)
+          .in("role", ["owner", "manager"]);
+
+        if (ownerRoles && ownerRoles.length > 0) {
+          const notifications = ownerRoles.map((r: any) => ({
+            user_id: r.user_id,
+            title: "Event Rescheduled",
+            message: `${customerName} rescheduled "${eventTitle}" from ${oldDate} to ${new_date}${routeConflict ? ". Note: delivery routes exist on the new date — review may be needed." : ""}`,
+            type: "reschedule",
+            severity: routeConflict ? "warning" : "info",
+            event_id: eventId,
+          }));
+
+          await supabaseAdmin.from("notifications").insert(notifications);
+        }
+      }
     }
 
     return new Response(JSON.stringify({

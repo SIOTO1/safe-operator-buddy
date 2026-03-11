@@ -164,12 +164,27 @@ Deno.serve(async (req) => {
         },
       });
 
-      // Send owner notification
-      const { data: ownerProfiles } = await supabase
+      // Send owner notification — scoped: if booking has company_id, only notify that company's owners
+      // For unscoped bookings (no company_id), notify the first owner found (legacy behavior)
+      const { data: theBooking } = await supabase
+        .from("booking_requests")
+        .select("id, company_id")
+        .eq("customer_email", customer_email.trim().toLowerCase())
+        .eq("event_date", event_date)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let ownerQuery = supabase
         .from("profiles")
         .select("email, user_id")
-        .not("email", "is", null)
-        .limit(100);
+        .not("email", "is", null);
+
+      if (theBooking?.company_id) {
+        ownerQuery = ownerQuery.eq("company_id", theBooking.company_id);
+      }
+
+      const { data: ownerProfiles } = await ownerQuery.limit(50);
 
       if (ownerProfiles) {
         for (const profile of ownerProfiles) {
