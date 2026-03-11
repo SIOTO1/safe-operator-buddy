@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const setWorkspaceId = async (workspaceId: string | null) => {
     if (!user) return;
-    await supabase.from("profiles").update({ selected_workspace_id: workspaceId } as any).eq("user_id", user.id);
+    await supabase.from("profiles").update({ selected_workspace_id: workspaceId }).eq("user_id", user.id);
     setProfile((prev) => prev ? { ...prev, selected_workspace_id: workspaceId } : prev);
   };
 

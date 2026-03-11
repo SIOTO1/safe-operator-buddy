@@ -75,7 +75,7 @@ const ContractSigningPage = () => {
     queryKey: ["payments", id],
     queryFn: async () => {
       const { data } = await supabase
-        .from("payments" as any)
+        .from("payments")
         .select("*")
         .eq("contract_id", id!)
         .order("created_at", { ascending: false });

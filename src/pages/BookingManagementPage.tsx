@@ -87,7 +87,7 @@ const BookingManagementPage = () => {
         status: "approved",
         reviewed_by: user!.id,
         reviewed_at: new Date().toISOString(),
-        event_id: (eventData as any).id,
+        event_id: eventData.id,
       }).eq("id", booking.id);
       if (updateError) throw updateError;
       toast.success("Booking approved! Event created on schedule.");

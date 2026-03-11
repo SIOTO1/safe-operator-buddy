@@ -187,7 +187,7 @@ const CrmDashboardPage = () => {
       const leads = generateFakeLeads(50).map((l) => ({ ...l, company_id: companyId }));
       for (let i = 0; i < leads.length; i += 25) {
         const batch = leads.slice(i, i + 25);
-        const { error } = await supabase.from("crm_leads" as any).insert(batch as any);
+        const { error } = await supabase.from("crm_leads").insert(batch);
         if (error) throw error;
       }
       toast({ title: "Success", description: "50 test leads generated." });

@@ -217,7 +217,7 @@ const QuoteDetailPage = () => {
           created_by: user.id,
           notes: eventNotes,
           quote_id: id,
-        } as any)
+        })
         .select()
         .single();
 

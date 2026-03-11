@@ -224,7 +224,7 @@ const EventDetailPage = () => {
         event_id: eventId,
         product_id: selectedProductId,
         quantity: qty,
-      } as any);
+      });
       if (error) throw error;
       toast.success("Product assigned");
       setSelectedProductId("");
