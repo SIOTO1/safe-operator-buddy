@@ -75,11 +75,11 @@ export const EventStaffAssignment = ({ eventId, canManage, hasInflatables }: Pro
         .from("employees")
         .select("id, name, role")
         .in("id", empIds) as any;
-      const empMap = new Map((emps || []).map((e: any) => [e.id, e]));
+      const empMap = new Map((emps || []).map((e: any) => [e.id, { name: e.name, role: e.role }]));
       setAssignments((data || []).map((a: any) => ({
         ...a,
-        employee_name: empMap.get(a.employee_id)?.name || "Unknown",
-        employee_role: empMap.get(a.employee_id)?.role || "",
+        employee_name: (empMap.get(a.employee_id) as any)?.name || "Unknown",
+        employee_role: (empMap.get(a.employee_id) as any)?.role || "",
       })));
     } else {
       setAssignments([]);
