@@ -20,6 +20,7 @@ const KnowledgePage = lazy(() => import("./pages/KnowledgePage"));
 const ChecklistsPage = lazy(() => import("./pages/ChecklistsPage"));
 const ContractsPage = lazy(() => import("./pages/ContractsPage"));
 const CrewPage = lazy(() => import("./pages/CrewPage"));
+const TeamPage = lazy(() => import("./pages/TeamPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const IncidentReportPage = lazy(() => import("./pages/IncidentReportPage"));
 const WaiverPage = lazy(() => import("./pages/WaiverPage"));
@@ -119,6 +120,7 @@ const App = () => (
               <Route path="drivers" element={<DriverManagementPage />} />
               <Route path="conversations" element={<DifficultConversationsPage />} />
               <Route path="crew" element={<CrewPage />} />
+              <Route path="team" element={<TeamPage />} />
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="scheduling/:eventId" element={<EventDetailPage />} />
               <Route path="events/calendar" element={<EventCalendarPage />} />

@@ -21,6 +21,7 @@ const getNavItems = (basePath: string) => [
   { to: `${basePath}/drivers`, icon: Truck, label: "Driver Management" },
   { to: `${basePath}/conversations`, icon: MessageSquareWarning, label: "Difficult Conversations" },
   { to: `${basePath}/crew`, icon: Users, label: "Crew" },
+  { to: `${basePath}/team`, icon: ShieldCheck, label: "Team Management" },
   { to: `${basePath}/employees`, icon: HardHat, label: "Employees" },
   { to: `${basePath}/compliance`, icon: ShieldCheck, label: "Compliance", minRole: "manager" as const },
   { to: `${basePath}/scheduling`, icon: CalendarDays, label: "Scheduling" },
