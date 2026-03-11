@@ -297,12 +297,30 @@ const EventDetailPage = () => {
             <ArrowLeft size={18} />
           </Button>
           <div>
-            <h1 className="text-2xl font-display font-bold">{event.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-display font-bold">{event.title}</h1>
+              <Badge
+                variant={event.status === "completed" ? "default" : "outline"}
+                className={event.status === "completed" ? "bg-green-600 text-white" : ""}
+              >
+                {event.status === "completed" ? "Completed" : "Upcoming"}
+              </Badge>
+            </div>
             <p className="text-muted-foreground text-sm">{format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}</p>
           </div>
         </div>
         {canManage && (
           <div className="flex items-center gap-2">
+            {event.status !== "completed" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleMarkCompleted}
+                className="text-green-600 border-green-600/30 hover:bg-green-50 dark:hover:bg-green-900/20"
+              >
+                <CheckCircle2 size={14} className="mr-1.5" /> Mark Completed
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
