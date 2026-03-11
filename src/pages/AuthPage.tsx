@@ -26,44 +26,54 @@ const AuthPage = () => {
       const validatedEmail = emailSchema.parse(email);
       const validatedPassword = passwordSchema.parse(password);
 
-      // Rate limit check
-      const { data: allowed, error: rlError } = await supabase.rpc("check_rate_limit", {
-        _identifier: validatedEmail,
-        _action: "login",
-        _max_requests: 5,
-        _window_seconds: 60,
-      });
-      if (rlError) console.error("Rate limit check failed:", rlError);
-      if (allowed === false) {
-        toast.error("Too many login attempts. Please wait a minute and try again.");
-        setLoading(false);
-        return;
+      // Rate limit check — skip gracefully if it fails
+      try {
+        const { data: allowed, error: rlError } = await supabase.rpc("check_rate_limit", {
+          _identifier: validatedEmail,
+          _action: "login",
+          _max_requests: 5,
+          _window_seconds: 60,
+        });
+        if (rlError) console.error("Rate limit check failed:", rlError);
+        if (allowed === false) {
+          toast.error("Too many login attempts. Please wait a minute and try again.");
+          setLoading(false);
+          return;
+        }
+      } catch (rlErr) {
+        console.error("Rate limit RPC error:", rlErr);
       }
 
+      console.log("Attempting sign in...");
       const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email: validatedEmail,
         password: validatedPassword,
       });
       if (error) throw error;
+      console.log("Sign in successful, resolving redirect...");
       toast.success("Welcome back!");
 
       // Resolve company slug for redirect
       if (signInData.user) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("company_id")
-          .eq("user_id", signInData.user.id)
-          .single();
-        if (prof?.company_id) {
-          const { data: company } = await supabase
-            .from("companies")
-            .select("slug")
-            .eq("id", prof.company_id)
+        try {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("company_id")
+            .eq("user_id", signInData.user.id)
             .single();
-          if ((company as any)?.slug) {
-            navigate(`/app/${(company as any).slug}`);
-            return;
+          if (prof?.company_id) {
+            const { data: company } = await supabase
+              .from("companies")
+              .select("slug")
+              .eq("id", prof.company_id)
+              .single();
+            if (company?.slug) {
+              navigate(`/app/${company.slug}`);
+              return;
+            }
           }
+        } catch (navErr) {
+          console.error("Redirect resolution failed:", navErr);
         }
       }
       navigate("/dashboard");
