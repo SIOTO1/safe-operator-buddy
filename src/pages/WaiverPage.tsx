@@ -217,7 +217,7 @@ const WaiverPage = () => {
     doc.text(footer, 20, y);
 
     doc.save(`Waiver_${form.participantName.replace(/\s+/g, "_")}_${eventDate ? format(eventDate, "yyyy-MM-dd") : "undated"}.pdf`);
-    toast({ title: "Waiver Generated", description: "PDF downloaded successfully." });
+    toast.success("Waiver Generated — PDF downloaded successfully.");
   };
 
   return (

@@ -150,7 +150,7 @@ const InterviewGuidePage = () => {
       }
     } catch (e: any) {
       console.error("Interview guide error:", e);
-      toast({ title: "Generation failed", description: e.message || "Could not generate guide.", variant: "destructive" });
+      toast.error(e.message || "Could not generate guide.");
     } finally {
       setGenerating(false);
     }
