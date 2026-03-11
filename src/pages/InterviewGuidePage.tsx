@@ -146,7 +146,7 @@ const InterviewGuidePage = () => {
       }
 
       if (!accumulated) {
-        toast({ title: "No content generated", description: "Please try again.", variant: "destructive" });
+        toast.error("No content generated. Please try again.");
       }
     } catch (e: any) {
       console.error("Interview guide error:", e);
