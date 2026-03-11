@@ -204,7 +204,7 @@ const ComplianceReportGenerator = () => {
           allCerts.forEach(cert => {
             const isExpired = cert.expiration_date && isBefore(new Date(cert.expiration_date), now);
             addTableRow([
-              (cert.employees as any)?.name || "Unknown",
+              (cert.employees as { name: string } | null)?.name || "Unknown",
               cert.certification_name,
               cert.certification_status,
               cert.issued_date ? format(new Date(cert.issued_date), "MMM d, yyyy") : "—",
