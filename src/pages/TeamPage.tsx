@@ -126,9 +126,63 @@ const TeamPage = () => {
     }
   }, [companyId, user?.id]);
 
+  const fetchInvites = useCallback(async () => {
+    if (!companyId) return;
+    try {
+      const { data } = await supabase
+        .from("user_invites")
+        .select("id, email, role, status, created_at")
+        .eq("company_id", companyId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      setPendingInvites(data || []);
+    } catch (err) {
+      console.error("Error fetching invites:", err);
+    }
+  }, [companyId]);
+
   useEffect(() => {
     fetchMembers();
-  }, [fetchMembers]);
+    fetchInvites();
+  }, [fetchMembers, fetchInvites]);
+
+  const handleSendInvite = async () => {
+    if (!inviteEmail.trim()) {
+      toast.error("Please enter an email address");
+      return;
+    }
+    setInviting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-invite", {
+        body: { email: inviteEmail.trim().toLowerCase(), role: inviteRole },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail("");
+      setInviteRole("staff");
+      setInviteOpen(false);
+      fetchInvites();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invitation");
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRevokeInvite = async (inviteId: string) => {
+    try {
+      const { error } = await supabase
+        .from("user_invites")
+        .update({ status: "revoked" })
+        .eq("id", inviteId);
+      if (error) throw error;
+      toast.success("Invitation revoked");
+      fetchInvites();
+    } catch (err: any) {
+      toast.error("Failed to revoke invitation");
+    }
+  };
 
   const handleRoleChange = async (memberId: string, newRole: TeamRole) => {
     try {
