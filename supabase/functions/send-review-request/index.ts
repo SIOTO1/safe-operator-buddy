@@ -84,12 +84,30 @@ Deno.serve(async (req) => {
 
     const bookings = bookingsRes.data || [];
     const products = productsRes.data || [];
+    const quoteLeads = quoteLeadsRes.data || [];
 
     let enqueued = 0;
 
     for (const event of events) {
+      // Try booking first, then fall back to CRM lead via quote
+      let customerName: string | null = null;
+      let customerEmail: string | null = null;
+
       const booking = bookings.find(b => b.event_id === event.id);
-      if (!booking?.customer_email) continue;
+      if (booking?.customer_email) {
+        customerName = booking.customer_name;
+        customerEmail = booking.customer_email;
+      } else {
+        // Fallback: check CRM lead via quote
+        const ql = quoteLeads.find(q => q.id === event.id) as any;
+        const lead = ql?.quotes?.crm_leads;
+        if (lead?.email) {
+          customerName = lead.name || "Customer";
+          customerEmail = lead.email;
+        }
+      }
+
+      if (!customerEmail) continue;
 
       // Get products for this event
       const eventProducts = products
