@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCompanySlug } from "@/hooks/use-company-slug";
-import { format, addDays, addMonths, subMonths, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, parseISO, isBefore, startOfDay, getDay } from "date-fns";
+import { format, addDays, addMonths, subMonths, startOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, isBefore, startOfDay, getDay } from "date-fns";
 import { CalendarDays, Plus, MapPin, Clock, ChevronLeft, ChevronRight, Calendar, Trash2 } from "lucide-react";
 import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,36 +17,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 import { useEventConflicts } from "@/hooks/use-event-conflicts";
 import { ConflictWarnings } from "@/components/scheduling/ConflictWarnings";
-
-interface Event {
-  id: string;
-  title: string;
-  event_date: string;
-  start_time: string | null;
-  end_time: string | null;
-  location: string | null;
-  notes: string | null;
-  company_id: string | null;
-  workspace_id: string | null;
-  lead_id: string | null;
-}
+import {
+  useWeekEvents,
+  useMonthEvents,
+  useCreateEvent,
+  useDeleteEvent,
+  useRescheduleEvent,
+  type ScheduleEvent,
+} from "@/hooks/use-scheduling-events";
 
 const SchedulingPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { basePath } = useCompanySlug();
-  const { user, role, companyId } = useAuth();
+  const { role } = useAuth();
   const isOwner = role === "owner";
   const isManager = role === "manager";
   const canManage = isOwner || isManager;
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
-  const [events, setEvents] = useState<Event[]>([]);
-  const [monthEvents, setMonthEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("calendar");
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
   const [dropTargetDate, setDropTargetDate] = useState<string | null>(null);
@@ -76,60 +69,29 @@ const SchedulingPage = () => {
     return [...padBefore, ...days, ...padAfter];
   }, [currentMonth]);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const startDate = format(weekStart, "yyyy-MM-dd");
-      const endDate = format(addDays(weekStart, 6), "yyyy-MM-dd");
-      const { data, error } = await supabase
-        .from("events").select("id, title, event_date, start_time, end_time, location, notes, company_id, workspace_id")
-        .gte("event_date", startDate).lte("event_date", endDate)
-        .order("event_date");
-      if (error) throw error;
-      setEvents((data || []) as unknown as Event[]);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      toast.error("Failed to load schedule data");
-    } finally {
-      setLoading(false);
-    }
-  }, [weekStart]);
+  // React Query hooks
+  const { data: events = [], isLoading: loading } = useWeekEvents(weekStart);
+  const { data: monthEvents = [] } = useMonthEvents(monthDays);
+  const createEventMutation = useCreateEvent();
+  const deleteEventMutation = useDeleteEvent();
+  const rescheduleEventMutation = useRescheduleEvent();
 
-  const fetchMonthEvents = useCallback(async () => {
-    try {
-      const mStart = format(monthDays[0], "yyyy-MM-dd");
-      const mEnd = format(monthDays[monthDays.length - 1], "yyyy-MM-dd");
-      const { data, error } = await supabase
-        .from("events").select("id, title, event_date, start_time, end_time, location, notes, company_id, workspace_id")
-        .gte("event_date", mStart).lte("event_date", mEnd)
-        .order("event_date");
-      if (error) throw error;
-      setMonthEvents((data || []) as unknown as Event[]);
-    } catch (err) {
-      console.error("Month fetch error:", err);
-    }
-  }, [monthDays]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-  useEffect(() => { if (activeTab === "month") fetchMonthEvents(); }, [activeTab, fetchMonthEvents]);
-
+  // Realtime subscription to invalidate queries
   useEffect(() => {
     const channel = supabase
       .channel("scheduling")
       .on("postgres_changes", { event: "*", schema: "public", table: "events" }, () => {
-        fetchData();
-        if (activeTab === "month") fetchMonthEvents();
+        queryClient.invalidateQueries({ queryKey: ["scheduling-events"] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetchData, fetchMonthEvents, activeTab]);
+  }, [queryClient]);
 
   const runConflictCheck = useCallback(async () => {
     if (!selectedDate) return;
     await checkConflicts({ eventDate: format(selectedDate, "yyyy-MM-dd") });
   }, [selectedDate, checkConflicts]);
 
-  // Auto-check conflicts when date changes in dialog
   useEffect(() => {
     if (createEventOpen && selectedDate) {
       runConflictCheck();
@@ -138,73 +100,45 @@ const SchedulingPage = () => {
 
   const handleCreateEvent = async (force = false) => {
     if (!newEvent.event_name || !selectedDate) return;
-
-    // If conflicts exist and user hasn't confirmed, show confirmation
     if (!force && conflicts.length > 0 && !showConfirmWithConflicts) {
       setShowConfirmWithConflicts(true);
       return;
     }
 
-    try {
-      const locationParts = [newEvent.location_address, newEvent.city, newEvent.state, newEvent.zip].filter(Boolean);
-      const fullLocation = locationParts.length > 0 ? locationParts.join(", ") : null;
-      const { error } = await supabase.from("events").insert({
-        title: newEvent.event_name,
-        event_date: format(selectedDate, "yyyy-MM-dd"),
-        start_time: newEvent.start_time || null,
-        end_time: newEvent.end_time || null,
-        location: fullLocation,
-        notes: newEvent.notes || null,
-        created_by: user!.id,
-        company_id: companyId,
-      });
-      if (error) throw error;
-      toast.success("Event created!");
-      setCreateEventOpen(false);
-      setShowConfirmWithConflicts(false);
-      clearConflicts();
-      setNewEvent({ event_name: "", location_address: "", city: "", state: "", zip: "", start_time: "08:00", end_time: "16:00", notes: "" });
-      fetchData();
-      if (activeTab === "month") fetchMonthEvents();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to create event");
-    }
+    const locationParts = [newEvent.location_address, newEvent.city, newEvent.state, newEvent.zip].filter(Boolean);
+    const fullLocation = locationParts.length > 0 ? locationParts.join(", ") : null;
+
+    createEventMutation.mutate({
+      title: newEvent.event_name,
+      event_date: format(selectedDate, "yyyy-MM-dd"),
+      start_time: newEvent.start_time || null,
+      end_time: newEvent.end_time || null,
+      location: fullLocation,
+      notes: newEvent.notes || null,
+    }, {
+      onSuccess: () => {
+        setCreateEventOpen(false);
+        setShowConfirmWithConflicts(false);
+        clearConflicts();
+        setNewEvent({ event_name: "", location_address: "", city: "", state: "", zip: "", start_time: "08:00", end_time: "16:00", notes: "" });
+      },
+    });
   };
 
   const handleDeleteEvent = async (eventId: string) => {
     if (!confirm("Delete this event? This cannot be undone.")) return;
-    try {
-      const { error } = await supabase.from("events").delete().eq("id", eventId);
-      if (error) throw error;
-      toast.success("Event deleted");
-      fetchData();
-      if (activeTab === "month") fetchMonthEvents();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete event");
-    }
+    deleteEventMutation.mutate(eventId);
   };
 
   const handleRescheduleEvent = async (eventId: string, newDate: string) => {
-    try {
-      // Quick conflict check for reschedule
-      const warnings = await checkConflicts({ eventDate: newDate, eventId });
-      if (warnings.length > 0) {
-        const proceed = confirm(
-          `Scheduling conflicts detected:\n${warnings.map(w => `• ${w.message}`).join("\n")}\n\nReschedule anyway?`
-        );
-        if (!proceed) return;
-      }
-      const { error } = await supabase.from("events").update({ event_date: newDate }).eq("id", eventId);
-      if (error) throw error;
-      toast.success("Event rescheduled!");
-      fetchData();
-      if (activeTab === "month") fetchMonthEvents();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to reschedule event");
+    const warnings = await checkConflicts({ eventDate: newDate, eventId });
+    if (warnings.length > 0) {
+      const proceed = confirm(
+        `Scheduling conflicts detected:\n${warnings.map(w => `• ${w.message}`).join("\n")}\n\nReschedule anyway?`
+      );
+      if (!proceed) return;
     }
+    rescheduleEventMutation.mutate({ eventId, newDate });
   };
 
   const getEventsForDay = (date: Date) => {
@@ -218,10 +152,6 @@ const SchedulingPage = () => {
   };
 
   const today = startOfDay(new Date());
-
-  const formatLocation = (ev: Event) => {
-    return ev.location || null;
-  };
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
@@ -331,14 +261,14 @@ const SchedulingPage = () => {
                                 {ev.start_time?.slice(0, 5)}{ev.end_time ? `–${ev.end_time.slice(0, 5)}` : ""}
                               </p>
                             )}
-                            {formatLocation(ev) && (
+                            {ev.location && (
                               <p className="text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
                                 <MapPin size={10} />
                                 {ev.location}
                               </p>
                             )}
                             <WeatherSafetyBadge
-                              eventLocation={formatLocation(ev)}
+                              eventLocation={ev.location}
                               eventDate={ev.event_date}
                               compact
                             />
