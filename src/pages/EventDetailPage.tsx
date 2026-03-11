@@ -478,7 +478,7 @@ const EventDetailPage = () => {
           <EventStaffAssignment
             eventId={event.id}
             canManage={canManage}
-            hasInflatables={eventProducts.some(ep => INFLATABLE_CATEGORIES.has(ep.product_category))}
+            hasInflatables={eventProducts.some(ep => ep.product_category === "inflatables" || ep.product_category === "slides")}
           />
         </div>
 
