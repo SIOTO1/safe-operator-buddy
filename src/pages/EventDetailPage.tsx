@@ -18,6 +18,7 @@ import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
 import { PaymentSummary } from "@/components/scheduling/PaymentSummary";
 import type { WeatherData } from "@/components/scheduling/WeatherSafetyBadge";
 import { getInflatableSafetyLevel } from "@/components/scheduling/WeatherSafetyBadge";
+import { EventStaffAssignment } from "@/components/scheduling/EventStaffAssignment";
 
 interface EventDetail {
   id: string;
