@@ -247,6 +247,7 @@ const StorefrontPage = () => {
                     cart={cart}
                     selectedDate={selectedDate}
                     cartTotal={cartTotal}
+                    companySlug={slug}
                     onBack={() => setShowBookingForm(false)}
                     onSuccess={() => {
                       setCart([]);
