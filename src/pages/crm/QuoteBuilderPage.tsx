@@ -125,7 +125,7 @@ const QuoteBuilderPage = () => {
 
       queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
       toast.success(`Quote saved as ${status}`);
-      navigate("/dashboard/crm/quotes");
+      navigate(`${basePath}/crm/quotes`);
     } catch {
       toast.error("Failed to save quote");
     } finally {
