@@ -63,6 +63,10 @@ const TeamPage = () => {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<TeamRole>("staff");
+  const [inviting, setInviting] = useState(false);
+  const [pendingInvites, setPendingInvites] = useState<any[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<TeamRole | null>(null);
 
   const isAdmin = currentUserRole === "admin";
