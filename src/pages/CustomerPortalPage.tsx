@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import {
   CalendarDays, MapPin, Package, DollarSign, FileText, Phone, Mail,
   Download, CreditCard, CheckCircle2, Clock, AlertCircle, Globe,
-  History, XCircle, Loader2, PenTool, Eraser,
+  History, XCircle, Loader2, PenTool, Eraser, CalendarClock, TriangleAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +54,12 @@ const CustomerPortalPage = () => {
   const [signing, setSigning] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
+
+  // Reschedule state
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [newDate, setNewDate] = useState("");
+  const [rescheduling, setRescheduling] = useState(false);
+  const [rescheduleResult, setRescheduleResult] = useState<{ success?: boolean; error?: string; unavailable?: string[]; route_warning?: string | null } | null>(null);
 
   const paymentStatus = searchParams.get("payment");
   const sessionId = searchParams.get("session_id");
@@ -258,6 +264,42 @@ const CustomerPortalPage = () => {
 
     doc.save(`contract-${data.event.title.replace(/\s+/g, "-").toLowerCase()}.pdf`);
     toast.success("Contract PDF downloaded");
+  };
+
+  const handleReschedule = async () => {
+    if (!token || !newDate) return;
+    const requestedDate = new Date(newDate + "T00:00:00");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (requestedDate < today) {
+      toast.error("Please select a future date");
+      return;
+    }
+    setRescheduling(true);
+    setRescheduleResult(null);
+    try {
+      const { data: result, error: fnError } = await supabase.functions.invoke("portal-reschedule-event", {
+        body: { token, new_date: newDate },
+      });
+      if (fnError) throw fnError;
+      if (result?.error) {
+        setRescheduleResult({ error: result.error, unavailable: result.unavailable });
+        return;
+      }
+      setRescheduleResult({ success: true, route_warning: result.route_warning });
+      toast.success("Event rescheduled successfully!");
+      setShowReschedule(false);
+      setNewDate("");
+      // Refresh data
+      const { data: refreshed } = await supabase.functions.invoke("portal-event-data", {
+        body: { token },
+      });
+      if (refreshed && !refreshed.error) setData(refreshed);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reschedule");
+    } finally {
+      setRescheduling(false);
+    }
   };
 
   const handlePayBalance = async () => {
@@ -837,6 +879,92 @@ const CustomerPortalPage = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Reschedule Event */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CalendarClock size={16} /> Reschedule Event
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!showReschedule ? (
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Need to change your event date? Submit a reschedule request and we'll check availability.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => { setShowReschedule(true); setRescheduleResult(null); }}
+                  className="w-full"
+                >
+                  <CalendarClock size={14} className="mr-1.5" /> Request Reschedule
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-1.5 block">Current Date</label>
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1.5 block">New Preferred Date</label>
+                  <Input
+                    type="date"
+                    value={newDate}
+                    onChange={e => { setNewDate(e.target.value); setRescheduleResult(null); }}
+                    min={format(new Date(Date.now() + 86400000), "yyyy-MM-dd")}
+                  />
+                </div>
+
+                {rescheduleResult?.error && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1">
+                    <p className="text-sm font-medium text-destructive flex items-center gap-1.5">
+                      <TriangleAlert size={14} /> {rescheduleResult.error}
+                    </p>
+                    {rescheduleResult.unavailable && rescheduleResult.unavailable.length > 0 && (
+                      <ul className="text-xs text-muted-foreground ml-5 list-disc space-y-0.5">
+                        {rescheduleResult.unavailable.map((item, i) => (
+                          <li key={i}>{item}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {rescheduleResult?.route_warning && (
+                  <div className="rounded-lg border border-yellow-300 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 p-3">
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300">{rescheduleResult.route_warning}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => { setShowReschedule(false); setRescheduleResult(null); setNewDate(""); }}
+                    disabled={rescheduling}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleReschedule}
+                    disabled={rescheduling || !newDate}
+                  >
+                    {rescheduling ? (
+                      <><Loader2 size={14} className="mr-1.5 animate-spin" /> Checking...</>
+                    ) : (
+                      "Confirm Reschedule"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
