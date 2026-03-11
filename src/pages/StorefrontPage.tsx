@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ShoppingCart, Search, Filter, Package, X, CalendarIcon } from "lucide-react";
+import BookingForm from "@/components/storefront/BookingForm";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
