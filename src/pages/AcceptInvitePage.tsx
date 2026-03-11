@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Shield, Eye, EyeOff, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import ShieldLogo from "@/components/ShieldLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
