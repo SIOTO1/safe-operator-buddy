@@ -78,6 +78,7 @@ const SettingsPage = () => {
             website: settings.website,
             logo_url: settings.logo_url,
             default_delivery_fee: settings.default_delivery_fee,
+            review_link: settings.review_link,
           } as any)
           .eq("id", settings.id);
         if (error) throw error;
