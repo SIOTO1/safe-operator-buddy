@@ -33,7 +33,7 @@ const emptySettings: OrgSettings = {
 };
 
 const SettingsPage = () => {
-  const { role } = useAuth();
+  const { role, companyId } = useAuth();
   const { updateOrg } = useOrgSettings();
   const isOwner = role === "owner";
   const [settings, setSettings] = useState<OrgSettings>(emptySettings);
@@ -94,6 +94,7 @@ const SettingsPage = () => {
             logo_url: settings.logo_url,
             default_delivery_fee: settings.default_delivery_fee,
             review_link: settings.review_link,
+            company_id: companyId,
           })
           .select()
           .single();

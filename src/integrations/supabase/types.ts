@@ -1354,6 +1354,7 @@ export type Database = {
       organization_settings: {
         Row: {
           address: string | null
+          company_id: string | null
           company_name: string
           created_at: string
           default_delivery_fee: number | null
@@ -1367,6 +1368,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          company_id?: string | null
           company_name?: string
           created_at?: string
           default_delivery_fee?: number | null
@@ -1380,6 +1382,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          company_id?: string | null
           company_name?: string
           created_at?: string
           default_delivery_fee?: number | null
@@ -1391,7 +1394,15 @@ export type Database = {
           updated_at?: string
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organization_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
