@@ -779,6 +779,47 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_certifications: {
+        Row: {
+          certificate_id: string | null
+          certification_name: string
+          certification_status: Database["public"]["Enums"]["certification_status"]
+          created_at: string
+          employee_id: string
+          expiration_date: string | null
+          id: string
+          issued_date: string | null
+        }
+        Insert: {
+          certificate_id?: string | null
+          certification_name: string
+          certification_status?: Database["public"]["Enums"]["certification_status"]
+          created_at?: string
+          employee_id: string
+          expiration_date?: string | null
+          id?: string
+          issued_date?: string | null
+        }
+        Update: {
+          certificate_id?: string | null
+          certification_name?: string
+          certification_status?: Database["public"]["Enums"]["certification_status"]
+          created_at?: string
+          employee_id?: string
+          expiration_date?: string | null
+          id?: string
+          issued_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_certifications_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           company_id: string
@@ -1690,6 +1731,7 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "manager" | "crew"
+      certification_status: "active" | "expired" | "pending" | "revoked"
       employee_role:
         | "driver"
         | "installer"
@@ -1842,6 +1884,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "manager", "crew"],
+      certification_status: ["active", "expired", "pending", "revoked"],
       employee_role: [
         "driver",
         "installer",
