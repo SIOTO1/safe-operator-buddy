@@ -103,6 +103,7 @@ const App = () => (
               <Route path="crew" element={<CrewPage />} />
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="scheduling/:eventId" element={<EventDetailPage />} />
+              <Route path="events/calendar" element={<EventCalendarPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
               <Route path="products" element={<ProductCatalogPage />} />
