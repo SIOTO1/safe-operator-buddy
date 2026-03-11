@@ -1953,6 +1953,20 @@ export type Database = {
       }
       generate_company_slug: { Args: { _name: string }; Returns: string }
       get_dashboard_stats: { Args: never; Returns: Json }
+      get_org_settings_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          address: string
+          company_id: string
+          company_name: string
+          default_delivery_fee: number
+          email: string
+          logo_url: string
+          phone: string
+          review_link: string
+          website: string
+        }[]
+      }
       get_product_availability: {
         Args: { _company_id: string; _date: string }
         Returns: {
