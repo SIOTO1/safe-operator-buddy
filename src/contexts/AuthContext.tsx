@@ -66,29 +66,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let mounted = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, nextSession) => {
         if (!mounted) return;
-        setSession(session);
-        setUser(session?.user ?? null);
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
 
-        if (session?.user) {
-          await fetchUserData(session.user.id);
+        if (nextSession?.user) {
+          // Avoid auth deadlocks by deferring DB calls outside the auth callback stack
+          setTimeout(() => {
+            void fetchUserData(nextSession.user.id).finally(() => {
+              if (mounted) setLoading(false);
+            });
+          }, 0);
         } else {
           setRole(null);
           setProfile(null);
+          setLoading(false);
         }
-        if (mounted) setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    void supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (!mounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchUserData(session.user.id);
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      if (currentSession?.user) {
+        void fetchUserData(currentSession.user.id).finally(() => {
+          if (mounted) setLoading(false);
+        });
+      } else {
+        setRole(null);
+        setProfile(null);
+        setLoading(false);
       }
-      if (mounted) setLoading(false);
     });
 
     return () => {
