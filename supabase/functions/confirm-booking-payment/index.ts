@@ -162,6 +162,7 @@ serve(async (req) => {
       special_requests: notes,
       status: "approved",
       event_id: event.id,
+      company_id: companyId,
     });
 
     // 5. Send confirmation email
