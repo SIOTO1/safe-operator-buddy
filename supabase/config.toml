@@ -31,3 +31,5 @@ project_id = "atdpdxocpjnldajapjyp"
     verify_jwt = false
   [functions.create-portal-payment]
     verify_jwt = false
+  [functions.portal-sign-contract]
+    verify_jwt = false

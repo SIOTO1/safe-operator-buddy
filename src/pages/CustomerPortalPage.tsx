@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import {
   CalendarDays, MapPin, Package, DollarSign, FileText, Phone, Mail,
   Download, CreditCard, CheckCircle2, Clock, AlertCircle, Globe,
-  History, XCircle, Loader2,
+  History, XCircle, Loader2, PenTool, Eraser,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,6 +47,14 @@ const CustomerPortalPage = () => {
   const [paymentMode, setPaymentMode] = useState<"full" | "custom">("full");
   const [customAmount, setCustomAmount] = useState("");
 
+  // Contract signing state
+  const [showContractView, setShowContractView] = useState(false);
+  const [showSigningPad, setShowSigningPad] = useState(false);
+  const [signerName, setSignerName] = useState("");
+  const [signing, setSigning] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawingRef = useRef(false);
+
   const paymentStatus = searchParams.get("payment");
   const sessionId = searchParams.get("session_id");
 
@@ -70,7 +78,6 @@ const CustomerPortalPage = () => {
     fetchData();
   }, [token]);
 
-  // Verify payment after redirect
   useEffect(() => {
     if (paymentStatus === "success" && sessionId) {
       const verify = async () => {
@@ -80,19 +87,178 @@ const CustomerPortalPage = () => {
           });
           if (result?.status === "completed") {
             toast.success("Payment completed successfully!");
-            // Refresh data
             const { data: refreshed } = await supabase.functions.invoke("portal-event-data", {
               body: { token },
             });
             if (refreshed && !refreshed.error) setData(refreshed);
           }
         } catch {
-          // Silent — data will refresh
+          // Silent
         }
       };
       verify();
     }
   }, [paymentStatus, sessionId, token]);
+
+  // Signature pad setup
+  const initCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * 2;
+    canvas.height = rect.height * 2;
+    ctx.scale(2, 2);
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+  }, []);
+
+  useEffect(() => {
+    if (showSigningPad) {
+      setTimeout(initCanvas, 100);
+    }
+  }, [showSigningPad, initCanvas]);
+
+  const getPos = (e: React.MouseEvent | React.TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    if ("touches" in e) {
+      return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+    }
+    return { x: (e as React.MouseEvent).clientX - rect.left, y: (e as React.MouseEvent).clientY - rect.top };
+  };
+
+  const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
+    isDrawingRef.current = true;
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  };
+
+  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawingRef.current) return;
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  };
+
+  const endDraw = () => { isDrawingRef.current = false; };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const isCanvasEmpty = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return true;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return true;
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    return !data.some((val, i) => i % 4 === 3 && val > 0);
+  };
+
+  const handleSignContract = async () => {
+    if (!data?.contract || !token || !signerName.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    if (isCanvasEmpty()) {
+      toast.error("Please draw your signature");
+      return;
+    }
+    setSigning(true);
+    try {
+      const signatureImage = canvasRef.current!.toDataURL("image/png");
+      const { data: result, error: fnError } = await supabase.functions.invoke("portal-sign-contract", {
+        body: {
+          token,
+          contract_id: data.contract.id,
+          signed_by: signerName.trim(),
+          signature_image: signatureImage,
+        },
+      });
+      if (fnError) throw fnError;
+      if (result?.error) throw new Error(result.error);
+
+      toast.success("Contract signed successfully!");
+      setShowSigningPad(false);
+      // Refresh data
+      const { data: refreshed } = await supabase.functions.invoke("portal-event-data", {
+        body: { token },
+      });
+      if (refreshed && !refreshed.error) setData(refreshed);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to sign contract");
+    } finally {
+      setSigning(false);
+    }
+  };
+
+  const handleDownloadContractPdf = () => {
+    if (!data?.contract) return;
+    const doc = new jsPDF();
+    const org = data.organization;
+    const contract = data.contract;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text(org?.company_name || "Contract", 20, 25);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("RENTAL AGREEMENT / CONTRACT", 20, 33);
+
+    // Contract text - strip HTML
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = contract.contract_text;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    
+    let y = 45;
+    doc.setFontSize(9);
+    const lines = doc.splitTextToSize(plainText, 170);
+    for (const line of lines) {
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.text(line, 20, y);
+      y += 5;
+    }
+
+    // Signature section
+    if (contract.signed_at) {
+      y += 10;
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFont("helvetica", "bold");
+      doc.text("SIGNATURE", 20, y);
+      y += 8;
+      doc.setFont("helvetica", "normal");
+      doc.text(`Signed by: ${contract.signed_by}`, 20, y);
+      y += 6;
+      doc.text(`Date: ${format(new Date(contract.signed_at), "MMMM d, yyyy 'at' h:mm a")}`, 20, y);
+      
+      if (contract.signature_image) {
+        y += 8;
+        try {
+          doc.addImage(contract.signature_image, "PNG", 20, y, 80, 30);
+        } catch {
+          // Skip if image can't be added
+        }
+      }
+    }
+
+    doc.save(`contract-${data.event.title.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    toast.success("Contract PDF downloaded");
+  };
 
   const handlePayBalance = async () => {
     if (!data || data.remainingBalance <= 0) return;
@@ -135,7 +301,6 @@ const CustomerPortalPage = () => {
     const org = data.organization;
     const event = data.event;
 
-    // Header
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
     doc.text(org?.company_name || "Invoice", 20, 25);
@@ -155,7 +320,6 @@ const CustomerPortalPage = () => {
     doc.text(`Event: ${event.title}`, 150, 38);
     doc.text(`Event Date: ${format(new Date(event.event_date), "MMM d, yyyy")}`, 150, 43);
 
-    // Customer info
     let y = 58;
     doc.setFont("helvetica", "bold");
     doc.text("Bill To:", 20, y);
@@ -165,7 +329,6 @@ const CustomerPortalPage = () => {
     if (data.customer?.customer_email) { doc.text(data.customer.customer_email, 20, y); y += 5; }
     if (data.customer?.customer_phone) { doc.text(data.customer.customer_phone, 20, y); y += 5; }
 
-    // Line items table
     y += 10;
     doc.setFont("helvetica", "bold");
     doc.setFillColor(245, 245, 245);
@@ -189,7 +352,6 @@ const CustomerPortalPage = () => {
       y += 6;
     });
 
-    // Totals
     y += 4;
     doc.line(120, y, 190, y);
     y += 8;
@@ -207,6 +369,29 @@ const CustomerPortalPage = () => {
 
     doc.save(`invoice-${event.title.replace(/\s+/g, "-").toLowerCase()}.pdf`);
     toast.success("Invoice downloaded");
+  };
+
+  const openContractView = () => {
+    if (!data?.contract) return;
+    const contract = data.contract;
+    const w = window.open("", "_blank");
+    if (w) {
+      w.document.write(`
+        <html><head><title>Contract</title>
+        <style>body{font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.6}
+        img{max-width:300px;border:1px solid #ccc;margin-top:20px}
+        .sig-section{margin-top:40px;padding-top:20px;border-top:2px solid #333}
+        </style></head>
+        <body>${contract.contract_text}
+        ${contract.signed_at ? `<div class="sig-section">
+          <p><strong>Signed by:</strong> ${contract.signed_by}</p>
+          <p><strong>Date:</strong> ${format(new Date(contract.signed_at), "MMMM d, yyyy 'at' h:mm a")}</p>
+          ${contract.signature_image ? `<img src="${contract.signature_image}" alt="Signature" />` : ""}
+        </div>` : ""}
+        </body></html>
+      `);
+      w.document.close();
+    }
   };
 
   if (loading) {
@@ -238,6 +423,8 @@ const CustomerPortalPage = () => {
   if (!data) return null;
 
   const { event, products, contract, organization, customer, quoteTotal, totalPaid, depositPaid, remainingBalance } = data;
+  const contractSigned = !!contract?.signed_at;
+  const contractExists = !!contract;
 
   return (
     <div className="min-h-screen bg-background">
@@ -358,6 +545,127 @@ const CustomerPortalPage = () => {
           </Card>
         )}
 
+        {/* Contract Section */}
+        {contractExists && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText size={16} /> Contract
+              </CardTitle>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-xs",
+                  contractSigned
+                    ? "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-300 dark:border-green-700"
+                    : "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700"
+                )}
+              >
+                {contractSigned ? "Signed" : "Awaiting Signature"}
+              </Badge>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {contractSigned ? (
+                <>
+                  <div className="text-sm space-y-1">
+                    <p className="text-muted-foreground">
+                      Signed by <span className="font-medium text-foreground">{contract.signed_by}</span> on{" "}
+                      {format(new Date(contract.signed_at), "MMMM d, yyyy 'at' h:mm a")}
+                    </p>
+                    {contract.signature_image && (
+                      <div className="mt-3 p-3 border border-border rounded-lg bg-muted/30 inline-block">
+                        <img src={contract.signature_image} alt="Signature" className="h-16 w-auto" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    <Button variant="outline" size="sm" onClick={openContractView}>
+                      <FileText size={14} className="mr-1.5" /> View Contract
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleDownloadContractPdf}>
+                      <Download size={14} className="mr-1.5" /> Download PDF
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Your contract is ready for review and signature. Please read the terms below and sign to confirm.
+                  </p>
+
+                  {/* Contract preview */}
+                  <div className="border border-border rounded-lg p-4 max-h-64 overflow-y-auto bg-muted/20 text-sm leading-relaxed">
+                    <div dangerouslySetInnerHTML={{ __html: contract.contract_text }} />
+                  </div>
+
+                  {!showSigningPad ? (
+                    <Button onClick={() => {
+                      setShowSigningPad(true);
+                      setSignerName(customer?.customer_name || "");
+                    }} className="w-full" size="lg">
+                      <PenTool size={16} className="mr-2" /> Sign Contract
+                    </Button>
+                  ) : (
+                    <div className="space-y-4 border border-border rounded-lg p-4 bg-card">
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">Your Full Name</label>
+                        <Input
+                          value={signerName}
+                          onChange={e => setSignerName(e.target.value)}
+                          placeholder="Enter your full name"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-sm font-medium">Signature</label>
+                          <Button variant="ghost" size="sm" onClick={clearCanvas} className="h-7 text-xs">
+                            <Eraser size={12} className="mr-1" /> Clear
+                          </Button>
+                        </div>
+                        <canvas
+                          ref={canvasRef}
+                          className="w-full h-32 border-2 border-dashed border-border rounded-lg cursor-crosshair bg-background touch-none"
+                          onMouseDown={startDraw}
+                          onMouseMove={draw}
+                          onMouseUp={endDraw}
+                          onMouseLeave={endDraw}
+                          onTouchStart={startDraw}
+                          onTouchMove={draw}
+                          onTouchEnd={endDraw}
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-1">Draw your signature above using mouse or touch</p>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => setShowSigningPad(false)}
+                          disabled={signing}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          className="flex-1"
+                          onClick={handleSignContract}
+                          disabled={signing || !signerName.trim()}
+                        >
+                          {signing ? (
+                            <><Loader2 size={14} className="mr-1.5 animate-spin" /> Signing...</>
+                          ) : (
+                            <><PenTool size={14} className="mr-1.5" /> Confirm & Sign</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Payment Summary */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -404,7 +712,6 @@ const CustomerPortalPage = () => {
 
             {remainingBalance > 0 && (
               <div className="space-y-3 pt-2">
-                {/* Payment mode toggle */}
                 <div className="flex gap-2">
                   <Button
                     variant={paymentMode === "full" ? "default" : "outline"}
@@ -418,10 +725,7 @@ const CustomerPortalPage = () => {
                     variant={paymentMode === "custom" ? "default" : "outline"}
                     size="sm"
                     className="flex-1"
-                    onClick={() => {
-                      setPaymentMode("custom");
-                      setCustomAmount("");
-                    }}
+                    onClick={() => { setPaymentMode("custom"); setCustomAmount(""); }}
                   >
                     Custom Amount
                   </Button>
@@ -536,39 +840,6 @@ const CustomerPortalPage = () => {
 
         {/* Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* View Contract */}
-          {contract?.signed_at && (
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => {
-              // Open contract in dialog/modal — for now show toast
-              const w = window.open("", "_blank");
-              if (w) {
-                w.document.write(`
-                  <html><head><title>Contract</title>
-                  <style>body{font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.6}
-                  img{max-width:300px;border:1px solid #ccc;margin-top:20px}</style></head>
-                  <body>${contract.contract_text}
-                  ${contract.signature_image ? `<hr><p><strong>Signed by:</strong> ${contract.signed_by}</p>
-                  <p><strong>Date:</strong> ${format(new Date(contract.signed_at), "MMMM d, yyyy 'at' h:mm a")}</p>
-                  <img src="${contract.signature_image}" alt="Signature" />` : ""}
-                  </body></html>
-                `);
-                w.document.close();
-              }
-            }}>
-              <CardContent className="pt-6 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <FileText size={18} className="text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">View Signed Contract</p>
-                  <p className="text-xs text-muted-foreground">
-                    Signed {format(new Date(contract.signed_at), "MMM d, yyyy")}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Download Invoice */}
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleDownloadInvoice}>
             <CardContent className="pt-6 flex items-center gap-3">
