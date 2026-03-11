@@ -120,6 +120,7 @@ const App = () => (
               <Route path="quotes/create" element={<QuoteBuilderPage />} />
               <Route path="crm/contracts/:id" element={<ContractSigningPage />} />
               <Route path="employees" element={<EmployeesPage />} />
+              <Route path="compliance" element={<ComplianceDashboardPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
 
