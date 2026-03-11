@@ -59,7 +59,12 @@ const App = () => (
             <Route path="/book" element={<BookingPage />} />
             <Route path="/portal/event/:token" element={<CustomerPortalPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/app/:slug/dashboard" element={
+              <ProtectedRoute>
+                <CompanyDashboardRedirect />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <DashboardLayout />
