@@ -199,6 +199,7 @@ const LeadDetailPage = () => {
           convertForm.notes,
         ].filter(Boolean).join("\n"),
         created_by: user.id,
+        company_id: companyId,
       }).select("id").single();
       if (error) throw error;
       toast.success("Event created from lead");
