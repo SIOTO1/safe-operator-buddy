@@ -183,10 +183,10 @@ const ComplianceDashboardPage = () => {
   };
 
   const handleAddInspection = async () => {
-    const { error } = await supabase.from("equipment_inspections" as any).insert({
+    const { error } = await supabase.from("equipment_inspections").insert({
       product_id: newInspection.product_id,
-      inspected_by: user?.id,
-      inspection_status: newInspection.inspection_status,
+      inspected_by: user?.id!,
+      inspection_status: newInspection.inspection_status as "pass" | "fail" | "needs_repair",
       notes: newInspection.notes || null,
       next_due_date: newInspection.next_due_date || null,
     });
