@@ -473,6 +473,13 @@ const EventDetailPage = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Staff Assignments */}
+          <EventStaffAssignment
+            eventId={event.id}
+            canManage={canManage}
+            hasInflatables={eventProducts.some(ep => INFLATABLE_CATEGORIES.has(ep.product_category))}
+          />
         </div>
 
         {/* Right: Payment & Safety */}
