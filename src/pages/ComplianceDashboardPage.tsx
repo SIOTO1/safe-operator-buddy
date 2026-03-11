@@ -381,7 +381,7 @@ const ComplianceDashboardPage = () => {
                   <div key={ins.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium truncate">{(ins.products as any)?.name || "Equipment"}</p>
+                        <p className="text-sm font-medium truncate">{(ins.products as { name: string } | null)?.name || "Equipment"}</p>
                         <Badge variant="outline" className={`${sm.color} border-0 text-[10px]`}>{sm.label}</Badge>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
