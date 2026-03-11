@@ -108,12 +108,9 @@ const AuthPage = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-primary hover:underline"
-            >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
+            <Link to="/signup" className="text-sm text-primary hover:underline">
+              Don't have an account? Create your company
+            </Link>
           </div>
         </div>
 
