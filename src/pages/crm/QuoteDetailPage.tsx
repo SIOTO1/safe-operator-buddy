@@ -77,14 +77,17 @@ const QuoteDetailPage = () => {
   const { data: products = [] } = useQuery({
     queryKey: ["products", companyId],
     queryFn: async () => {
+      if (!companyId) return [];
       const { data, error } = await supabase
         .from("products")
         .select("*")
+        .eq("company_id", companyId)
         .eq("is_active", true)
         .order("name");
       if (error) throw error;
       return data || [];
     },
+    enabled: !!companyId,
   });
 
   // Seed form from loaded quote
