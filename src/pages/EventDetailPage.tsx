@@ -277,9 +277,36 @@ const EventDetailPage = () => {
           </div>
         </div>
         {canManage && (
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
-            <Trash2 size={14} className="mr-1.5" /> Delete
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={generatingPortalLink}
+              onClick={async () => {
+                setGeneratingPortalLink(true);
+                try {
+                  const { data: result, error: fnError } = await supabase.functions.invoke("generate-portal-token", {
+                    body: { event_id: eventId },
+                  });
+                  if (fnError) throw fnError;
+                  if (result?.error) throw new Error(result.error);
+                  const portalUrl = `${window.location.origin}/portal/event/${result.token}`;
+                  await navigator.clipboard.writeText(portalUrl);
+                  toast.success("Portal link copied to clipboard!");
+                } catch (err: any) {
+                  toast.error(err.message || "Failed to generate portal link");
+                } finally {
+                  setGeneratingPortalLink(false);
+                }
+              }}
+            >
+              {generatingPortalLink ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <Share2 size={14} className="mr-1.5" />}
+              {generatingPortalLink ? "Generating..." : "Copy Portal Link"}
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleDelete}>
+              <Trash2 size={14} className="mr-1.5" /> Delete
+            </Button>
+          </div>
         )}
       </div>
 
