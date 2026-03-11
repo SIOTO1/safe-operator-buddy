@@ -40,7 +40,7 @@ const ComplianceReportGenerator = () => {
 
   const generateReport = async () => {
     if (selectedSections.size === 0) {
-      toast({ title: "Select at least one section", variant: "destructive" });
+      toast.error("Select at least one section");
       return;
     }
 
