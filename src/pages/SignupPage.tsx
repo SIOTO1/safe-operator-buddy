@@ -68,8 +68,8 @@ const SignupPage = () => {
             .eq("id", profile.company_id)
             .single();
 
-          toast.success("Welcome to SIOTO.AI! Your company is set up.");
-          navigate(company?.slug ? `/app/${company.slug}/dashboard` : "/dashboard");
+          toast.success("Welcome to SIOTO.AI! Let's set up your company.");
+          navigate(company?.slug ? `/app/${company.slug}/setup` : "/dashboard");
         } else {
           toast.success("Account created! Welcome aboard!");
           navigate("/dashboard");
