@@ -25,6 +25,20 @@ const AuthPage = () => {
       const validatedEmail = emailSchema.parse(email);
       const validatedPassword = passwordSchema.parse(password);
 
+      // Rate limit check
+      const { data: allowed, error: rlError } = await supabase.rpc("check_rate_limit", {
+        _identifier: validatedEmail,
+        _action: "login",
+        _max_requests: 5,
+        _window_seconds: 60,
+      });
+      if (rlError) console.error("Rate limit check failed:", rlError);
+      if (allowed === false) {
+        toast.error("Too many login attempts. Please wait a minute and try again.");
+        setLoading(false);
+        return;
+      }
+
       const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email: validatedEmail,
         password: validatedPassword,

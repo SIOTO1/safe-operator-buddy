@@ -13,7 +13,7 @@ import ComplianceReportGenerator from "@/components/compliance/ComplianceReportG
 import { motion } from "framer-motion";
 import { format, addDays, isBefore, differenceInDays } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 type StatusLevel = "green" | "yellow" | "red";
 
@@ -178,8 +178,8 @@ const ComplianceDashboardPage = () => {
       expiration_date: newPolicy.expiration_date,
       document_url: newPolicy.document_url || null,
     });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
-    else { toast({ title: "Policy added" }); setAddOpen(false); setNewPolicy({ provider: "", policy_number: "", coverage_amount: "", effective_date: "", expiration_date: "", document_url: "" }); loadData(); }
+    if (error) { toast.error(error.message); }
+    else { toast.success("Policy added"); setAddOpen(false); setNewPolicy({ provider: "", policy_number: "", coverage_amount: "", effective_date: "", expiration_date: "", document_url: "" }); loadData(); }
   };
 
   const handleAddInspection = async () => {
@@ -190,8 +190,8 @@ const ComplianceDashboardPage = () => {
       notes: newInspection.notes || null,
       next_due_date: newInspection.next_due_date || null,
     });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
-    else { toast({ title: "Inspection logged" }); setInspectionOpen(false); setNewInspection({ product_id: "", inspection_status: "pass", notes: "", next_due_date: "" }); loadData(); }
+    if (error) { toast.error(error.message); }
+    else { toast.success("Inspection logged"); setInspectionOpen(false); setNewInspection({ product_id: "", inspection_status: "pass", notes: "", next_due_date: "" }); loadData(); }
   };
 
   const handleDeletePolicy = async (id: string) => {

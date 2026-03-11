@@ -12,7 +12,7 @@ import {
   startOfMonth, endOfMonth, differenceInHours, subDays,
 } from "date-fns";
 import { useState, useMemo } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -172,7 +172,7 @@ const PIE_COLORS = [
 
 const CrmDashboardPage = () => {
   const { can, crmRoleLabel, companyId, workspaceId } = useCrmPermissions();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState(false);
 
@@ -190,11 +190,11 @@ const CrmDashboardPage = () => {
         const { error } = await supabase.from("crm_leads").insert(batch);
         if (error) throw error;
       }
-      toast({ title: "Success", description: "50 test leads generated." });
+      toast.success("50 test leads generated.");
       queryClient.invalidateQueries({ queryKey: ["crm-dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["crm-leads"] });
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error(err.message);
     } finally {
       setGenerating(false);
     }

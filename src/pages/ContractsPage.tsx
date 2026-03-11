@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { FileText, Download, MapPin, Clock, User, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { contractTemplates, ContractTemplate } from "@/lib/contractTemplates";
 import { mergeContractTemplates } from "@/lib/mergeContracts";
@@ -11,7 +11,6 @@ import DatePicker from "@/components/DatePicker";
 import jsPDF from "jspdf";
 
 const ContractsPage = () => {
-  const { toast } = useToast();
   const { orgName } = useOrgSettings();
   const [selectedIds, setSelectedIds] = useState<string[]>([contractTemplates[0].id]);
   const [eventDate, setEventDate] = useState<Date>();
@@ -206,9 +205,9 @@ const ContractsPage = () => {
 
       const fileName = `rental-agreement-${formData.customerName.replace(/\s+/g, "-").toLowerCase()}.pdf`;
       doc.save(fileName);
-      toast({ title: "PDF Downloaded", description: `Saved as ${fileName}` });
+      toast.success(`PDF Downloaded — Saved as ${fileName}`);
     } catch {
-      toast({ title: "Download Failed", description: "Could not generate PDF.", variant: "destructive" });
+      toast.error("Download Failed — Could not generate PDF.");
     }
   };
 

@@ -3,13 +3,12 @@ import { format } from "date-fns";
 import { AlertTriangle, Download, MapPin, Clock, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import DatePicker from "@/components/DatePicker";
 import jsPDF from "jspdf";
 
 const IncidentReportPage = () => {
-  const { toast } = useToast();
   const { orgName } = useOrgSettings();
   const [incidentDate, setIncidentDate] = useState<Date>();
   const [formData, setFormData] = useState({
@@ -143,9 +142,9 @@ const IncidentReportPage = () => {
 
       const fileName = `incident-report-${incidentDate ? format(incidentDate, "yyyy-MM-dd") : "undated"}-${formData.reporterName.replace(/\s+/g, "-").toLowerCase() || "report"}.pdf`;
       doc.save(fileName);
-      toast({ title: "Report Downloaded", description: `Saved as ${fileName}` });
+      toast.success(`Report Downloaded — Saved as ${fileName}`);
     } catch {
-      toast({ title: "Download Failed", description: "Could not generate PDF.", variant: "destructive" });
+      toast.error("Download Failed — Could not generate PDF.");
     }
   };
 

@@ -1,7 +1,7 @@
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,7 +10,6 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { session, role, loading } = useAuth();
-  const { toast } = useToast();
   const hasShownToast = useRef(false);
 
   const shouldRedirectRole =
@@ -24,13 +23,9 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   useEffect(() => {
     if (shouldRedirectRole && !hasShownToast.current) {
       hasShownToast.current = true;
-      toast({
-        title: "Access Restricted",
-        description: "You don't have permission to access that page.",
-        variant: "destructive",
-      });
+      toast.error("You don't have permission to access that page.");
     }
-  }, [shouldRedirectRole, toast]);
+  }, [shouldRedirectRole]);
 
   if (loading) {
     return (

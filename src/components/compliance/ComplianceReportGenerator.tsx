@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { FileText, Download, Loader2 } from "lucide-react";
 import jsPDF from "jspdf";
 import { format, isBefore } from "date-fns";
@@ -40,7 +40,7 @@ const ComplianceReportGenerator = () => {
 
   const generateReport = async () => {
     if (selectedSections.size === 0) {
-      toast({ title: "Select at least one section", variant: "destructive" });
+      toast.error("Select at least one section");
       return;
     }
 
@@ -348,11 +348,11 @@ const ComplianceReportGenerator = () => {
       // Save
       const filename = `compliance-report-${format(new Date(), "yyyy-MM-dd")}.pdf`;
       doc.save(filename);
-      toast({ title: "Report downloaded", description: filename });
+      toast.success(`Report downloaded — ${filename}`);
       setOpen(false);
     } catch (err: any) {
       console.error("Report generation error:", err);
-      toast({ title: "Error generating report", description: err.message, variant: "destructive" });
+      toast.error(`Error generating report: ${err.message}`);
     } finally {
       setGenerating(false);
     }

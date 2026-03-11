@@ -3,7 +3,7 @@ import { Sparkles, Download, FileText, Briefcase, ClipboardList, Loader2 } from 
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import jsPDF from "jspdf";
 
@@ -70,7 +70,7 @@ const InterviewGuidePage = () => {
   const [guide, setGuide] = useState("");
   const [generating, setGenerating] = useState(false);
   const { orgName } = useOrgSettings();
-  const { toast } = useToast();
+  
   const guideRef = useRef<HTMLDivElement>(null);
 
   const loadSample = (key: string) => {
@@ -83,7 +83,7 @@ const InterviewGuidePage = () => {
 
   const generateGuide = async () => {
     if (!jobTitle.trim() || !jobDescription.trim()) {
-      toast({ title: "Missing info", description: "Please enter a job title and description.", variant: "destructive" });
+      toast.error("Please enter a job title and description.");
       return;
     }
 
@@ -146,11 +146,11 @@ const InterviewGuidePage = () => {
       }
 
       if (!accumulated) {
-        toast({ title: "No content generated", description: "Please try again.", variant: "destructive" });
+        toast.error("No content generated. Please try again.");
       }
     } catch (e: any) {
       console.error("Interview guide error:", e);
-      toast({ title: "Generation failed", description: e.message || "Could not generate guide.", variant: "destructive" });
+      toast.error(e.message || "Could not generate guide.");
     } finally {
       setGenerating(false);
     }

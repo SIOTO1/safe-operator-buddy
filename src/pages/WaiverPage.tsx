@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { contractTemplates } from "@/lib/contractTemplates";
 import { FileSignature, Download, RotateCcw } from "lucide-react";
 import DatePicker from "@/components/DatePicker";
@@ -16,7 +16,7 @@ import jsPDF from "jspdf";
 
 const WaiverPage = () => {
   const { orgName } = useOrgSettings();
-  const { toast } = useToast();
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const guardianCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -108,7 +108,7 @@ const WaiverPage = () => {
 
   const generatePDF = () => {
     if (!canSubmit) {
-      toast({ title: "Incomplete", description: "Please fill all required fields and sign.", variant: "destructive" });
+      toast.error("Please fill all required fields and sign.");
       return;
     }
 
@@ -217,7 +217,7 @@ const WaiverPage = () => {
     doc.text(footer, 20, y);
 
     doc.save(`Waiver_${form.participantName.replace(/\s+/g, "_")}_${eventDate ? format(eventDate, "yyyy-MM-dd") : "undated"}.pdf`);
-    toast({ title: "Waiver Generated", description: "PDF downloaded successfully." });
+    toast.success("Waiver Generated — PDF downloaded successfully.");
   };
 
   return (
