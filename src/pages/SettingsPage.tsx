@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Settings, Upload, Save, Building2, Phone, Mail, Globe, MapPin, DollarSign } from "lucide-react";
+import { Settings, Upload, Save, Building2, Phone, Mail, Globe, MapPin, DollarSign, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
