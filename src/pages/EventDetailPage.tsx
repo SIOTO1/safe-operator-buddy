@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
+import { PaymentSummary } from "@/components/scheduling/PaymentSummary";
 import type { WeatherData } from "@/components/scheduling/WeatherSafetyBadge";
 import { getInflatableSafetyLevel } from "@/components/scheduling/WeatherSafetyBadge";
 
