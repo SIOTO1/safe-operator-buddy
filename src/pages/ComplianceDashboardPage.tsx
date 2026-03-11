@@ -94,8 +94,8 @@ const ComplianceDashboardPage = () => {
       supabase.from("employee_certifications").select("*, employees(name)"),
       supabase.from("incident_reports").select("*, events(title)").order("date_reported", { ascending: false }).limit(10),
       supabase.from("products").select("id, name, is_active"),
-      supabase.from("insurance_policies" as any).select("*").order("expiration_date", { ascending: true }),
-      supabase.from("equipment_inspections" as any).select("*, products(name)").order("inspection_date", { ascending: false }),
+      supabase.from("insurance_policies").select("*").order("expiration_date", { ascending: true }),
+      supabase.from("equipment_inspections").select("*, products(name)").order("inspection_date", { ascending: false }),
     ]);
 
     setProductsList((products || []).map(p => ({ id: p.id, name: p.name })));
