@@ -270,7 +270,7 @@ const EventDetailPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/scheduling")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(`${basePath}/scheduling`)}>
             <ArrowLeft size={18} />
           </Button>
           <div>
