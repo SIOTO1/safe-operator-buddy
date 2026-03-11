@@ -4,6 +4,7 @@ import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import PipelineBoard from "@/components/crm/PipelineBoard";
 import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 
 const PipelinePage = () => {
   const queryClient = useQueryClient();

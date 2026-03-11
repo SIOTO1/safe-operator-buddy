@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getLeads, createLead } from "@/lib/crm/leadService";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";

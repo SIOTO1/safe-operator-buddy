@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getLeadById, updateLead } from "@/lib/crm/leadService";
 import { getNotesByLeadId, createNote, deleteNote } from "@/lib/crm/noteService";

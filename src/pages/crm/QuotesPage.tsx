@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import { getQuotes, updateQuote, deleteQuote, type QuoteStatus } from "@/lib/crm/quoteService";
