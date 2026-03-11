@@ -16,6 +16,25 @@ serve(async (req) => {
     const { token, new_date } = await req.json();
     if (!token || !new_date) throw new Error("Missing required fields");
 
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Rate limit: 5 reschedule attempts per minute per token
+    const { data: allowed } = await supabaseAdmin.rpc("check_rate_limit", {
+      _identifier: token,
+      _action: "reschedule_event",
+      _max_requests: 5,
+      _window_seconds: 60,
+    });
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "Too many reschedule attempts. Please wait a moment." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 429,
+      });
+    }
+
     // Validate date format
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(new_date)) throw new Error("Invalid date format");
