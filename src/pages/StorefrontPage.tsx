@@ -64,8 +64,20 @@ const StorefrontPage = () => {
   const [notFound, setNotFound] = useState(false);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(`storefront-cart-${slug}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [cartOpen, setCartOpen] = useState(false);
+
+  // Persist cart to localStorage
+  useEffect(() => {
+    if (slug) {
+      localStorage.setItem(`storefront-cart-${slug}`, JSON.stringify(cart));
+    }
+  }, [cart, slug]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [allocations, setAllocations] = useState<Record<string, number>>({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
