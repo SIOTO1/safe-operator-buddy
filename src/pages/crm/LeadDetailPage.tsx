@@ -420,7 +420,7 @@ const LeadDetailPage = () => {
 
                                 if (!error && evt) {
                                   toast.success("Event created from closed deal — redirecting…");
-                                  navigate("/dashboard/scheduling");
+                                  navigate(`${basePath}/scheduling`);
                                 }
                               }
                             } catch {
