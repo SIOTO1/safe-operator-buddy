@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, AlertTriangle, Clock, Package, FileWarning, CheckCircle2, XCircle, ShieldCheck, Plus, Trash2, ExternalLink, Wrench, ClipboardCheck } from "lucide-react";
+import ComplianceReportGenerator from "@/components/compliance/ComplianceReportGenerator";
 import { motion } from "framer-motion";
 import { format, addDays, isBefore, differenceInDays } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
@@ -229,10 +230,13 @@ const ComplianceDashboardPage = () => {
           <h1 className="text-2xl font-display font-bold">Insurance & Compliance</h1>
           <p className="text-muted-foreground text-sm mt-1">Monitor certifications, inspections, insurance, and incidents</p>
         </div>
-        <Badge className={`${statusColors[overallStatus].bg} ${statusColors[overallStatus].text} border-0 text-sm px-3 py-1`}>
-          {overallStatus === "green" ? <CheckCircle2 size={14} className="mr-1.5" /> : overallStatus === "red" ? <XCircle size={14} className="mr-1.5" /> : <AlertTriangle size={14} className="mr-1.5" />}
-          {statusColors[overallStatus].label}
-        </Badge>
+        <div className="flex items-center gap-3">
+          {canManage && <ComplianceReportGenerator />}
+          <Badge className={`${statusColors[overallStatus].bg} ${statusColors[overallStatus].text} border-0 text-sm px-3 py-1`}>
+            {overallStatus === "green" ? <CheckCircle2 size={14} className="mr-1.5" /> : overallStatus === "red" ? <XCircle size={14} className="mr-1.5" /> : <AlertTriangle size={14} className="mr-1.5" />}
+            {statusColors[overallStatus].label}
+          </Badge>
+        </div>
       </div>
 
       {/* Certification Expiration Alerts */}
