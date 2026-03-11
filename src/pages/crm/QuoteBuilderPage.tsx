@@ -28,6 +28,7 @@ type CartItem = {
 
 const QuoteBuilderPage = () => {
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { companyId, workspaceId } = useCrmPermissions();

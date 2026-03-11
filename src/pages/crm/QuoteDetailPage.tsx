@@ -50,6 +50,7 @@ const STATUS_COLORS: Record<QuoteStatus, string> = {
 const QuoteDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const { user } = useAuth();
   const { companyId } = useCrmPermissions();
   const { orgName } = useOrgSettings();

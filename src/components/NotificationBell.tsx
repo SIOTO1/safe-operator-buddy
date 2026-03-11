@@ -137,7 +137,7 @@ const NotificationBell = () => {
                   onClick={() => {
                     if (!notif.is_read) markAsRead(notif.id);
                     if (notif.event_id) {
-                      navigate(`/dashboard/scheduling/${notif.event_id}`);
+                      navigate(`${basePath}/scheduling/${notif.event_id}`);
                       setOpen(false);
                     }
                   }}

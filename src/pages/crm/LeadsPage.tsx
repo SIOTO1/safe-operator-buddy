@@ -142,7 +142,7 @@ const LeadsPage = () => {
         <p className="text-muted-foreground">Loading...</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onClick={(l) => navigate(`/dashboard/crm/leads/${l.id}`)} />)}
+          {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onClick={(l) => navigate(`${basePath}/crm/leads/${l.id}`)} />)}
           {filtered.length === 0 && <p className="text-muted-foreground col-span-full text-center py-8">No leads found.</p>}
         </div>
       )}

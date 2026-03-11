@@ -30,6 +30,7 @@ import { format } from "date-fns";
 const LeadDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const { user } = useAuth();
   const { can, companyId, workspaceId } = useCrmPermissions();
   const queryClient = useQueryClient();
