@@ -172,7 +172,7 @@ const EventDetailPage = () => {
       const { error } = await supabase.from("events").delete().eq("id", eventId!);
       if (error) throw error;
       toast.success("Event deleted");
-      navigate("/dashboard/scheduling");
+      navigate(`${basePath}/scheduling`);
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete event");
