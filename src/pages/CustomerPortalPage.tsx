@@ -266,6 +266,42 @@ const CustomerPortalPage = () => {
     toast.success("Contract PDF downloaded");
   };
 
+  const handleReschedule = async () => {
+    if (!token || !newDate) return;
+    const requestedDate = new Date(newDate + "T00:00:00");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (requestedDate < today) {
+      toast.error("Please select a future date");
+      return;
+    }
+    setRescheduling(true);
+    setRescheduleResult(null);
+    try {
+      const { data: result, error: fnError } = await supabase.functions.invoke("portal-reschedule-event", {
+        body: { token, new_date: newDate },
+      });
+      if (fnError) throw fnError;
+      if (result?.error) {
+        setRescheduleResult({ error: result.error, unavailable: result.unavailable });
+        return;
+      }
+      setRescheduleResult({ success: true, route_warning: result.route_warning });
+      toast.success("Event rescheduled successfully!");
+      setShowReschedule(false);
+      setNewDate("");
+      // Refresh data
+      const { data: refreshed } = await supabase.functions.invoke("portal-event-data", {
+        body: { token },
+      });
+      if (refreshed && !refreshed.error) setData(refreshed);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reschedule");
+    } finally {
+      setRescheduling(false);
+    }
+  };
+
   const handlePayBalance = async () => {
     if (!data || data.remainingBalance <= 0) return;
     setPayingBalance(true);
