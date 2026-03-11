@@ -224,7 +224,7 @@ const ComplianceReportGenerator = () => {
       if (selectedSections.has("inspections")) {
         addSectionHeader("Equipment Inspections");
 
-        const allInspections = (inspectionData || []) as any[];
+        const allInspections = (inspectionData || []) as { inspection_status: string; next_due_date: string | null; products: { name: string } | null; inspection_date: string; notes: string | null }[];
         const passCount = allInspections.filter(i => i.inspection_status === "pass").length;
         const failCount = allInspections.filter(i => i.inspection_status === "fail").length;
         const repairCount = allInspections.filter(i => i.inspection_status === "needs_repair").length;
