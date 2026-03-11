@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Shield, Mail, Lock, User, Building2, Phone, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, Building2, Phone, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import ShieldLogo from "@/components/ShieldLogo";
 import { toast } from "sonner";
 import { z } from "zod";
 
