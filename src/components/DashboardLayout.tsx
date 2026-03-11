@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate, useParams } from "react-router-dom";
-import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag, Receipt } from "lucide-react";
+import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag, Receipt, HardHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
