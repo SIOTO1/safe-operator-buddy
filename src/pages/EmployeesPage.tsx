@@ -66,7 +66,7 @@ const EmployeesPage = () => {
       console.error(error);
       toast.error("Failed to load employees");
     } else {
-      setEmployees((data as any) || []);
+      setEmployees((data || []) as Employee[]);
     }
     setLoading(false);
   };
