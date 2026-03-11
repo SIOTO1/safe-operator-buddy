@@ -452,9 +452,27 @@ const SchedulingPage = () => {
               <Textarea value={newEvent.notes} onChange={(e) => setNewEvent({ ...newEvent, notes: e.target.value })} placeholder="Special instructions..." />
             </div>
           </div>
+          <ConflictWarnings conflicts={conflicts} checking={checking} />
+
+          {showConfirmWithConflicts && conflicts.length > 0 && (
+            <div className="rounded-md border border-yellow-500/40 bg-yellow-500/10 p-3 text-sm">
+              <p className="font-medium text-yellow-700 dark:text-yellow-400">
+                Conflicts detected. Create event anyway?
+              </p>
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateEventOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateEvent} disabled={!newEvent.event_name}>Create Event</Button>
+            <Button variant="outline" onClick={() => { setCreateEventOpen(false); setShowConfirmWithConflicts(false); clearConflicts(); }}>Cancel</Button>
+            {showConfirmWithConflicts && conflicts.length > 0 ? (
+              <Button variant="destructive" onClick={() => handleCreateEvent(true)} disabled={!newEvent.event_name}>
+                Create Anyway
+              </Button>
+            ) : (
+              <Button onClick={() => handleCreateEvent()} disabled={!newEvent.event_name || checking}>
+                {checking ? "Checking…" : "Create Event"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
