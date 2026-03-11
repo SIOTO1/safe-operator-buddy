@@ -1,11 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Task } from "@/types/crm";
 
-export async function getTasks(workspaceId?: string | null): Promise<Task[]> {
+export async function getTasks(workspaceId?: string | null, page = 0, pageSize = 100): Promise<Task[]> {
   let query = supabase
     .from("crm_tasks")
     .select("*")
-    .order("due_date", { ascending: true });
+    .order("due_date", { ascending: true })
+    .range(page * pageSize, (page + 1) * pageSize - 1);
   if (workspaceId) {
     query = query.eq("workspace_id", workspaceId);
   }

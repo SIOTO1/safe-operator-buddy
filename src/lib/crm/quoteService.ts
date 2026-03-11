@@ -29,11 +29,12 @@ export type QuoteItem = {
   created_at: string;
 };
 
-export async function getQuotes(companyId?: string | null): Promise<Quote[]> {
+export async function getQuotes(companyId?: string | null, page = 0, pageSize = 100): Promise<Quote[]> {
   const query = supabase
     .from("quotes")
     .select("*, lead:crm_leads(name, email)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(page * pageSize, (page + 1) * pageSize - 1);
 
   const { data, error } = await query;
   if (error) throw error;

@@ -1,11 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Lead } from "@/types/crm";
 
-export async function getLeads(workspaceId?: string | null): Promise<Lead[]> {
+export async function getLeads(workspaceId?: string | null, page = 0, pageSize = 100): Promise<Lead[]> {
   let query = supabase
     .from("crm_leads")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(page * pageSize, (page + 1) * pageSize - 1);
   if (workspaceId) {
     query = query.eq("workspace_id", workspaceId);
   }
