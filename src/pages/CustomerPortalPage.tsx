@@ -403,13 +403,136 @@ const CustomerPortalPage = () => {
             </div>
 
             {remainingBalance > 0 && (
-              <Button onClick={handlePayBalance} disabled={payingBalance} className="w-full" size="lg">
-                <CreditCard size={16} className="mr-2" />
-                {payingBalance ? "Redirecting to payment..." : `Pay $${remainingBalance.toFixed(2)} Now`}
-              </Button>
+              <div className="space-y-3 pt-2">
+                {/* Payment mode toggle */}
+                <div className="flex gap-2">
+                  <Button
+                    variant={paymentMode === "full" ? "default" : "outline"}
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setPaymentMode("full")}
+                  >
+                    Pay Full Balance
+                  </Button>
+                  <Button
+                    variant={paymentMode === "custom" ? "default" : "outline"}
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      setPaymentMode("custom");
+                      setCustomAmount("");
+                    }}
+                  >
+                    Custom Amount
+                  </Button>
+                </div>
+
+                {paymentMode === "custom" && (
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                    <Input
+                      type="number"
+                      min="0.50"
+                      max={remainingBalance}
+                      step="0.01"
+                      value={customAmount}
+                      onChange={e => setCustomAmount(e.target.value)}
+                      placeholder={`0.50 – ${remainingBalance.toFixed(2)}`}
+                      className="pl-7"
+                    />
+                  </div>
+                )}
+
+                <Button
+                  onClick={handlePayBalance}
+                  disabled={payingBalance || (paymentMode === "custom" && !customAmount)}
+                  className="w-full"
+                  size="lg"
+                >
+                  {payingBalance ? (
+                    <><Loader2 size={16} className="mr-2 animate-spin" /> Redirecting to payment...</>
+                  ) : (
+                    <><CreditCard size={16} className="mr-2" />
+                      Pay ${paymentMode === "custom" && customAmount
+                        ? parseFloat(customAmount).toFixed(2)
+                        : remainingBalance.toFixed(2)} Now
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Payment History */}
+        {data.payments.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <History size={16} /> Payment History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {data.payments.map(p => {
+                  const isCompleted = p.payment_status === "completed";
+                  const isFailed = p.payment_status === "failed";
+                  const isPending = p.payment_status === "pending";
+
+                  return (
+                    <div key={p.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                          isCompleted && "bg-green-100 dark:bg-green-900/30",
+                          isFailed && "bg-destructive/10",
+                          isPending && "bg-muted"
+                        )}>
+                          {isCompleted && <CheckCircle2 size={14} className="text-green-600 dark:text-green-400" />}
+                          {isFailed && <XCircle size={14} className="text-destructive" />}
+                          {isPending && <Clock size={14} className="text-muted-foreground" />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium capitalize">
+                            {p.payment_type === "deposit" ? "Deposit" :
+                             p.payment_type === "balance" ? "Balance Payment" :
+                             p.payment_type === "auto_balance" ? "Auto-Charge" :
+                             p.payment_type === "partial" ? "Partial Payment" :
+                             "Payment"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(p.created_at), "MMM d, yyyy 'at' h:mm a")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={cn(
+                          "text-sm font-semibold",
+                          isCompleted && "text-green-600 dark:text-green-400",
+                          isFailed && "text-destructive",
+                          isPending && "text-muted-foreground"
+                        )}>
+                          ${Number(p.amount).toFixed(2)}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] px-1.5",
+                            isCompleted && "border-green-300 dark:border-green-700 text-green-600 dark:text-green-400",
+                            isFailed && "border-destructive/30 text-destructive",
+                            isPending && "text-muted-foreground"
+                          )}
+                        >
+                          {isCompleted ? "Completed" : isFailed ? "Failed" : "Pending"}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Actions */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
