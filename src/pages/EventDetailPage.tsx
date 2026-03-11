@@ -444,8 +444,13 @@ const EventDetailPage = () => {
           </Card>
         </div>
 
-        {/* Right: Safety Status */}
+        {/* Right: Payment & Safety */}
         <div className="space-y-6">
+          <PaymentSummary
+            eventId={event.id}
+            eventDate={event.event_date}
+            quoteId={event.quote_id}
+          />
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
