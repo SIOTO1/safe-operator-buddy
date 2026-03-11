@@ -1741,6 +1741,13 @@ export type Database = {
         Returns: string
       }
       generate_company_slug: { Args: { _name: string }; Returns: string }
+      get_product_availability: {
+        Args: { _company_id: string; _date: string }
+        Returns: {
+          product_id: string
+          units_allocated: number
+        }[]
+      }
       get_user_company_id: { Args: never; Returns: string }
       get_user_workspace_id: { Args: never; Returns: string }
       has_role: {
