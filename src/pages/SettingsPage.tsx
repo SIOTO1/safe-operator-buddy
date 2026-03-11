@@ -299,6 +299,20 @@ const SettingsPage = () => {
           />
           <p className="text-xs text-muted-foreground mt-1">Shown on the public booking form's cost estimate</p>
         </div>
+
+        <div>
+          <Label htmlFor="review_link" className="text-sm font-medium flex items-center gap-1.5 mb-1.5">
+            <Star size={14} /> Review Link
+          </Label>
+          <Input
+            id="review_link"
+            value={settings.review_link || ""}
+            onChange={(e) => update("review_link", e.target.value)}
+            placeholder="https://g.page/r/your-business/review"
+            disabled={!isOwner}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Google, Yelp, or Facebook review link. Sent to customers after completed events.</p>
+        </div>
       </div>
 
       {isOwner && (
