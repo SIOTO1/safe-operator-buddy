@@ -55,6 +55,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/book" element={<BookingPage />} />
+            <Route path="/portal/event/:token" element={<CustomerPortalPage />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
