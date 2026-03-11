@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
         queue_name: "transactional_emails",
         payload: {
           message_id: messageId,
-          to: booking.customer_email,
+          to: customerEmail,
           from: `${companyName} <noreply@${SENDER_DOMAIN}>`,
           sender_domain: SENDER_DOMAIN,
           subject: `How was your event? We'd love your review! ⭐`,
