@@ -46,6 +46,7 @@ import CustomerPortalPage from "./pages/CustomerPortalPage";
 import SetupWizardPage from "./pages/SetupWizardPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import StorefrontPage from "./pages/StorefrontPage";
+import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
 import BookingSuccessPage from "./pages/BookingSuccessPage";
 import NotFound from "./pages/NotFound";
 
@@ -119,6 +120,7 @@ const App = () => (
               <Route path="quotes/create" element={<QuoteBuilderPage />} />
               <Route path="crm/contracts/:id" element={<ContractSigningPage />} />
               <Route path="employees" element={<EmployeesPage />} />
+              <Route path="compliance" element={<ComplianceDashboardPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate, useParams } from "react-router-dom";
-import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag, Receipt, HardHat } from "lucide-react";
+import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag, Receipt, HardHat, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +22,7 @@ const getNavItems = (basePath: string) => [
   { to: `${basePath}/conversations`, icon: MessageSquareWarning, label: "Difficult Conversations" },
   { to: `${basePath}/crew`, icon: Users, label: "Crew" },
   { to: `${basePath}/employees`, icon: HardHat, label: "Employees" },
+  { to: `${basePath}/compliance`, icon: ShieldCheck, label: "Compliance", minRole: "manager" as const },
   { to: `${basePath}/scheduling`, icon: CalendarDays, label: "Scheduling" },
   { to: `${basePath}/bookings`, icon: Inbox, label: "Bookings", minRole: "manager" as const },
   { to: `${basePath}/equipment`, icon: Package, label: "Equipment", minRole: "manager" as const },
