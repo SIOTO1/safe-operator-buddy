@@ -278,11 +278,11 @@ export default function BookingForm({ cart, selectedDate, cartTotal, companySlug
       </div>
 
       <Button className="w-full" size="lg" disabled={submitting} onClick={handleSubmit}>
-        {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Submitting...</> : "Request Booking"}
+        {submitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Redirecting to Payment...</> : `Pay $${(cartTotal * 0.25).toFixed(2)} Deposit & Book`}
       </Button>
 
       <p className="text-[10px] text-muted-foreground text-center">
-        By submitting, you agree to be contacted regarding this booking request.
+        You'll be redirected to Stripe for secure payment. A 25% deposit is required to confirm your booking.
       </p>
     </div>
   );
