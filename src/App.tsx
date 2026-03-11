@@ -21,6 +21,7 @@ const ChecklistsPage = lazy(() => import("./pages/ChecklistsPage"));
 const ContractsPage = lazy(() => import("./pages/ContractsPage"));
 const CrewPage = lazy(() => import("./pages/CrewPage"));
 const TeamPage = lazy(() => import("./pages/TeamPage"));
+const AcceptInvitePage = lazy(() => import("./pages/AcceptInvitePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const IncidentReportPage = lazy(() => import("./pages/IncidentReportPage"));
 const WaiverPage = lazy(() => import("./pages/WaiverPage"));
