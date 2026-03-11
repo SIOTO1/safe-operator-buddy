@@ -12,7 +12,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Trash2, FileText, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
 
 const STATUS_COLORS: Record<QuoteStatus, string> = {
   draft: "bg-muted text-muted-foreground",
