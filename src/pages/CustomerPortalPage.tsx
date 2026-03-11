@@ -44,6 +44,8 @@ const CustomerPortalPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [payingBalance, setPayingBalance] = useState(false);
+  const [paymentMode, setPaymentMode] = useState<"full" | "custom">("full");
+  const [customAmount, setCustomAmount] = useState("");
 
   const paymentStatus = searchParams.get("payment");
   const sessionId = searchParams.get("session_id");
