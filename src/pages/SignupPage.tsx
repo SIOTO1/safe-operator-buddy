@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Shield, Mail, Lock, User, Building2, Phone, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, Building2, Phone, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import ShieldLogo from "@/components/ShieldLogo";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -93,11 +94,8 @@ const SignupPage = () => {
       {/* Left side — benefits */}
       <div className="hidden lg:flex flex-col justify-center flex-1 px-16 xl:px-24">
         <div className="max-w-md">
-          <div className="flex items-center gap-2 mb-8">
-            <Shield className="text-primary" size={40} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-            <span className="font-display font-bold text-3xl text-secondary-foreground">
-              SIOTO<span className="text-primary">.AI</span>
-            </span>
+          <div className="mb-8">
+            <ShieldLogo size={40} />
           </div>
           <h1 className="font-display font-bold text-4xl text-foreground mb-4 leading-tight">
             Start running your business smarter
@@ -120,11 +118,8 @@ const SignupPage = () => {
       <div className="flex-1 flex items-center justify-center p-6 lg:p-16">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <div className="flex items-center justify-center gap-2 mb-6 lg:hidden">
-            <Shield className="text-primary" size={32} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-            <span className="font-display font-bold text-2xl text-secondary-foreground">
-              SIOTO<span className="text-primary">.AI</span>
-            </span>
+          <div className="flex items-center justify-center mb-6 lg:hidden">
+            <ShieldLogo size={32} />
           </div>
 
           <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">

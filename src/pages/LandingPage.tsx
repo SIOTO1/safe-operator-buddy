@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Shield, MessageSquare, ClipboardCheck, FileText, Users, BarChart3, ChevronRight, Zap, BookOpen, Wind } from "lucide-react";
+import { MessageSquare, ClipboardCheck, FileText, Users, BarChart3, ChevronRight, Zap, BookOpen, Wind } from "lucide-react";
+import ShieldLogo from "@/components/ShieldLogo";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -26,12 +27,7 @@ const LandingPage = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass-card">
         <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <Shield className="text-primary" size={28} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-            <span className="font-display font-bold text-xl tracking-tight">
-              SIOTO<span className="text-primary">.AI</span>
-            </span>
-          </div>
+          <ShieldLogo size={28} />
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
             <a href="#knowledge" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Knowledge Base</a>
@@ -218,10 +214,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Shield className="text-primary" size={20} strokeWidth={2.5} />
-            <span className="font-display font-bold text-sm">SIOTO.AI</span>
-          </div>
+          <ShieldLogo size={20} />
           <p className="text-xs text-muted-foreground">© 2026 SIOTO.AI. All rights reserved.</p>
         </div>
       </footer>

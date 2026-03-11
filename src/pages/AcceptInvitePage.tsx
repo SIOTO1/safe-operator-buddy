@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Shield, Eye, EyeOff, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import ShieldLogo from "@/components/ShieldLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -116,11 +117,8 @@ const AcceptInvitePage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Shield className="text-primary" size={32} strokeWidth={2.5} fill="hsl(24, 95%, 53%)" />
-          <span className="font-display font-bold text-2xl">
-            SIOTO<span className="text-primary">.AI</span>
-          </span>
+        <div className="flex items-center justify-center mb-8">
+          <ShieldLogo size={32} />
         </div>
 
         {step === "loading" && (

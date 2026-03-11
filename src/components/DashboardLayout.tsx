@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate, useParams } from "react-router-dom";
-import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag, Receipt, HardHat, ShieldCheck } from "lucide-react";
+import { MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag, Receipt, HardHat, ShieldCheck } from "lucide-react";
+import ShieldLogo from "@/components/ShieldLogo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -61,16 +62,16 @@ const DashboardLayout = () => {
       )}>
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-            <div className="flex items-center gap-2">
-              {orgLogo ? (
+            {orgLogo ? (
+              <div className="flex items-center gap-2">
                 <img src={orgLogo} alt="Company logo" className="w-7 h-7 rounded object-contain" />
-              ) : (
-                <Shield className="text-sidebar-primary" size={24} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-              )}
-              <span className="font-display font-bold text-lg text-sidebar-accent-foreground truncate">
-                {orgName || <>SIOTO<span className="text-sidebar-primary">.AI</span></>}
-              </span>
-            </div>
+                <span className="font-display font-bold text-lg text-sidebar-accent-foreground truncate">
+                  {orgName || "SIOTO"}
+                </span>
+              </div>
+            ) : (
+              <ShieldLogo size={24} />
+            )}
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground">
               <X size={20} />
             </button>

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, Send, CheckCircle, Shield, ArrowLeft } from "lucide-react";
+import { CalendarIcon, Send, CheckCircle, ArrowLeft } from "lucide-react";
+import ShieldLogo from "@/components/ShieldLogo";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,10 +164,7 @@ const BookingPage = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="text-primary" size={24} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-            <span className="font-display font-bold text-lg">SIOTO<span className="text-primary">.AI</span></span>
-          </div>
+          <ShieldLogo size={24} />
           <Button variant="ghost" size="sm" onClick={() => navigate("/")}><ArrowLeft size={16} className="mr-1" /> Home</Button>
         </div>
       </header>
