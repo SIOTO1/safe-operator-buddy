@@ -289,7 +289,7 @@ const SchedulingPage = () => {
                               "bg-card border-border",
                               isOwner && "cursor-grab active:cursor-grabbing"
                             )}
-                            onClick={() => navigate(`/dashboard/scheduling/${ev.id}`)}
+                            onClick={() => navigate(`${basePath}/scheduling/${ev.id}`)}
                           >
                             <p className="font-medium truncate">{ev.title}</p>
                             {(ev.start_time || ev.end_time) && (
