@@ -8,6 +8,8 @@ import { OrgSettingsProvider } from "@/contexts/OrgSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
+import SignupPage from "./pages/SignupPage";
+import CompanyDashboardRedirect from "./pages/CompanyDashboardRedirect";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import ChatPage from "./pages/ChatPage";
