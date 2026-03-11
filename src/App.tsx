@@ -26,6 +26,7 @@ import DriverManagementPage from "./pages/DriverManagementPage";
 import DifficultConversationsPage from "./pages/DifficultConversationsPage";
 import SchedulingPage from "./pages/SchedulingPage";
 import EventDetailPage from "./pages/EventDetailPage";
+import EventCalendarPage from "./pages/EventCalendarPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
@@ -102,6 +103,7 @@ const App = () => (
               <Route path="crew" element={<CrewPage />} />
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="scheduling/:eventId" element={<EventDetailPage />} />
+              <Route path="events/calendar" element={<EventCalendarPage />} />
               <Route path="bookings" element={<BookingManagementPage />} />
               <Route path="equipment" element={<EquipmentCatalogPage />} />
               <Route path="products" element={<ProductCatalogPage />} />
