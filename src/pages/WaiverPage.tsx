@@ -108,7 +108,7 @@ const WaiverPage = () => {
 
   const generatePDF = () => {
     if (!canSubmit) {
-      toast({ title: "Incomplete", description: "Please fill all required fields and sign.", variant: "destructive" });
+      toast.error("Please fill all required fields and sign.");
       return;
     }
 
