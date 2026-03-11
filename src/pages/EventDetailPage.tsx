@@ -33,6 +33,8 @@ interface EventDetail {
   created_by: string;
   created_at: string;
   quote_id: string | null;
+  status: string;
+  review_request_sent: boolean;
 }
 
 interface EventEquipment {
