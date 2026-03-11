@@ -62,11 +62,11 @@ async function getCrmAnalytics(workspaceId?: string | null) {
   if (notesRes.error) throw notesRes.error;
   if (activityRes.error) throw activityRes.error;
 
-  const leads = leadsRes.data as any[];
-  const tasks = tasksRes.data as any[];
-  const deals = dealsRes.data as any[];
-  const notes = notesRes.data as any[];
-  const activities = activityRes.data as any[];
+  const leads = (leadsRes.data || []) as any[];
+  const tasks = (tasksRes.data || []) as any[];
+  const deals = (dealsRes.data || []) as any[];
+  const notes = (notesRes.data || []) as any[];
+  const activities = (activityRes.data || []) as any[];
 
   const now = new Date();
   const todayStr = format(now, "yyyy-MM-dd");

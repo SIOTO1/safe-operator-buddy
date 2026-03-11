@@ -334,7 +334,7 @@ const ComplianceReportGenerator = () => {
           allIncidents.forEach(inc => {
             addTableRow([
               format(new Date(inc.date_reported), "MMM d, yyyy"),
-              (inc.events as any)?.title || "—",
+              (inc.events as { title: string } | null)?.title || "—",
               (inc.description || "").substring(0, 100),
             ], cols);
           });
