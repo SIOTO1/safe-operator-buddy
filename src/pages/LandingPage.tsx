@@ -27,7 +27,7 @@ const LandingPage = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass-card">
         <div className="container flex items-center justify-between h-16">
-          <ShieldLogo size={28} />
+          <ShieldLogo size={48} />
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
             <a href="#knowledge" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Knowledge Base</a>

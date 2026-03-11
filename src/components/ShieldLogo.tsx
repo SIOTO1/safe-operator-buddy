@@ -6,7 +6,7 @@ const ShieldLogo = ({ className = "", size = 32 }: { className?: string; size?: 
       src={siotoLogo}
       alt="SIOTO - Safe Inflatable Operators Training Organization"
       style={{ height: size * 1.2 }}
-      className="object-contain"
+      className="object-contain mix-blend-multiply dark:mix-blend-normal"
     />
   </div>
 );

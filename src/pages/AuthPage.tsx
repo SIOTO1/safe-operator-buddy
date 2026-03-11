@@ -52,7 +52,7 @@ const AuthPage = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <ShieldLogo size={36} />
+            <ShieldLogo size={56} />
           </div>
           <p className="text-secondary-foreground/50 text-sm">
             AI-Powered Safety & Operations
