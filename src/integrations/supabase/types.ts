@@ -170,16 +170,19 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          slug: string
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          slug: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          slug?: string
         }
         Relationships: []
       }
@@ -1603,6 +1606,7 @@ export type Database = {
         }
         Returns: string
       }
+      generate_company_slug: { Args: { _name: string }; Returns: string }
       get_user_company_id: { Args: never; Returns: string }
       get_user_workspace_id: { Args: never; Returns: string }
       has_role: {
