@@ -296,7 +296,7 @@ By signing below, the client acknowledges they have read, understood, and agree 
       toast.success("Quote accepted! Contract created. Redirecting…");
 
       // 7. Redirect to contract signing page
-      navigate(`/dashboard/crm/contracts/${contractRecord.id}`);
+      navigate(`${basePath}/crm/contracts/${contractRecord.id}`);
     } catch (err) {
       console.error("Accept quote error:", err);
       toast.error("Failed to accept quote");
