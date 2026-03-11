@@ -83,7 +83,7 @@ const InterviewGuidePage = () => {
 
   const generateGuide = async () => {
     if (!jobTitle.trim() || !jobDescription.trim()) {
-      toast({ title: "Missing info", description: "Please enter a job title and description.", variant: "destructive" });
+      toast.error("Please enter a job title and description.");
       return;
     }
 
