@@ -45,3 +45,7 @@ project_id = "atdpdxocpjnldajapjyp"
     verify_jwt = false
   [functions.check-cert-expirations]
     verify_jwt = false
+  [functions.send-invite]
+    verify_jwt = false
+  [functions.accept-invite]
+    verify_jwt = false

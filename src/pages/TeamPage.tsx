@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { Users, UserPlus, MoreVertical, ShieldCheck, Briefcase, User, Crown } from "lucide-react";
+import { Users, UserPlus, MoreVertical, ShieldCheck, Briefcase, User, Crown, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +63,10 @@ const TeamPage = () => {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<TeamRole>("staff");
+  const [inviting, setInviting] = useState(false);
+  const [pendingInvites, setPendingInvites] = useState<any[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<TeamRole | null>(null);
 
   const isAdmin = currentUserRole === "admin";
@@ -122,9 +126,63 @@ const TeamPage = () => {
     }
   }, [companyId, user?.id]);
 
+  const fetchInvites = useCallback(async () => {
+    if (!companyId) return;
+    try {
+      const { data } = await supabase
+        .from("user_invites")
+        .select("id, email, role, status, created_at")
+        .eq("company_id", companyId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+      setPendingInvites(data || []);
+    } catch (err) {
+      console.error("Error fetching invites:", err);
+    }
+  }, [companyId]);
+
   useEffect(() => {
     fetchMembers();
-  }, [fetchMembers]);
+    fetchInvites();
+  }, [fetchMembers, fetchInvites]);
+
+  const handleSendInvite = async () => {
+    if (!inviteEmail.trim()) {
+      toast.error("Please enter an email address");
+      return;
+    }
+    setInviting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-invite", {
+        body: { email: inviteEmail.trim().toLowerCase(), role: inviteRole },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail("");
+      setInviteRole("staff");
+      setInviteOpen(false);
+      fetchInvites();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invitation");
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const handleRevokeInvite = async (inviteId: string) => {
+    try {
+      const { error } = await supabase
+        .from("user_invites")
+        .update({ status: "revoked" })
+        .eq("id", inviteId);
+      if (error) throw error;
+      toast.success("Invitation revoked");
+      fetchInvites();
+    } catch (err: any) {
+      toast.error("Failed to revoke invitation");
+    }
+  };
 
   const handleRoleChange = async (memberId: string, newRole: TeamRole) => {
     try {
@@ -335,42 +393,83 @@ const TeamPage = () => {
         )}
       </div>
 
+      {/* Pending Invites */}
+      {isAdmin && pendingInvites.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Mail size={16} className="text-primary" />
+            Pending Invitations ({pendingInvites.length})
+          </h2>
+          <div className="space-y-2">
+            {pendingInvites.map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium">{inv.email}</span>
+                  <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive text-xs"
+                  onClick={() => handleRevokeInvite(inv.id)}
+                >
+                  Revoke
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Invite Dialog */}
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Invite Team Member</DialogTitle>
             <DialogDescription>
-              Share the signup link with your team. New members will appear here once they create an account.
+              Send an email invitation. They'll receive a link to create their account and join your team.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="rounded-lg border border-border bg-muted/50 p-4">
-              <Label className="text-xs text-muted-foreground mb-1 block">Signup Link</Label>
-              <div className="flex gap-2">
-                <Input
-                  readOnly
-                  value={`${window.location.origin}/auth`}
-                  className="text-xs"
-                />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/auth`);
-                    toast.success("Link copied!");
-                  }}
-                >
-                  Copy
-                </Button>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">Email Address</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                placeholder="teammate@example.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
             </div>
-            <p className="text-xs text-muted-foreground">
-              New members automatically join as <strong>Staff</strong>. You can change their role after they sign up.
-            </p>
+            <div className="space-y-2">
+              <Label htmlFor="invite-role">Role</Label>
+              <Select value={inviteRole} onValueChange={(val) => setInviteRole(val as TeamRole)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin — Full access including settings & billing</SelectItem>
+                  <SelectItem value="manager">Manager — CRM, events, compliance, reporting</SelectItem>
+                  <SelectItem value="staff">Staff — Operational tools, CRM, events, payments</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setInviteOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
+            <Button onClick={handleSendInvite} disabled={inviting}>
+              {inviting ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail size={16} className="mr-2" />
+                  Send Invitation
+                </>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
