@@ -1019,6 +1019,45 @@ export type Database = {
           },
         ]
       }
+      event_staff: {
+        Row: {
+          assigned_at: string
+          employee_id: string
+          event_id: string
+          id: string
+          role: Database["public"]["Enums"]["event_staff_role"]
+        }
+        Insert: {
+          assigned_at?: string
+          employee_id: string
+          event_id: string
+          id?: string
+          role?: Database["public"]["Enums"]["event_staff_role"]
+        }
+        Update: {
+          assigned_at?: string
+          employee_id?: string
+          event_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["event_staff_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_staff_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_staff_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
@@ -1739,6 +1778,7 @@ export type Database = {
         | "warehouse"
         | "manager"
       employee_status: "active" | "inactive" | "on_leave"
+      event_staff_role: "driver" | "setup_crew" | "supervisor"
       job_status: "pending" | "processing" | "completed" | "failed" | "retrying"
       job_type:
         | "email_notification"
@@ -1893,6 +1933,7 @@ export const Constants = {
         "manager",
       ],
       employee_status: ["active", "inactive", "on_leave"],
+      event_staff_role: ["driver", "setup_crew", "supervisor"],
       job_status: ["pending", "processing", "completed", "failed", "retrying"],
       job_type: [
         "email_notification",
