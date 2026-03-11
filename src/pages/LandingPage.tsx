@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Shield, MessageSquare, ClipboardCheck, FileText, Users, BarChart3, ChevronRight, Zap, BookOpen, Wind } from "lucide-react";
+import { MessageSquare, ClipboardCheck, FileText, Users, BarChart3, ChevronRight, Zap, BookOpen, Wind } from "lucide-react";
+import ShieldLogo from "@/components/ShieldLogo";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
