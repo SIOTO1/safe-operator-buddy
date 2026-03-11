@@ -224,23 +224,27 @@ const QuoteDetailPage = () => {
 
       if (eventError) throw eventError;
 
-      // 4. Populate event_products from quote_items (consolidate duplicates)
+      // 4. Populate event_products from quote_items (atomic inventory check)
       const productMap = new Map<string, number>();
       items.filter((i) => i.product_id).forEach((i) => {
         const existing = productMap.get(i.product_id!) || 0;
         productMap.set(i.product_id!, existing + i.quantity);
       });
-      const eventProducts = Array.from(productMap.entries()).map(([product_id, quantity]) => ({
-        event_id: event.id,
-        product_id,
+      const productsPayload = Array.from(productMap.entries()).map(([pid, quantity]) => ({
+        pid,
         quantity,
       }));
 
-      if (eventProducts.length > 0) {
-        const { error: epError } = await supabase
-          .from("event_products")
-          .insert(eventProducts);
-        if (epError) throw epError;
+      if (productsPayload.length > 0) {
+        const { data: assignResult, error: assignError } = await supabase.rpc(
+          "assign_event_products",
+          { _event_id: event.id, _products: productsPayload }
+        );
+        if (assignError) throw assignError;
+        const assignObj = assignResult as Record<string, unknown> | null;
+        if (assignObj?.error) {
+          toast.error(`Inventory issue: ${String(assignObj.error)}`);
+        }
       }
 
       // 5. Generate contract text
