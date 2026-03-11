@@ -128,7 +128,7 @@ const ComplianceDashboardPage = () => {
     const eqStatus: StatusLevel = eqRatio >= 0.95 ? "green" : eqRatio >= 0.8 ? "yellow" : "red";
 
     // Insurance
-    const pols = (insurancePolicies || []) as unknown as InsurancePolicy[];
+    const pols = (insurancePolicies || []) as InsurancePolicy[];
     const expiredPolicies = pols.filter(p => isBefore(new Date(p.expiration_date), now));
     const warningPolicies = pols.filter(p => {
       const exp = new Date(p.expiration_date);
