@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Clock, Users, FileText, Trash2, BookOpen, Plus, Package, X, Share2, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,7 @@ const SAFETY_TRAINING_LINKS = [
 const EventDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const { user, role } = useAuth();
   const isOwner = role === "owner";
   const canManage = isOwner || role === "manager";
@@ -170,7 +172,7 @@ const EventDetailPage = () => {
       const { error } = await supabase.from("events").delete().eq("id", eventId!);
       if (error) throw error;
       toast.success("Event deleted");
-      navigate("/dashboard/scheduling");
+      navigate(`${basePath}/scheduling`);
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete event");
@@ -243,7 +245,7 @@ const EventDetailPage = () => {
     return (
       <div className="p-6 lg:p-8 text-center">
         <p className="text-muted-foreground">Event not found.</p>
-        <Button variant="outline" className="mt-4" onClick={() => navigate("/dashboard/scheduling")}>Back to Schedule</Button>
+        <Button variant="outline" className="mt-4" onClick={() => navigate(`${basePath}/scheduling`)}>Back to Schedule</Button>
       </div>
     );
   }
@@ -268,7 +270,7 @@ const EventDetailPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/scheduling")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(`${basePath}/scheduling`)}>
             <ArrowLeft size={18} />
           </Button>
           <div>
@@ -522,7 +524,7 @@ const EventDetailPage = () => {
                   {SAFETY_TRAINING_LINKS.map((link) => (
                     <Link
                       key={link.sopId}
-                      to={`/dashboard/sops?article=${link.sopId}`}
+                      to={`${basePath}/sops?article=${link.sopId}`}
                       className="block rounded-md border border-border/60 p-2.5 hover:bg-accent/50 transition-colors group"
                     >
                       <p className="text-xs font-medium group-hover:text-primary transition-colors">{link.label}</p>

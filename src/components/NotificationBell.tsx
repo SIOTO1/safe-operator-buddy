@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 
 interface AppNotification {
   id: string;
@@ -25,6 +26,7 @@ interface AppNotification {
 const NotificationBell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [open, setOpen] = useState(false);
 
@@ -135,7 +137,7 @@ const NotificationBell = () => {
                   onClick={() => {
                     if (!notif.is_read) markAsRead(notif.id);
                     if (notif.event_id) {
-                      navigate(`/dashboard/scheduling/${notif.event_id}`);
+                      navigate(`${basePath}/scheduling/${notif.event_id}`);
                       setOpen(false);
                     }
                   }}

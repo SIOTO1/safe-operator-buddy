@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
@@ -49,6 +50,7 @@ const STATUS_COLORS: Record<QuoteStatus, string> = {
 const QuoteDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const { user } = useAuth();
   const { companyId } = useCrmPermissions();
   const { orgName } = useOrgSettings();
@@ -294,7 +296,7 @@ By signing below, the client acknowledges they have read, understood, and agree 
       toast.success("Quote accepted! Contract created. Redirecting…");
 
       // 7. Redirect to contract signing page
-      navigate(`/dashboard/crm/contracts/${contractRecord.id}`);
+      navigate(`${basePath}/crm/contracts/${contractRecord.id}`);
     } catch (err) {
       console.error("Accept quote error:", err);
       toast.error("Failed to accept quote");
@@ -321,7 +323,7 @@ By signing below, the client acknowledges they have read, understood, and agree 
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/crm/quotes")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(`${basePath}/crm/quotes`)}>
           <ArrowLeft size={18} />
         </Button>
         <div className="flex-1">

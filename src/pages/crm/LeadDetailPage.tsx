@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getLeadById, updateLead } from "@/lib/crm/leadService";
 import { getNotesByLeadId, createNote, deleteNote } from "@/lib/crm/noteService";
@@ -29,6 +30,7 @@ import { format } from "date-fns";
 const LeadDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const { user } = useAuth();
   const { can, companyId, workspaceId } = useCrmPermissions();
   const queryClient = useQueryClient();
@@ -201,7 +203,7 @@ const LeadDetailPage = () => {
       if (error) throw error;
       toast.success("Event created from lead");
       setConvertOpen(false);
-      navigate(`/dashboard/scheduling`);
+      navigate(`${basePath}/scheduling`);
     } catch (err: any) {
       toast.error(err.message || "Failed to create event");
     } finally {
@@ -218,7 +220,7 @@ const LeadDetailPage = () => {
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/crm/leads")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(`${basePath}/crm/leads`)}>
           <ArrowLeft size={18} />
         </Button>
         <div className="flex-1">
@@ -418,7 +420,7 @@ const LeadDetailPage = () => {
 
                                 if (!error && evt) {
                                   toast.success("Event created from closed deal — redirecting…");
-                                  navigate("/dashboard/scheduling");
+                                  navigate(`${basePath}/scheduling`);
                                 }
                               }
                             } catch {

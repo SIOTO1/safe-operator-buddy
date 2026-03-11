@@ -4,10 +4,12 @@ import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import PipelineBoard from "@/components/crm/PipelineBoard";
 import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 
 const PipelinePage = () => {
   const queryClient = useQueryClient();
   const { can, workspaceId } = useCrmPermissions();
+  const { basePath } = useCompanySlug();
   const { data: leads = [], isLoading } = useQuery({ queryKey: ["crm-leads", workspaceId], queryFn: () => getLeads(workspaceId) });
 
   const stageMutation = useMutation({
@@ -18,7 +20,7 @@ const PipelinePage = () => {
 
   // Sales Reps cannot access the pipeline view
   if (!can("view_pipeline")) {
-    return <Navigate to="/dashboard/crm/leads" replace />;
+    return <Navigate to={`${basePath}/crm/leads`} replace />;
   }
 
   return (

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
@@ -27,6 +28,7 @@ type CartItem = {
 
 const QuoteBuilderPage = () => {
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { companyId, workspaceId } = useCrmPermissions();
@@ -123,7 +125,7 @@ const QuoteBuilderPage = () => {
 
       queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
       toast.success(`Quote saved as ${status}`);
-      navigate("/dashboard/crm/quotes");
+      navigate(`${basePath}/crm/quotes`);
     } catch {
       toast.error("Failed to save quote");
     } finally {
@@ -135,7 +137,7 @@ const QuoteBuilderPage = () => {
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/crm/quotes")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(`${basePath}/crm/quotes`)}>
           <ArrowLeft size={18} />
         </Button>
         <div>

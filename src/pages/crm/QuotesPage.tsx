@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
 import { getQuotes, updateQuote, deleteQuote, type QuoteStatus } from "@/lib/crm/quoteService";
@@ -10,7 +12,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Trash2, FileText, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
 
 const STATUS_COLORS: Record<QuoteStatus, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -23,6 +24,7 @@ const QuotesPage = () => {
   const { companyId } = useCrmPermissions();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const { data: quotes = [], isLoading } = useQuery({
@@ -70,7 +72,7 @@ const QuotesPage = () => {
               <SelectItem value="expired">Expired</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={() => navigate("/dashboard/quotes/create")}>
+          <Button onClick={() => navigate(`${basePath}/quotes/create`)}>
             <Plus size={16} className="mr-1.5" />New Quote
           </Button>
         </div>
@@ -99,7 +101,7 @@ const QuotesPage = () => {
                 </TableRow>
               ) : (
                 filtered.map((q) => (
-                  <TableRow key={q.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/dashboard/crm/quotes/${q.id}`)}>
+                  <TableRow key={q.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`${basePath}/crm/quotes/${q.id}`)}>
                     <TableCell className="font-medium">{q.title || "Untitled"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{q.lead?.name || "—"}</TableCell>
                     <TableCell>

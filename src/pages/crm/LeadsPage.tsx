@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCompanySlug } from "@/hooks/use-company-slug";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getLeads, createLead } from "@/lib/crm/leadService";
 import { useCrmPermissions } from "@/hooks/use-crm-permissions";
@@ -20,6 +21,7 @@ const emptyForm = { name: "", email: "", phone: "", company: "", source: "", sta
 const LeadsPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const { can, crmRoleLabel, userId, companyId, workspaceId } = useCrmPermissions();
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -140,7 +142,7 @@ const LeadsPage = () => {
         <p className="text-muted-foreground">Loading...</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onClick={(l) => navigate(`/dashboard/crm/leads/${l.id}`)} />)}
+          {filtered.map((lead) => <LeadCard key={lead.id} lead={lead} onClick={(l) => navigate(`${basePath}/crm/leads/${l.id}`)} />)}
           {filtered.length === 0 && <p className="text-muted-foreground col-span-full text-center py-8">No leads found.</p>}
         </div>
       )}

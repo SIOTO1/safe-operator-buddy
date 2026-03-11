@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Outlet, NavLink, useNavigate, useParams } from "react-router-dom";
 import { Shield, MessageSquare, BookOpen, ClipboardCheck, FileText, BarChart3, Users, Menu, X, LogOut, Settings, AlertTriangle, FileSignature, ScrollText, ClipboardList, Truck, MessageSquareWarning, CalendarDays, Inbox, Package, Contact, Kanban, ListTodo, MapPin, Route, ShoppingBag, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -8,30 +8,30 @@ import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
 import NotificationBell from "@/components/NotificationBell";
 
-const navItems = [
-  { to: "/dashboard", icon: BarChart3, label: "Dashboard", end: true },
-  { to: "/dashboard/chat", icon: MessageSquare, label: "AI Assistant" },
-  { to: "/dashboard/knowledge", icon: BookOpen, label: "Knowledge Base" },
-  { to: "/dashboard/checklists", icon: ClipboardCheck, label: "Checklists" },
-  { to: "/dashboard/contracts", icon: FileText, label: "Contracts" },
-  { to: "/dashboard/incident-report", icon: AlertTriangle, label: "Incident Report" },
-  { to: "/dashboard/waiver", icon: FileSignature, label: "Liability Waiver" },
-  { to: "/dashboard/sops", icon: ScrollText, label: "SOPs & Policies" },
-  { to: "/dashboard/interview-guide", icon: ClipboardList, label: "Interview Guides" },
-  { to: "/dashboard/drivers", icon: Truck, label: "Driver Management" },
-  { to: "/dashboard/conversations", icon: MessageSquareWarning, label: "Difficult Conversations" },
-  { to: "/dashboard/crew", icon: Users, label: "Crew" },
-  { to: "/dashboard/scheduling", icon: CalendarDays, label: "Scheduling" },
-  { to: "/dashboard/bookings", icon: Inbox, label: "Bookings", minRole: "manager" as const },
-  { to: "/dashboard/equipment", icon: Package, label: "Equipment", minRole: "manager" as const },
-  { to: "/dashboard/products", icon: ShoppingBag, label: "Product Catalog", minRole: "manager" as const },
-  { to: "/dashboard/deliveries", icon: MapPin, label: "Delivery Schedule" },
-  { to: "/dashboard/routes", icon: Route, label: "Route Planning", minRole: "manager" as const },
-  { to: "/dashboard/crm/leads", icon: Contact, label: "Leads", section: "CRM" },
-  { to: "/dashboard/crm/pipeline", icon: Kanban, label: "Pipeline", section: "CRM" },
-  { to: "/dashboard/crm/tasks", icon: ListTodo, label: "Tasks", section: "CRM" },
-  { to: "/dashboard/crm/quotes", icon: Receipt, label: "Quotes", section: "CRM" },
-  { to: "/dashboard/settings", icon: Settings, label: "Settings", ownerOnly: true },
+const getNavItems = (basePath: string) => [
+  { to: basePath, icon: BarChart3, label: "Dashboard", end: true },
+  { to: `${basePath}/chat`, icon: MessageSquare, label: "AI Assistant" },
+  { to: `${basePath}/knowledge`, icon: BookOpen, label: "Knowledge Base" },
+  { to: `${basePath}/checklists`, icon: ClipboardCheck, label: "Checklists" },
+  { to: `${basePath}/contracts`, icon: FileText, label: "Contracts" },
+  { to: `${basePath}/incident-report`, icon: AlertTriangle, label: "Incident Report" },
+  { to: `${basePath}/waiver`, icon: FileSignature, label: "Liability Waiver" },
+  { to: `${basePath}/sops`, icon: ScrollText, label: "SOPs & Policies" },
+  { to: `${basePath}/interview-guide`, icon: ClipboardList, label: "Interview Guides" },
+  { to: `${basePath}/drivers`, icon: Truck, label: "Driver Management" },
+  { to: `${basePath}/conversations`, icon: MessageSquareWarning, label: "Difficult Conversations" },
+  { to: `${basePath}/crew`, icon: Users, label: "Crew" },
+  { to: `${basePath}/scheduling`, icon: CalendarDays, label: "Scheduling" },
+  { to: `${basePath}/bookings`, icon: Inbox, label: "Bookings", minRole: "manager" as const },
+  { to: `${basePath}/equipment`, icon: Package, label: "Equipment", minRole: "manager" as const },
+  { to: `${basePath}/products`, icon: ShoppingBag, label: "Product Catalog", minRole: "manager" as const },
+  { to: `${basePath}/deliveries`, icon: MapPin, label: "Delivery Schedule" },
+  { to: `${basePath}/routes`, icon: Route, label: "Route Planning", minRole: "manager" as const },
+  { to: `${basePath}/crm/leads`, icon: Contact, label: "Leads", section: "CRM" },
+  { to: `${basePath}/crm/pipeline`, icon: Kanban, label: "Pipeline", section: "CRM" },
+  { to: `${basePath}/crm/tasks`, icon: ListTodo, label: "Tasks", section: "CRM" },
+  { to: `${basePath}/crm/quotes`, icon: Receipt, label: "Quotes", section: "CRM" },
+  { to: `${basePath}/settings`, icon: Settings, label: "Settings", ownerOnly: true },
 ];
 
 const DashboardLayout = () => {
@@ -40,6 +40,9 @@ const DashboardLayout = () => {
   const { orgName, orgLogo } = useOrgSettings();
   const { user, role, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const { slug } = useParams<{ slug: string }>();
+  const basePath = `/app/${slug}`;
+  const navItems = getNavItems(basePath);
 
   const handleSignOut = async () => {
     await signOut();

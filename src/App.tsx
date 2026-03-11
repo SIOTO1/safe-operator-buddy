@@ -2,14 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OrgSettingsProvider } from "@/contexts/OrgSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import SignupPage from "./pages/SignupPage";
-import CompanyDashboardRedirect from "./pages/CompanyDashboardRedirect";
+import DashboardRedirect from "./pages/DashboardRedirect";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import ChatPage from "./pages/ChatPage";
@@ -55,17 +55,22 @@ const App = () => (
         <OrgSettingsProvider>
         <BrowserRouter>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/book" element={<BookingPage />} />
             <Route path="/portal/event/:token" element={<CustomerPortalPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            <Route path="/app/:slug/dashboard" element={
+
+            {/* Legacy /dashboard redirect → resolves slug and redirects */}
+            <Route path="/dashboard/*" element={
               <ProtectedRoute>
-                <CompanyDashboardRedirect />
+                <DashboardRedirect />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard" element={
+
+            {/* Slug-based company routes */}
+            <Route path="/app/:slug" element={
               <ProtectedRoute>
                 <DashboardLayout />
               </ProtectedRoute>
@@ -100,6 +105,7 @@ const App = () => (
               <Route path="crm/contracts/:id" element={<ContractSigningPage />} />
               <Route path="settings" element={<ProtectedRoute requiredRole="owner"><SettingsPage /></ProtectedRoute>} />
             </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
