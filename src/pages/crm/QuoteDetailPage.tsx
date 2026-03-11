@@ -154,9 +154,18 @@ const QuoteDetailPage = () => {
     if (!title.trim()) return toast.error("Title is required");
     setSaving(true);
     try {
+      const prevStatus = quote?.status;
       await updateQuote(id!, { title, notes: notes || null, status, total_amount: total });
       queryClient.invalidateQueries({ queryKey: ["crm-quote", id] });
       queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
+
+      // Send email if status just changed to "sent"
+      if (status === "sent" && prevStatus !== "sent") {
+        supabase.functions.invoke("send-quote-email", {
+          body: { quote_id: id },
+        }).catch((err) => console.error("Quote email error:", err));
+      }
+
       toast.success("Quote saved");
     } catch {
       toast.error("Failed to save quote");
