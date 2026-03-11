@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useEventConflicts } from "@/hooks/use-event-conflicts";
+import { ConflictWarnings } from "@/components/scheduling/ConflictWarnings";
 
 interface Event {
   id: string;
@@ -51,6 +53,8 @@ const SchedulingPage = () => {
   // Dialog states
   const [createEventOpen, setCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showConfirmWithConflicts, setShowConfirmWithConflicts] = useState(false);
+  const { conflicts, checking, checkConflicts, clearConflicts } = useEventConflicts();
 
   // Form states
   const [newEvent, setNewEvent] = useState({
@@ -120,10 +124,28 @@ const SchedulingPage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [fetchData, fetchMonthEvents, activeTab]);
 
-  const handleCreateEvent = async () => {
+  const runConflictCheck = useCallback(async () => {
+    if (!selectedDate) return;
+    await checkConflicts({ eventDate: format(selectedDate, "yyyy-MM-dd") });
+  }, [selectedDate, checkConflicts]);
+
+  // Auto-check conflicts when date changes in dialog
+  useEffect(() => {
+    if (createEventOpen && selectedDate) {
+      runConflictCheck();
+    }
+  }, [createEventOpen, selectedDate, runConflictCheck]);
+
+  const handleCreateEvent = async (force = false) => {
     if (!newEvent.event_name || !selectedDate) return;
+
+    // If conflicts exist and user hasn't confirmed, show confirmation
+    if (!force && conflicts.length > 0 && !showConfirmWithConflicts) {
+      setShowConfirmWithConflicts(true);
+      return;
+    }
+
     try {
-      // Build full location string from address parts
       const locationParts = [newEvent.location_address, newEvent.city, newEvent.state, newEvent.zip].filter(Boolean);
       const fullLocation = locationParts.length > 0 ? locationParts.join(", ") : null;
       const { error } = await supabase.from("events").insert({
@@ -138,6 +160,8 @@ const SchedulingPage = () => {
       if (error) throw error;
       toast.success("Event created!");
       setCreateEventOpen(false);
+      setShowConfirmWithConflicts(false);
+      clearConflicts();
       setNewEvent({ event_name: "", location_address: "", city: "", state: "", zip: "", start_time: "08:00", end_time: "16:00", notes: "" });
       fetchData();
       if (activeTab === "month") fetchMonthEvents();
@@ -163,6 +187,14 @@ const SchedulingPage = () => {
 
   const handleRescheduleEvent = async (eventId: string, newDate: string) => {
     try {
+      // Quick conflict check for reschedule
+      const warnings = await checkConflicts({ eventDate: newDate, eventId });
+      if (warnings.length > 0) {
+        const proceed = confirm(
+          `Scheduling conflicts detected:\n${warnings.map(w => `• ${w.message}`).join("\n")}\n\nReschedule anyway?`
+        );
+        if (!proceed) return;
+      }
       const { error } = await supabase.from("events").update({ event_date: newDate }).eq("id", eventId);
       if (error) throw error;
       toast.success("Event rescheduled!");
@@ -428,9 +460,27 @@ const SchedulingPage = () => {
               <Textarea value={newEvent.notes} onChange={(e) => setNewEvent({ ...newEvent, notes: e.target.value })} placeholder="Special instructions..." />
             </div>
           </div>
+          <ConflictWarnings conflicts={conflicts} checking={checking} />
+
+          {showConfirmWithConflicts && conflicts.length > 0 && (
+            <div className="rounded-md border border-yellow-500/40 bg-yellow-500/10 p-3 text-sm">
+              <p className="font-medium text-yellow-700 dark:text-yellow-400">
+                Conflicts detected. Create event anyway?
+              </p>
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateEventOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateEvent} disabled={!newEvent.event_name}>Create Event</Button>
+            <Button variant="outline" onClick={() => { setCreateEventOpen(false); setShowConfirmWithConflicts(false); clearConflicts(); }}>Cancel</Button>
+            {showConfirmWithConflicts && conflicts.length > 0 ? (
+              <Button variant="destructive" onClick={() => handleCreateEvent(true)} disabled={!newEvent.event_name}>
+                Create Anyway
+              </Button>
+            ) : (
+              <Button onClick={() => handleCreateEvent()} disabled={!newEvent.event_name || checking}>
+                {checking ? "Checking…" : "Create Event"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
