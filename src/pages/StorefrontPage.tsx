@@ -94,7 +94,7 @@ const StorefrontPage = () => {
       setCompany(comp);
 
       const [{ data: orgSettings }, { data: prods }] = await Promise.all([
-        supabase.from("organization_settings").select("logo_url").limit(1).maybeSingle(),
+        supabase.from("organization_settings").select("logo_url").eq("company_id", comp.id).limit(1).maybeSingle(),
         supabase.from("products").select("id, name, description, price, image_url, category, quantity_available")
           .eq("company_id", comp.id).eq("is_active", true).order("category").order("name"),
       ]);
