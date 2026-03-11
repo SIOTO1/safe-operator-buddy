@@ -1069,7 +1069,9 @@ export type Database = {
           location: string | null
           notes: string | null
           quote_id: string | null
+          review_request_sent: boolean
           start_time: string | null
+          status: string
           title: string
           updated_at: string
         }
@@ -1083,7 +1085,9 @@ export type Database = {
           location?: string | null
           notes?: string | null
           quote_id?: string | null
+          review_request_sent?: boolean
           start_time?: string | null
+          status?: string
           title: string
           updated_at?: string
         }
@@ -1097,7 +1101,9 @@ export type Database = {
           location?: string | null
           notes?: string | null
           quote_id?: string | null
+          review_request_sent?: boolean
           start_time?: string | null
+          status?: string
           title?: string
           updated_at?: string
         }
@@ -1229,6 +1235,7 @@ export type Database = {
           id: string
           logo_url: string | null
           phone: string | null
+          review_link: string | null
           updated_at: string
           website: string | null
         }
@@ -1241,6 +1248,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          review_link?: string | null
           updated_at?: string
           website?: string | null
         }
@@ -1253,6 +1261,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           phone?: string | null
+          review_link?: string | null
           updated_at?: string
           website?: string | null
         }

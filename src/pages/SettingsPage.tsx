@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Settings, Upload, Save, Building2, Phone, Mail, Globe, MapPin, DollarSign } from "lucide-react";
+import { Settings, Upload, Save, Building2, Phone, Mail, Globe, MapPin, DollarSign, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ interface OrgSettings {
   address: string | null;
   website: string | null;
   default_delivery_fee: number | null;
+  review_link: string | null;
 }
 
 const emptySettings: OrgSettings = {
@@ -28,6 +29,7 @@ const emptySettings: OrgSettings = {
   address: null,
   website: null,
   default_delivery_fee: null,
+  review_link: null,
 };
 
 const SettingsPage = () => {
@@ -76,6 +78,7 @@ const SettingsPage = () => {
             website: settings.website,
             logo_url: settings.logo_url,
             default_delivery_fee: settings.default_delivery_fee,
+            review_link: settings.review_link,
           } as any)
           .eq("id", settings.id);
         if (error) throw error;
@@ -90,6 +93,7 @@ const SettingsPage = () => {
             website: settings.website,
             logo_url: settings.logo_url,
             default_delivery_fee: settings.default_delivery_fee,
+            review_link: settings.review_link,
           } as any)
           .select()
           .single();
@@ -294,6 +298,20 @@ const SettingsPage = () => {
             disabled={!isOwner}
           />
           <p className="text-xs text-muted-foreground mt-1">Shown on the public booking form's cost estimate</p>
+        </div>
+
+        <div>
+          <Label htmlFor="review_link" className="text-sm font-medium flex items-center gap-1.5 mb-1.5">
+            <Star size={14} /> Review Link
+          </Label>
+          <Input
+            id="review_link"
+            value={settings.review_link || ""}
+            onChange={(e) => update("review_link", e.target.value)}
+            placeholder="https://g.page/r/your-business/review"
+            disabled={!isOwner}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Google, Yelp, or Facebook review link. Sent to customers after completed events.</p>
         </div>
       </div>
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useCompanySlug } from "@/hooks/use-company-slug";
 import { format } from "date-fns";
-import { ArrowLeft, MapPin, Clock, Users, FileText, Trash2, BookOpen, Plus, Package, X, Share2, Copy, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Users, FileText, Trash2, BookOpen, Plus, Package, X, Share2, Copy, Loader2, CheckCircle2 } from "lucide-react";
 import { IncidentReportSection } from "@/components/scheduling/IncidentReportSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +33,8 @@ interface EventDetail {
   created_by: string;
   created_at: string;
   quote_id: string | null;
+  status: string;
+  review_request_sent: boolean;
 }
 
 interface EventEquipment {
@@ -168,6 +170,25 @@ const EventDetailPage = () => {
     fetchEventProducts();
   }, [eventId, fetchEventProducts, fetchDateAllocations]);
 
+  const handleMarkCompleted = async () => {
+    if (!confirm("Mark this event as completed? A review request email will be sent to the customer.")) return;
+    try {
+      const { error } = await supabase.from("events").update({ status: "completed" } as any).eq("id", eventId!);
+      if (error) throw error;
+
+      // Trigger review request email
+      await supabase.functions.invoke("send-review-request", {
+        body: { event_id: eventId },
+      });
+
+      setEvent(prev => prev ? { ...prev, status: "completed" } : prev);
+      toast.success("Event marked as completed! Review request sent.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update event status");
+    }
+  };
+
   const handleDelete = async () => {
     if (!confirm("Delete this event? This cannot be undone.")) return;
     try {
@@ -276,12 +297,30 @@ const EventDetailPage = () => {
             <ArrowLeft size={18} />
           </Button>
           <div>
-            <h1 className="text-2xl font-display font-bold">{event.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-display font-bold">{event.title}</h1>
+              <Badge
+                variant={event.status === "completed" ? "default" : "outline"}
+                className={event.status === "completed" ? "bg-green-600 text-white" : ""}
+              >
+                {event.status === "completed" ? "Completed" : "Upcoming"}
+              </Badge>
+            </div>
             <p className="text-muted-foreground text-sm">{format(new Date(event.event_date), "EEEE, MMMM d, yyyy")}</p>
           </div>
         </div>
         {canManage && (
           <div className="flex items-center gap-2">
+            {event.status !== "completed" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleMarkCompleted}
+                className="text-green-600 border-green-600/30 hover:bg-green-50 dark:hover:bg-green-900/20"
+              >
+                <CheckCircle2 size={14} className="mr-1.5" /> Mark Completed
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
