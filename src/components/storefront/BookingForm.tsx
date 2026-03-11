@@ -99,30 +99,36 @@ export default function BookingForm({ cart, selectedDate, cartTotal, companySlug
 
     setSubmitting(true);
     const eventLocation = `${result.data.event_address}, ${result.data.event_city}, ${result.data.event_state} ${result.data.event_zip}`;
-    const equipment = cart.map((i) => `${i.product.name} (x${i.quantity})`);
+
+    const depositAmount = Math.round(cartTotal * 0.25 * 100) / 100;
 
     try {
-      const { data, error } = await supabase.functions.invoke("submit-booking", {
+      const { data, error } = await supabase.functions.invoke("create-booking-checkout", {
         body: {
           customer_name: result.data.customer_name,
           customer_email: result.data.customer_email,
           customer_phone: result.data.customer_phone || null,
           event_date: result.data.event_date,
-          event_time: result.data.start_time,
-          event_end_time: result.data.end_time,
+          start_time: result.data.start_time,
+          end_time: result.data.end_time,
           event_location: eventLocation,
-          equipment,
-          special_requests: result.data.notes || null,
-          guest_count: null,
+          notes: result.data.notes || null,
+          company_slug: companySlug || "",
+          cart_items: cart.map((i) => ({
+            product_id: i.product.id,
+            product_name: i.product.name,
+            quantity: i.quantity,
+            unit_price: i.product.price || 0,
+          })),
         },
       });
 
-      if (error || (data && data.error)) {
-        toast.error(data?.error || "Failed to submit booking. Please try again.");
-      } else {
-        setSubmitted(true);
-        toast.success("Booking request submitted!");
-        onSuccess();
+      if (error || data?.error) {
+        toast.error(data?.error || "Failed to create checkout. Please try again.");
+      } else if (data?.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+        return; // Don't set submitting false, we're navigating away
       }
     } catch {
       toast.error("An unexpected error occurred. Please try again.");

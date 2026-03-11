@@ -66,6 +66,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/rentals/:slug" element={<StorefrontPage />} />
+            <Route path="/rentals/:slug/booking-success" element={<BookingSuccessPage />} />
 
             {/* Legacy /dashboard redirect → resolves slug and redirects */}
             <Route path="/dashboard/*" element={
