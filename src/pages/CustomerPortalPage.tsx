@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import {
   CalendarDays, MapPin, Package, DollarSign, FileText, Phone, Mail,
   Download, CreditCard, CheckCircle2, Clock, AlertCircle, Globe,
-  History, XCircle, Loader2, PenTool, Eraser,
+  History, XCircle, Loader2, PenTool, Eraser, CalendarClock, TriangleAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
