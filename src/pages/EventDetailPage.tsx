@@ -75,6 +75,7 @@ const SAFETY_TRAINING_LINKS = [
 const EventDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const { user, role } = useAuth();
   const isOwner = role === "owner";
   const canManage = isOwner || role === "manager";
