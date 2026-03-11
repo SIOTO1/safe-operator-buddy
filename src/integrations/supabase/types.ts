@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      background_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          job_type: Database["public"]["Enums"]["job_type"]
+          max_attempts: number
+          payload: Json
+          priority: number
+          processed_at: string | null
+          scheduled_for: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["job_status"]
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          job_type: Database["public"]["Enums"]["job_type"]
+          max_attempts?: number
+          payload?: Json
+          priority?: number
+          processed_at?: string | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          job_type?: Database["public"]["Enums"]["job_type"]
+          max_attempts?: number
+          payload?: Json
+          priority?: number
+          processed_at?: string | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+        }
+        Relationships: []
+      }
       booking_notes: {
         Row: {
           booking_id: string
@@ -1516,6 +1564,15 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      enqueue_job: {
+        Args: {
+          _job_type: Database["public"]["Enums"]["job_type"]
+          _payload?: Json
+          _priority?: number
+          _scheduled_for?: string
+        }
+        Returns: string
+      }
       get_user_company_id: { Args: never; Returns: string }
       get_user_workspace_id: { Args: never; Returns: string }
       has_role: {
@@ -1545,6 +1602,12 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "manager" | "crew"
+      job_status: "pending" | "processing" | "completed" | "failed" | "retrying"
+      job_type:
+        | "email_notification"
+        | "balance_charge"
+        | "weather_check"
+        | "report_generation"
       product_category:
         | "inflatables"
         | "slides"
@@ -1684,6 +1747,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "manager", "crew"],
+      job_status: ["pending", "processing", "completed", "failed", "retrying"],
+      job_type: [
+        "email_notification",
+        "balance_charge",
+        "weather_check",
+        "report_generation",
+      ],
       product_category: [
         "inflatables",
         "slides",

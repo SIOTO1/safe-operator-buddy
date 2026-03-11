@@ -35,3 +35,5 @@ project_id = "atdpdxocpjnldajapjyp"
     verify_jwt = false
   [functions.portal-reschedule-event]
     verify_jwt = false
+  [functions.process-job-queue]
+    verify_jwt = false
