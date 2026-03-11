@@ -22,7 +22,7 @@ const SOPsPage = () => {
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [generating, setGenerating] = useState(false);
   const { orgName, orgLogo } = useOrgSettings();
-  const { toast } = useToast();
+  
 
   // Filter articles
   const filteredArticles = useMemo(() => {

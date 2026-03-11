@@ -70,7 +70,7 @@ const InterviewGuidePage = () => {
   const [guide, setGuide] = useState("");
   const [generating, setGenerating] = useState(false);
   const { orgName } = useOrgSettings();
-  const { toast } = useToast();
+  
   const guideRef = useRef<HTMLDivElement>(null);
 
   const loadSample = (key: string) => {

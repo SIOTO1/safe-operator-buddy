@@ -205,9 +205,9 @@ const ContractsPage = () => {
 
       const fileName = `rental-agreement-${formData.customerName.replace(/\s+/g, "-").toLowerCase()}.pdf`;
       doc.save(fileName);
-      toast({ title: "PDF Downloaded", description: `Saved as ${fileName}` });
+      toast.success(`PDF Downloaded — Saved as ${fileName}`);
     } catch {
-      toast({ title: "Download Failed", description: "Could not generate PDF.", variant: "destructive" });
+      toast.error("Download Failed — Could not generate PDF.");
     }
   };
 

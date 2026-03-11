@@ -172,7 +172,7 @@ const PIE_COLORS = [
 
 const CrmDashboardPage = () => {
   const { can, crmRoleLabel, companyId, workspaceId } = useCrmPermissions();
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState(false);
 

@@ -16,7 +16,7 @@ import jsPDF from "jspdf";
 
 const WaiverPage = () => {
   const { orgName } = useOrgSettings();
-  const { toast } = useToast();
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const guardianCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);

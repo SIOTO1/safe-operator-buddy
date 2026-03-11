@@ -190,8 +190,8 @@ const ComplianceDashboardPage = () => {
       notes: newInspection.notes || null,
       next_due_date: newInspection.next_due_date || null,
     });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
-    else { toast({ title: "Inspection logged" }); setInspectionOpen(false); setNewInspection({ product_id: "", inspection_status: "pass", notes: "", next_due_date: "" }); loadData(); }
+    if (error) { toast.error(error.message); }
+    else { toast.success("Inspection logged"); setInspectionOpen(false); setNewInspection({ product_id: "", inspection_status: "pass", notes: "", next_due_date: "" }); loadData(); }
   };
 
   const handleDeletePolicy = async (id: string) => {

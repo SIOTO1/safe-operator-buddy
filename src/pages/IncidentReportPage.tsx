@@ -142,9 +142,9 @@ const IncidentReportPage = () => {
 
       const fileName = `incident-report-${incidentDate ? format(incidentDate, "yyyy-MM-dd") : "undated"}-${formData.reporterName.replace(/\s+/g, "-").toLowerCase() || "report"}.pdf`;
       doc.save(fileName);
-      toast({ title: "Report Downloaded", description: `Saved as ${fileName}` });
+      toast.success(`Report Downloaded — Saved as ${fileName}`);
     } catch {
-      toast({ title: "Download Failed", description: "Could not generate PDF.", variant: "destructive" });
+      toast.error("Download Failed — Could not generate PDF.");
     }
   };
 
