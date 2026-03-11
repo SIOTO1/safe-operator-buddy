@@ -59,8 +59,8 @@ const ComplianceReportGenerator = () => {
       ] = await Promise.all([
         supabase.from("employees").select("id, name, status, role"),
         supabase.from("employee_certifications").select("*, employees(name)"),
-        supabase.from("equipment_inspections" as any).select("*, products(name)").order("inspection_date", { ascending: false }),
-        supabase.from("insurance_policies" as any).select("*").order("expiration_date", { ascending: true }),
+        supabase.from("equipment_inspections").select("*, products(name)").order("inspection_date", { ascending: false }),
+        supabase.from("insurance_policies").select("*").order("expiration_date", { ascending: true }),
         supabase.from("incident_reports").select("*, events(title)").order("date_reported", { ascending: false }),
         supabase.from("organization_settings").select("company_name").limit(1).single(),
         supabase.from("profiles").select("display_name, company_id").eq("user_id", user?.id || "").single(),
