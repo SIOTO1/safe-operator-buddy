@@ -250,6 +250,14 @@ serve(async (req) => {
               .maybeSingle();
 
             if (booking?.customer_email) {
+              const html = render(AutoChargeAlertEmail({
+                customer_name: booking.customer_name || "there",
+                event_title: event.title,
+                event_date: event.event_date,
+                amount: remaining,
+                success: true,
+              }));
+
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
@@ -258,7 +266,7 @@ serve(async (req) => {
                   from: "SIOTO <noreply@notify.sioto.com>",
                   sender_domain: "notify.sioto.com",
                   subject: `Payment Collected — ${event.title}`,
-                  html: `<p>Hey ${booking.customer_name || "there"}! The remaining balance of $${remaining.toFixed(2)} for "${event.title}" (${event.event_date}) has been automatically charged to your card on file. No action needed — we look forward to your event!</p>`,
+                  html,
                   purpose: "transactional",
                   label: "auto_charge_alert",
                   queued_at: new Date().toISOString(),
