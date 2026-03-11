@@ -8,7 +8,7 @@ import { z } from "zod";
 
 const emailSchema = z.string().trim().email("Invalid email address").max(255);
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(128);
-const nameSchema = z.string().trim().min(1, "Name is required").max(100);
+
 
 const AuthPage = () => {
   const [email, setEmail] = useState("");
