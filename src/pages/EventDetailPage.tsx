@@ -220,12 +220,17 @@ const EventDetailPage = () => {
 
     setAddingProduct(true);
     try {
-      const { error } = await supabase.from("event_products").insert({
-        event_id: eventId,
-        product_id: selectedProductId,
-        quantity: qty,
+      // Use atomic server-side function to prevent race conditions
+      const { data: result, error } = await supabase.rpc("assign_event_products", {
+        _event_id: eventId,
+        _products: [{ pid: selectedProductId, quantity: qty }],
       });
       if (error) throw error;
+      const resultObj = result as Record<string, unknown> | null;
+      if (resultObj?.error) {
+        toast.error(String(resultObj.error));
+        return;
+      }
       toast.success("Product assigned");
       setSelectedProductId("");
       setProductQty("1");

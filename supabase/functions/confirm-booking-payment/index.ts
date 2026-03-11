@@ -119,14 +119,22 @@ serve(async (req) => {
 
     if (eventError || !event) throw new Error(`Failed to create event: ${eventError?.message}`);
 
-    // 2. Assign products to event
+    // 2. Assign products to event (with atomic inventory validation)
     if (cartItems.length > 0) {
-      const productInserts = cartItems.map((item) => ({
-        event_id: event.id,
-        product_id: item.pid,
+      const productsPayload = cartItems.map((item) => ({
+        pid: item.pid,
         quantity: item.q || 1,
       }));
-      await supabaseAdmin.from("event_products").insert(productInserts);
+      const { data: assignResult, error: assignError } = await supabaseAdmin.rpc(
+        "assign_event_products",
+        { _event_id: event.id, _products: productsPayload }
+      );
+      if (assignError) {
+        console.error("Product assignment error:", assignError);
+      } else if (assignResult?.error) {
+        console.error("Inventory exceeded:", assignResult.error);
+        // Event is already created, log the issue but don't fail the payment
+      }
     }
 
     // 3. Create payment record

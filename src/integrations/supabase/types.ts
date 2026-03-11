@@ -1921,6 +1921,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_event_products: {
+        Args: { _event_id: string; _products: Json }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: {
           _action: string
