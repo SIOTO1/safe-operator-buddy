@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { render } from "npm:@react-email/render@0.0.12";
+import { AutoChargeAlertEmail } from "../_shared/email-templates/auto-charge-alert.tsx";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -174,6 +176,15 @@ serve(async (req) => {
               .maybeSingle();
 
             if (booking?.customer_email) {
+              const html = render(AutoChargeAlertEmail({
+                customer_name: booking.customer_name || "there",
+                event_title: event.title,
+                event_date: event.event_date,
+                amount: remaining,
+                success: false,
+                error_message: stripeErr.message,
+              }));
+
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
@@ -182,7 +193,7 @@ serve(async (req) => {
                   from: "SIOTO <noreply@notify.sioto.com>",
                   sender_domain: "notify.sioto.com",
                   subject: `Payment Failed — ${event.title}`,
-                  html: `<p>Hey ${booking.customer_name || "there"}! We attempted to charge the remaining balance of $${remaining.toFixed(2)} for "${event.title}" (${event.event_date}), but the payment didn't go through. Reason: ${stripeErr.message}. Please update your payment method or contact us.</p>`,
+                  html,
                   purpose: "transactional",
                   label: "auto_charge_alert",
                   queued_at: new Date().toISOString(),
@@ -239,6 +250,14 @@ serve(async (req) => {
               .maybeSingle();
 
             if (booking?.customer_email) {
+              const html = render(AutoChargeAlertEmail({
+                customer_name: booking.customer_name || "there",
+                event_title: event.title,
+                event_date: event.event_date,
+                amount: remaining,
+                success: true,
+              }));
+
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
@@ -247,7 +266,7 @@ serve(async (req) => {
                   from: "SIOTO <noreply@notify.sioto.com>",
                   sender_domain: "notify.sioto.com",
                   subject: `Payment Collected — ${event.title}`,
-                  html: `<p>Hey ${booking.customer_name || "there"}! The remaining balance of $${remaining.toFixed(2)} for "${event.title}" (${event.event_date}) has been automatically charged to your card on file. No action needed — we look forward to your event!</p>`,
+                  html,
                   purpose: "transactional",
                   label: "auto_charge_alert",
                   queued_at: new Date().toISOString(),

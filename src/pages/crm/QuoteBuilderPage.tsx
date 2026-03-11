@@ -124,6 +124,14 @@ const QuoteBuilderPage = () => {
       );
 
       queryClient.invalidateQueries({ queryKey: ["crm-quotes"] });
+
+      // Send email notification when quote is sent to customer
+      if (status === "sent") {
+        supabase.functions.invoke("send-quote-email", {
+          body: { quote_id: quote.id },
+        }).catch((err) => console.error("Quote email error:", err));
+      }
+
       toast.success(`Quote saved as ${status}`);
       navigate(`${basePath}/crm/quotes`);
     } catch {
