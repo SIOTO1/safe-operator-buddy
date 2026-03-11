@@ -63,8 +63,8 @@ Deno.serve(async (req) => {
 
     const eventIds = events.map(e => e.id);
 
-    // Fetch booking info and products in parallel
-    const [bookingsRes, productsRes] = await Promise.all([
+    // Fetch booking info, products, and quote-linked lead info in parallel
+    const [bookingsRes, productsRes, quoteLeadsRes] = await Promise.all([
       supabase
         .from("booking_requests")
         .select("event_id, customer_name, customer_email")
@@ -74,6 +74,12 @@ Deno.serve(async (req) => {
         .from("event_products")
         .select("event_id, quantity, product:products(name)")
         .in("event_id", eventIds),
+      // For CRM-originated events: event → quote → lead
+      supabase
+        .from("events")
+        .select("id, quote_id, quotes:quotes(lead_id, crm_leads:crm_leads(name, email))")
+        .in("id", eventIds)
+        .not("quote_id", "is", null),
     ]);
 
     const bookings = bookingsRes.data || [];
