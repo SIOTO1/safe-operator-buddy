@@ -357,7 +357,7 @@ const ComplianceDashboardPage = () => {
                   <div key={a.id} className="flex items-center gap-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
                     <AlertTriangle size={16} className="text-destructive shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{(a.products as any)?.name || "Equipment"}</p>
+                      <p className="text-sm font-medium">{(a.products as { name: string } | null)?.name || "Equipment"}</p>
                       <p className="text-xs text-muted-foreground">
                         {isFail && <span className="text-destructive font-medium">{inspectionStatusMap[a.inspection_status]?.label}</span>}
                         {isFail && isOverdue && " · "}
