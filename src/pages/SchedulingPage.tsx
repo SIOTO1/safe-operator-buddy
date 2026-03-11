@@ -53,6 +53,8 @@ const SchedulingPage = () => {
   // Dialog states
   const [createEventOpen, setCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showConfirmWithConflicts, setShowConfirmWithConflicts] = useState(false);
+  const { conflicts, checking, checkConflicts, clearConflicts } = useEventConflicts();
 
   // Form states
   const [newEvent, setNewEvent] = useState({
