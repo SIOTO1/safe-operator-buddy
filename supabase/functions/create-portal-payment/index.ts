@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { token, customer_email, customer_name } = await req.json();
+    const { token, customer_email, customer_name, amount: customAmount } = await req.json();
     if (!token) throw new Error("Missing token");
 
     const supabaseAdmin = createClient(
@@ -66,6 +66,16 @@ serve(async (req) => {
     const remaining = Math.max(0, quoteTotal - totalPaid);
     if (remaining <= 0) throw new Error("No remaining balance to pay");
 
+    // Determine charge amount — allow custom amount up to remaining
+    let chargeAmount = remaining;
+    let paymentType = "balance";
+    if (customAmount && Number(customAmount) > 0) {
+      chargeAmount = Math.min(Number(customAmount), remaining);
+      paymentType = chargeAmount >= remaining ? "balance" : "partial";
+    }
+
+    if (chargeAmount < 0.50) throw new Error("Minimum payment amount is $0.50");
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -84,14 +94,18 @@ serve(async (req) => {
       customerId = newCustomer.id;
     }
 
+    const label = chargeAmount >= remaining
+      ? `Full Remaining Balance — ${event.title}`
+      : `Partial Payment — ${event.title}`;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_intent_data: { setup_future_usage: "off_session" },
       line_items: [{
         price_data: {
           currency: "usd",
-          product_data: { name: `Remaining Balance — ${event.title}` },
-          unit_amount: Math.round(remaining * 100),
+          product_data: { name: label },
+          unit_amount: Math.round(chargeAmount * 100),
         },
         quantity: 1,
       }],
@@ -101,7 +115,7 @@ serve(async (req) => {
       metadata: {
         event_id: eventId,
         quote_id: event.quote_id || "",
-        payment_type: "balance",
+        payment_type: paymentType,
         portal_token: token,
       },
     });
@@ -110,8 +124,8 @@ serve(async (req) => {
     await supabaseAdmin.from("payments").insert({
       event_id: eventId,
       quote_id: event.quote_id,
-      amount: remaining,
-      payment_type: "balance",
+      amount: chargeAmount,
+      payment_type: paymentType,
       payment_status: "pending",
       payment_method: "stripe",
       stripe_session_id: session.id,
