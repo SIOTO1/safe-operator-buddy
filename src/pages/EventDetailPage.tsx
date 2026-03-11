@@ -245,7 +245,7 @@ const EventDetailPage = () => {
     return (
       <div className="p-6 lg:p-8 text-center">
         <p className="text-muted-foreground">Event not found.</p>
-        <Button variant="outline" className="mt-4" onClick={() => navigate("/dashboard/scheduling")}>Back to Schedule</Button>
+        <Button variant="outline" className="mt-4" onClick={() => navigate(`${basePath}/scheduling`)}>Back to Schedule</Button>
       </div>
     );
   }
