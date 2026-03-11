@@ -96,7 +96,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    await supabaseAdmin.from("payments").insert({
+    const { error: insertErr } = await supabaseAdmin.from("payments").insert({
       quote_id,
       event_id,
       contract_id,
@@ -107,6 +107,16 @@ serve(async (req) => {
       stripe_session_id: session.id,
       stripe_customer_id: customerId,
     });
+
+    if (insertErr) {
+      if (insertErr.code === "23505") {
+        return new Response(JSON.stringify({ url: session.url }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      throw new Error("Failed to create payment record");
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

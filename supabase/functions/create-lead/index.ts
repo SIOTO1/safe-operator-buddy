@@ -69,6 +69,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Ignore client-sent company_id to prevent cross-tenant injection
     const { data: lead, error } = await supabase
       .from("crm_leads")
       .insert({
@@ -78,7 +79,6 @@ Deno.serve(async (req) => {
         company: company?.trim().slice(0, 200) || null,
         source: source || "Website",
         stage: "new",
-        company_id: company_id || null,
       })
       .select()
       .single();

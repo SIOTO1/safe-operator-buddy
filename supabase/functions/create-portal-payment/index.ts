@@ -134,8 +134,8 @@ serve(async (req) => {
       },
     });
 
-    // Create pending payment record
-    await supabaseAdmin.from("payments").insert({
+    // Create pending payment record (unique stripe_session_id index prevents duplicates)
+    const { error: insertErr } = await supabaseAdmin.from("payments").insert({
       event_id: eventId,
       quote_id: event.quote_id,
       amount: chargeAmount,
@@ -145,6 +145,16 @@ serve(async (req) => {
       stripe_session_id: session.id,
       stripe_customer_id: customerId,
     });
+
+    if (insertErr) {
+      // If duplicate session, return existing session URL (idempotent)
+      if (insertErr.code === "23505") {
+        return new Response(JSON.stringify({ url: session.url }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      throw new Error("Failed to create payment record");
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
