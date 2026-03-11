@@ -67,36 +67,24 @@ const EventCalendarPage = () => {
       const endStr = format(dateRange.end, "yyyy-MM-dd");
       const { data: eventsData, error } = await supabase
         .from("events")
-        .select("id, title, event_date, start_time, end_time, location, notes")
+        .select("id, title, event_date, start_time, end_time, location, notes, event_products(quantity, products(name))")
         .gte("event_date", startStr)
         .lte("event_date", endStr)
         .order("event_date")
         .order("start_time");
       if (error) throw error;
 
-      // Fetch products for these events
-      const eventIds = (eventsData || []).map((e) => e.id);
-      let productsMap: Record<string, { name: string; quantity: number }[]> = {};
-      if (eventIds.length > 0) {
-        const { data: epData } = await supabase
-          .from("event_products")
-          .select("event_id, quantity, products(name)")
-          .in("event_id", eventIds);
-        if (epData) {
-          epData.forEach((ep: any) => {
-            if (!productsMap[ep.event_id]) productsMap[ep.event_id] = [];
-            productsMap[ep.event_id].push({ name: ep.products?.name || "Unknown", quantity: ep.quantity });
-          });
-        }
-      }
-
       const today = startOfDay(new Date());
-      const mapped: CalendarEvent[] = (eventsData || []).map((e) => {
+      const mapped: CalendarEvent[] = (eventsData || []).map((e: any) => {
         const eventDay = parseISO(e.event_date);
         let status: CalendarEvent["status"] = "upcoming";
         if (isSameDay(eventDay, today)) status = "today";
         else if (eventDay < today) status = "past";
-        return { ...e, products: productsMap[e.id] || [], status };
+        const products = (e.event_products || []).map((ep: any) => ({
+          name: ep.products?.name || "Unknown",
+          quantity: ep.quantity,
+        }));
+        return { id: e.id, title: e.title, event_date: e.event_date, start_time: e.start_time, end_time: e.end_time, location: e.location, notes: e.notes, products, status };
       });
 
       setEvents(mapped);

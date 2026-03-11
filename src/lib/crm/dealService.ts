@@ -1,11 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Deal } from "@/types/crm";
 
-export async function getDeals(workspaceId?: string | null): Promise<Deal[]> {
+export async function getDeals(workspaceId?: string | null, page = 0, pageSize = 100): Promise<Deal[]> {
   let query = supabase
     .from("crm_deals")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(page * pageSize, (page + 1) * pageSize - 1);
   if (workspaceId) {
     query = query.eq("workspace_id", workspaceId);
   }
