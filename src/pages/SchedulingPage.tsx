@@ -156,6 +156,7 @@ const SchedulingPage = () => {
         location: fullLocation,
         notes: newEvent.notes || null,
         created_by: user!.id,
+        company_id: companyId,
       });
       if (error) throw error;
       toast.success("Event created!");

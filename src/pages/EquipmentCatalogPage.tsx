@@ -27,7 +27,7 @@ interface EquipmentItem {
 const MAX_ITEMS = 20;
 
 const EquipmentCatalogPage = () => {
-  const { user } = useAuth();
+  const { user, companyId } = useAuth();
   const [items, setItems] = useState<EquipmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -117,6 +117,7 @@ const EquipmentCatalogPage = () => {
           price: priceVal,
           sort_order: items.length,
           created_by: user!.id,
+          company_id: companyId,
         });
         if (error) throw error;
         toast.success("Equipment added");

@@ -96,6 +96,7 @@ export type Database = {
       }
       booking_requests: {
         Row: {
+          company_id: string | null
           created_at: string
           customer_email: string
           customer_name: string
@@ -116,6 +117,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           customer_email: string
           customer_name: string
@@ -136,6 +138,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           customer_email?: string
           customer_name?: string
@@ -156,6 +159,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "booking_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "booking_requests_event_id_fkey"
             columns: ["event_id"]
@@ -876,6 +886,7 @@ export type Database = {
       }
       equipment_catalog: {
         Row: {
+          company_id: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -888,6 +899,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -900,6 +912,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -911,7 +924,15 @@ export type Database = {
           sort_order?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "equipment_catalog_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       equipment_inspections: {
         Row: {
@@ -1101,6 +1122,7 @@ export type Database = {
       }
       events: {
         Row: {
+          company_id: string | null
           created_at: string
           created_by: string
           crew_needed: number
@@ -1115,8 +1137,10 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           created_by: string
           crew_needed?: number
@@ -1131,8 +1155,10 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           created_by?: string
           crew_needed?: number
@@ -1147,13 +1173,28 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "events_quote_id_fkey"
             columns: ["quote_id"]
             isOneToOne: false
             referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
