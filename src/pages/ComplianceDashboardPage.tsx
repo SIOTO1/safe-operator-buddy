@@ -137,7 +137,7 @@ const ComplianceDashboardPage = () => {
     const insStatus: StatusLevel = expiredPolicies.length > 0 ? "red" : warningPolicies.length > 0 ? "yellow" : pols.length === 0 ? "yellow" : "green";
 
     // Inspections
-    const allInspections = (inspectionData || []) as unknown as Inspection[];
+    const allInspections = (inspectionData || []) as Inspection[];
     const failedOrRepair = allInspections.filter(i => i.inspection_status === "fail" || i.inspection_status === "needs_repair");
     const overdue = allInspections.filter(i => i.next_due_date && isBefore(new Date(i.next_due_date), now));
     const dueSoon = allInspections.filter(i => i.next_due_date && !isBefore(new Date(i.next_due_date), now) && isBefore(new Date(i.next_due_date), in30Days));
