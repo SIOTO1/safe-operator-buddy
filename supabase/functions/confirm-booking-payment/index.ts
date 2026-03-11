@@ -120,6 +120,7 @@ serve(async (req) => {
     if (eventError || !event) throw new Error(`Failed to create event: ${eventError?.message}`);
 
     // 2. Assign products to event (with atomic inventory validation)
+    let inventoryWarning: string | null = null;
     if (cartItems.length > 0) {
       const productsPayload = cartItems.map((item) => ({
         pid: item.pid,
@@ -131,9 +132,22 @@ serve(async (req) => {
       );
       if (assignError) {
         console.error("Product assignment error:", assignError);
+        inventoryWarning = `Product assignment failed: ${assignError.message}`;
       } else if (assignResult?.error) {
         console.error("Inventory exceeded:", assignResult.error);
-        // Event is already created, log the issue but don't fail the payment
+        inventoryWarning = String(assignResult.error);
+      }
+
+      // If inventory failed, notify company owners so they can resolve manually
+      if (inventoryWarning && creatorId) {
+        await supabaseAdmin.from("notifications").insert({
+          user_id: creatorId,
+          title: "⚠️ Booking Inventory Issue",
+          message: `Booking for ${customerName} on ${eventDate} was paid but inventory assignment failed: ${inventoryWarning}. Please review and resolve manually.`,
+          type: "inventory_conflict",
+          severity: "warning",
+          event_id: event.id,
+        });
       }
     }
 
