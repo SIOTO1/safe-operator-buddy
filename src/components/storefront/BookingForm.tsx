@@ -51,11 +51,12 @@ interface BookingFormProps {
   cart: CartItem[];
   selectedDate?: Date;
   cartTotal: number;
+  companySlug?: string;
   onBack: () => void;
   onSuccess: () => void;
 }
 
-export default function BookingForm({ cart, selectedDate, cartTotal, onBack, onSuccess }: BookingFormProps) {
+export default function BookingForm({ cart, selectedDate, cartTotal, companySlug, onBack, onSuccess }: BookingFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof BookingFormData, string>>>({});
