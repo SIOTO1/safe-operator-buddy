@@ -58,9 +58,68 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Too many attempts. Please wait a few minutes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Calculate totals
+    // --- P0 FIX: Pre-checkout inventory availability check ---
+    // Look up company_id from slug
+    let companyId: string | null = null;
+    if (company_slug) {
+      const { data: comp } = await supabaseAdmin.from("companies").select("id").eq("slug", company_slug).single();
+      if (comp) companyId = comp.id;
+    }
+
+    if (companyId) {
+      // Get current allocations for the event date
+      const { data: allocations } = await supabaseAdmin.rpc("get_product_availability", {
+        _company_id: companyId,
+        _date: event_date,
+      });
+
+      const allocMap: Record<string, number> = {};
+      if (allocations) {
+        (allocations as { product_id: string; units_allocated: number }[]).forEach((a) => {
+          allocMap[a.product_id] = a.units_allocated;
+        });
+      }
+
+      // Get product inventory limits
+      const productIds = cart_items.map((i: any) => i.product_id).filter(Boolean);
+      if (productIds.length > 0) {
+        const { data: products } = await supabaseAdmin
+          .from("products")
+          .select("id, name, quantity_available, price")
+          .in("id", productIds);
+
+        const unavailable: string[] = [];
+        const priceMismatches: string[] = [];
+
+        for (const item of cart_items) {
+          const product = (products || []).find((p: any) => p.id === item.product_id);
+          if (!product) { unavailable.push(item.product_name || "Unknown"); continue; }
+
+          const allocated = allocMap[item.product_id] || 0;
+          const available = product.quantity_available - allocated;
+          if ((item.quantity || 1) > available) {
+            unavailable.push(`${product.name} (need ${item.quantity}, only ${available} available)`);
+          }
+
+          // P2 FIX: Server-side price validation
+          if (product.price !== null && Math.abs((item.unit_price || 0) - product.price) > 0.01) {
+            priceMismatches.push(product.name);
+            item.unit_price = product.price; // Correct to server-side price
+          }
+        }
+
+        if (unavailable.length > 0) {
+          return new Response(JSON.stringify({
+            error: "Some items are no longer available for this date",
+            unavailable,
+          }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      }
+    }
+
+    // Calculate totals (using server-validated prices)
     const subtotal = cart_items.reduce((sum: number, item: any) => sum + (item.unit_price || 0) * (item.quantity || 1), 0);
-    const depositAmount = Math.round(subtotal * DEPOSIT_PERCENT * 100) / 100; // round to cents
+    const depositAmount = Math.round(subtotal * DEPOSIT_PERCENT * 100) / 100;
     const depositCents = Math.round(depositAmount * 100);
 
     if (depositCents < 50) {
@@ -86,7 +145,6 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://id-preview--9c9e3625-06c4-4d28-87a2-b1e5d562271a.lovable.app";
 
-    // Store booking data in metadata (Stripe limits: 500 chars per value)
     const bookingMeta = {
       customer_name: customer_name.trim().substring(0, 100),
       customer_email: customer_email.trim().toLowerCase(),
