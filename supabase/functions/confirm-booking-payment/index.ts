@@ -112,6 +112,7 @@ serve(async (req) => {
         notes: notes ? `Customer: ${customerName} (${customerEmail})\nPhone: ${customerPhone || "N/A"}\n\n${notes}` : `Customer: ${customerName} (${customerEmail})\nPhone: ${customerPhone || "N/A"}`,
         created_by: creatorId,
         crew_needed: 1,
+        company_id: companyId,
       })
       .select("id")
       .single();
