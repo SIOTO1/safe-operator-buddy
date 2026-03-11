@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useCompanySlug } from "@/hooks/use-company-slug";
 import { format } from "date-fns";
 import { ArrowLeft, MapPin, Clock, Users, FileText, Trash2, BookOpen, Plus, Package, X, Share2, Copy, Loader2 } from "lucide-react";
+import { IncidentReportSection } from "@/components/scheduling/IncidentReportSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -479,6 +480,12 @@ const EventDetailPage = () => {
             eventId={event.id}
             canManage={canManage}
             hasInflatables={eventProducts.some(ep => ep.product_category === "inflatables" || ep.product_category === "slides")}
+          />
+
+          {/* Incident Reports */}
+          <IncidentReportSection
+            eventId={event.id}
+            eventProducts={eventProducts.map(ep => ({ id: ep.product_id, name: ep.product_name }))}
           />
         </div>
 

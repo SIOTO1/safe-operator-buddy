@@ -1111,6 +1111,67 @@ export type Database = {
           },
         ]
       }
+      incident_reports: {
+        Row: {
+          created_at: string
+          date_reported: string
+          description: string
+          equipment_product_id: string | null
+          event_id: string
+          id: string
+          photo_urls: string[]
+          reported_by_employee_id: string | null
+          reported_by_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_reported?: string
+          description: string
+          equipment_product_id?: string | null
+          event_id: string
+          id?: string
+          photo_urls?: string[]
+          reported_by_employee_id?: string | null
+          reported_by_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_reported?: string
+          description?: string
+          equipment_product_id?: string | null
+          event_id?: string
+          id?: string
+          photo_urls?: string[]
+          reported_by_employee_id?: string | null
+          reported_by_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_reports_equipment_product_id_fkey"
+            columns: ["equipment_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_reports_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_reports_reported_by_employee_id_fkey"
+            columns: ["reported_by_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
