@@ -162,6 +162,12 @@ export default function BookingForm({ cart, selectedDate, cartTotal, companySlug
         <p className="text-muted-foreground text-xs mt-0.5">
           {cart.length} item{cart.length !== 1 ? "s" : ""} · ${cartTotal.toFixed(2)} total
         </p>
+        <div className="mt-2 rounded-lg bg-primary/5 border border-primary/20 p-3">
+          <p className="text-sm font-medium">25% Deposit Required</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Pay <span className="font-semibold text-foreground">${(cartTotal * 0.25).toFixed(2)}</span> now to confirm your booking. The remaining <span className="font-semibold text-foreground">${(cartTotal * 0.75).toFixed(2)}</span> is due before your event.
+          </p>
+        </div>
       </div>
 
       <Separator />
