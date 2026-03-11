@@ -1925,6 +1925,10 @@ export type Database = {
         Args: { _event_id: string; _products: Json }
         Returns: Json
       }
+      atomic_reschedule_event: {
+        Args: { _event_id: string; _new_date: string }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: {
           _action: string
