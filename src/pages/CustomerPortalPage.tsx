@@ -55,6 +55,12 @@ const CustomerPortalPage = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
 
+  // Reschedule state
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [newDate, setNewDate] = useState("");
+  const [rescheduling, setRescheduling] = useState(false);
+  const [rescheduleResult, setRescheduleResult] = useState<{ success?: boolean; error?: string; unavailable?: string[]; route_warning?: string | null } | null>(null);
+
   const paymentStatus = searchParams.get("payment");
   const sessionId = searchParams.get("session_id");
 
