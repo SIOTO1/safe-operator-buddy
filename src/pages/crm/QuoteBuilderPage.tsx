@@ -106,7 +106,7 @@ const QuoteBuilderPage = () => {
         notes: notes || null,
         status,
         total_amount: total,
-        lead_id: selectedLeadId || null,
+        lead_id: selectedLeadId && selectedLeadId !== "none" ? selectedLeadId : null,
         company_id: companyId ?? null,
         workspace_id: workspaceId ?? null,
         created_by: user?.id || "",

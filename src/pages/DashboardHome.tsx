@@ -33,7 +33,7 @@ const DashboardHome = () => {
     { label: "Upcoming Events", value: stats?.upcoming_events ?? 0, icon: CalendarDays, sub: `${stats?.today_events ?? 0} today` },
     { label: "Total Leads", value: stats?.total_leads ?? 0, icon: UserPlus, sub: `${stats?.new_leads ?? 0} new` },
     { label: "Open Tasks", value: stats?.open_tasks ?? 0, icon: ClipboardCheck, sub: `${stats?.total_deals ?? 0} deals` },
-    { label: "Revenue", value: `$${((stats?.won_revenue ?? 0) / 100).toLocaleString()}`, icon: DollarSign, sub: `$${((stats?.total_payments ?? 0) / 100).toLocaleString()} collected` },
+    { label: "Revenue", value: `$${(stats?.won_revenue ?? 0).toLocaleString()}`, icon: DollarSign, sub: `$${(stats?.total_payments ?? 0).toLocaleString()} collected` },
     { label: "Active Employees", value: stats?.active_employees ?? 0, icon: Users, sub: "on roster" },
     { label: "Pending Bookings", value: stats?.pending_bookings ?? 0, icon: Package, sub: "awaiting review" },
   ];

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<{ display_name: string | null; email: string | null; company_id: string | null; selected_workspace_id: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (userId: string) => {
+  const fetchUserData = useCallback(async (userId: string) => {
     try {
       const [{ data: roles }, { data: prof }] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", userId),
@@ -48,43 +48,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const roleOrder: AppRole[] = ["owner", "manager", "crew"];
         const userRole = roleOrder.find(r => roles.some(ur => ur.role === r)) || "crew";
         setRole(userRole);
+      } else {
+        setRole(null);
       }
 
       if (prof) {
         setProfile(prof as any);
+      } else {
+        setProfile(null);
       }
     } catch (err) {
       console.error("Error fetching user data:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          setTimeout(() => fetchUserData(session.user.id), 0);
+          await fetchUserData(session.user.id);
         } else {
           setRole(null);
           setProfile(null);
         }
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserData(session.user.id);
+        await fetchUserData(session.user.id);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [fetchUserData]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -101,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, role, profile, companyId: profile?.company_id ?? null, workspaceId: (profile as any)?.selected_workspace_id ?? null, loading, signOut, setWorkspaceId }}>
+    <AuthContext.Provider value={{ session, user, role, profile, companyId: profile?.company_id ?? null, workspaceId: profile?.selected_workspace_id ?? null, loading, signOut, setWorkspaceId }}>
       {children}
     </AuthContext.Provider>
   );
