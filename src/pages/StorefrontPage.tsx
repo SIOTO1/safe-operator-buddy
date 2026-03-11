@@ -82,6 +82,7 @@ const StorefrontPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [allocations, setAllocations] = useState<Record<string, number>>({});
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [showBookingForm, setShowBookingForm] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
