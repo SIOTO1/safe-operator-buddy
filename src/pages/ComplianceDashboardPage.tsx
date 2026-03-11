@@ -195,7 +195,7 @@ const ComplianceDashboardPage = () => {
   };
 
   const handleDeletePolicy = async (id: string) => {
-    await supabase.from("insurance_policies" as any).delete().eq("id", id);
+    await supabase.from("insurance_policies").delete().eq("id", id);
     loadData();
   };
 
