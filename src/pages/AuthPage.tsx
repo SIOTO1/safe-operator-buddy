@@ -115,7 +115,7 @@ const AuthPage = () => {
         </div>
 
         <p className="text-center text-xs text-secondary-foreground/30 mt-6">
-          {!isLogin && "The first account registered becomes the Owner/Admin."}
+          AI-Powered Safety & Operations
         </p>
       </div>
     </div>
