@@ -27,12 +27,7 @@ const LandingPage = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass-card">
         <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <Shield className="text-primary" size={28} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-            <span className="font-display font-bold text-xl tracking-tight">
-              SIOTO<span className="text-primary">.AI</span>
-            </span>
-          </div>
+          <ShieldLogo size={28} />
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
             <a href="#knowledge" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Knowledge Base</a>
