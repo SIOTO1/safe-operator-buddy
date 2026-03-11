@@ -26,6 +26,7 @@ interface AppNotification {
 const NotificationBell = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [open, setOpen] = useState(false);
 
