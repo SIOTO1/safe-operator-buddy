@@ -72,7 +72,7 @@ const QuotesPage = () => {
               <SelectItem value="expired">Expired</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={() => navigate("/dashboard/quotes/create")}>
+          <Button onClick={() => navigate(`${basePath}/quotes/create`)}>
             <Plus size={16} className="mr-1.5" />New Quote
           </Button>
         </div>
