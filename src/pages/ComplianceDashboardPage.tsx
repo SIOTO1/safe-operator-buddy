@@ -178,8 +178,8 @@ const ComplianceDashboardPage = () => {
       expiration_date: newPolicy.expiration_date,
       document_url: newPolicy.document_url || null,
     });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
-    else { toast({ title: "Policy added" }); setAddOpen(false); setNewPolicy({ provider: "", policy_number: "", coverage_amount: "", effective_date: "", expiration_date: "", document_url: "" }); loadData(); }
+    if (error) { toast.error(error.message); }
+    else { toast.success("Policy added"); setAddOpen(false); setNewPolicy({ provider: "", policy_number: "", coverage_amount: "", effective_date: "", expiration_date: "", document_url: "" }); loadData(); }
   };
 
   const handleAddInspection = async () => {
