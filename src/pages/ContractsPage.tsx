@@ -11,7 +11,6 @@ import DatePicker from "@/components/DatePicker";
 import jsPDF from "jspdf";
 
 const ContractsPage = () => {
-  const { toast } = useToast();
   const { orgName } = useOrgSettings();
   const [selectedIds, setSelectedIds] = useState<string[]>([contractTemplates[0].id]);
   const [eventDate, setEventDate] = useState<Date>();
