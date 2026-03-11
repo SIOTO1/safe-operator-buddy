@@ -29,6 +29,7 @@ interface EventDetail {
   crew_needed: number;
   created_by: string;
   created_at: string;
+  quote_id: string | null;
 }
 
 interface EventEquipment {
