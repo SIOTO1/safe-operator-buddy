@@ -18,6 +18,7 @@ interface OrgSettings {
   address: string | null;
   website: string | null;
   default_delivery_fee: number | null;
+  review_link: string | null;
 }
 
 const emptySettings: OrgSettings = {
@@ -28,6 +29,7 @@ const emptySettings: OrgSettings = {
   address: null,
   website: null,
   default_delivery_fee: null,
+  review_link: null,
 };
 
 const SettingsPage = () => {
