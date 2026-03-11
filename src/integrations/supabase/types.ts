@@ -913,6 +913,47 @@ export type Database = {
         }
         Relationships: []
       }
+      equipment_inspections: {
+        Row: {
+          created_at: string
+          id: string
+          inspected_by: string
+          inspection_date: string
+          inspection_status: Database["public"]["Enums"]["inspection_status"]
+          next_due_date: string | null
+          notes: string | null
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inspected_by: string
+          inspection_date?: string
+          inspection_status?: Database["public"]["Enums"]["inspection_status"]
+          next_due_date?: string | null
+          notes?: string | null
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inspected_by?: string
+          inspection_date?: string
+          inspection_status?: Database["public"]["Enums"]["inspection_status"]
+          next_due_date?: string | null
+          notes?: string | null
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_inspections_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_assignments: {
         Row: {
           created_at: string
@@ -1900,6 +1941,7 @@ export type Database = {
         | "manager"
       employee_status: "active" | "inactive" | "on_leave"
       event_staff_role: "driver" | "setup_crew" | "supervisor"
+      inspection_status: "pass" | "fail" | "needs_repair"
       job_status: "pending" | "processing" | "completed" | "failed" | "retrying"
       job_type:
         | "email_notification"
@@ -2055,6 +2097,7 @@ export const Constants = {
       ],
       employee_status: ["active", "inactive", "on_leave"],
       event_staff_role: ["driver", "setup_crew", "supervisor"],
+      inspection_status: ["pass", "fail", "needs_repair"],
       job_status: ["pending", "processing", "completed", "failed", "retrying"],
       job_type: [
         "email_notification",
