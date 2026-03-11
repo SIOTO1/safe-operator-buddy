@@ -26,6 +26,7 @@ import DriverManagementPage from "./pages/DriverManagementPage";
 import DifficultConversationsPage from "./pages/DifficultConversationsPage";
 import SchedulingPage from "./pages/SchedulingPage";
 import EventDetailPage from "./pages/EventDetailPage";
+import EventCalendarPage from "./pages/EventCalendarPage";
 import BookingPage from "./pages/BookingPage";
 import BookingManagementPage from "./pages/BookingManagementPage";
 import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
