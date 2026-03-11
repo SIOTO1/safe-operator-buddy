@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
 
       // Render email
       const html = render(ReviewRequestEmail({
-        customer_name: booking.customer_name,
+        customer_name: customerName || "Customer",
         company_name: companyName,
         event_date: formattedDate,
         event_title: event.title,
