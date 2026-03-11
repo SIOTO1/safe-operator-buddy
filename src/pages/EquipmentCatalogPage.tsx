@@ -27,7 +27,7 @@ interface EquipmentItem {
 const MAX_ITEMS = 20;
 
 const EquipmentCatalogPage = () => {
-  const { user } = useAuth();
+  const { user, companyId } = useAuth();
   const [items, setItems] = useState<EquipmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);

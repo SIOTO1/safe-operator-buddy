@@ -36,7 +36,7 @@ const statusConfig: Record<string, { label: string; class: string }> = {
 };
 
 const BookingManagementPage = () => {
-  const { user } = useAuth();
+  const { user, companyId } = useAuth();
   const [bookings, setBookings] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<BookingRequest | null>(null);
