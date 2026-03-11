@@ -169,7 +169,7 @@ const ComplianceDashboardPage = () => {
   const handleAddPolicy = async () => {
     const { data: profile } = await supabase.from("profiles").select("company_id").eq("user_id", user?.id || "").single();
     if (!profile?.company_id) return;
-    const { error } = await supabase.from("insurance_policies" as any).insert({
+    const { error } = await supabase.from("insurance_policies").insert({
       company_id: profile.company_id,
       provider: newPolicy.provider,
       policy_number: newPolicy.policy_number,
