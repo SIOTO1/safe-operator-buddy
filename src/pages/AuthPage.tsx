@@ -103,7 +103,7 @@ const AuthPage = () => {
             </div>
 
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
+              {loading ? "Please wait..." : "Sign In"}
             </Button>
           </form>
 
