@@ -28,38 +28,13 @@ const AuthPage = () => {
 
       // Sign in
 
-      console.log("Attempting sign in...");
-      const { data: signInData, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: validatedEmail,
         password: validatedPassword,
       });
       if (error) throw error;
-      console.log("Sign in successful, resolving redirect...");
       toast.success("Welcome back!");
-
-      // Resolve company slug for redirect
-      if (signInData.user) {
-        try {
-          const { data: prof } = await supabase
-            .from("profiles")
-            .select("company_id")
-            .eq("user_id", signInData.user.id)
-            .single();
-          if (prof?.company_id) {
-            const { data: company } = await supabase
-              .from("companies")
-              .select("slug")
-              .eq("id", prof.company_id)
-              .single();
-            if (company?.slug) {
-              navigate(`/app/${company.slug}`);
-              return;
-            }
-          }
-        } catch (navErr) {
-          console.error("Redirect resolution failed:", navErr);
-        }
-      }
+      // Let DashboardRedirect handle slug resolution
       navigate("/dashboard");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
