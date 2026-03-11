@@ -106,6 +106,41 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Rate limiting: extract user from JWT
+    const authHeader = req.headers.get("authorization") ?? "";
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Try to identify the caller for rate limiting
+    let identifier = req.headers.get("x-forwarded-for") ?? "anonymous";
+    if (authHeader.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "");
+      try {
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+        const userClient = createClient(SUPABASE_URL, anonKey, {
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        });
+        const { data: { user } } = await userClient.auth.getUser();
+        if (user) identifier = user.id;
+      } catch { /* use IP fallback */ }
+    }
+
+    // Check rate limit: 20 messages per minute
+    const { data: allowed } = await supabaseAdmin.rpc("check_rate_limit", {
+      _identifier: identifier,
+      _action: "chat",
+      _max_requests: 20,
+      _window_seconds: 60,
+    });
+    if (allowed === false) {
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded. Please wait a moment before sending more messages." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
