@@ -44,10 +44,6 @@ serve(async (req) => {
     today.setHours(0, 0, 0, 0);
     if (requestedDate < today) throw new Error("Requested date must be in the future");
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
 
     // Verify token
     const { data: portalToken, error: tokenError } = await supabaseAdmin
