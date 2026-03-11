@@ -46,6 +46,7 @@ import CustomerPortalPage from "./pages/CustomerPortalPage";
 import SetupWizardPage from "./pages/SetupWizardPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import StorefrontPage from "./pages/StorefrontPage";
+import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
 import BookingSuccessPage from "./pages/BookingSuccessPage";
 import NotFound from "./pages/NotFound";
 
