@@ -235,6 +235,47 @@ const ComplianceDashboardPage = () => {
         </Badge>
       </div>
 
+      {/* Certification Expiration Alerts */}
+      {expiringCerts.filter(c => isBefore(new Date(c.expiration_date), addDays(new Date(), 30))).length > 0 && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="border-warning/40 bg-warning/5">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 mt-0.5 rounded-full bg-warning/15 p-2">
+                  <AlertTriangle size={18} className="text-warning" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold">Certification Expiration Alert</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+                    The following employee certifications expire within 30 days and require immediate attention.
+                  </p>
+                  <div className="space-y-1.5">
+                    {expiringCerts
+                      .filter(c => isBefore(new Date(c.expiration_date), addDays(new Date(), 30)))
+                      .map(cert => {
+                        const exp = new Date(cert.expiration_date);
+                        const isExpired = isBefore(exp, new Date());
+                        const days = differenceInDays(exp, new Date());
+                        return (
+                          <div key={cert.id} className="flex items-center justify-between py-1.5 px-3 rounded-md bg-background/80">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-sm font-medium truncate">{(cert.employees as any)?.name}</span>
+                              <span className="text-xs text-muted-foreground">— {cert.certification_name}</span>
+                            </div>
+                            <Badge variant="outline" className={`shrink-0 border-0 text-[10px] ${isExpired ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
+                              {isExpired ? "Expired" : `${days}d remaining`}
+                            </Badge>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
       {/* Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {metrics.map((m, i) => {
