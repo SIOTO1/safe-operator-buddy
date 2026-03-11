@@ -3,7 +3,7 @@ import type { Task } from "@/types/crm";
 
 export async function getTasks(workspaceId?: string | null): Promise<Task[]> {
   let query = supabase
-    .from("crm_tasks" as any)
+    .from("crm_tasks")
     .select("*")
     .order("due_date", { ascending: true });
   if (workspaceId) {
@@ -11,41 +11,41 @@ export async function getTasks(workspaceId?: string | null): Promise<Task[]> {
   }
   const { data, error } = await query;
   if (error) throw error;
-  return (data as unknown) as Task[];
+  return (data || []) as Task[];
 }
 
 export async function getTasksByLeadId(leadId: string): Promise<Task[]> {
   const { data, error } = await supabase
-    .from("crm_tasks" as any)
+    .from("crm_tasks")
     .select("*")
     .eq("lead_id", leadId)
     .order("due_date", { ascending: true });
   if (error) throw error;
-  return (data as unknown) as Task[];
+  return (data || []) as Task[];
 }
 
 export async function createTask(task: Omit<Task, "id">): Promise<Task> {
   const { data, error } = await supabase
-    .from("crm_tasks" as any)
-    .insert(task as any)
+    .from("crm_tasks")
+    .insert(task)
     .select()
     .single();
   if (error) throw error;
-  return (data as unknown) as Task;
+  return data as Task;
 }
 
 export async function updateTask(id: string, updates: Partial<Task>): Promise<Task> {
   const { data, error } = await supabase
-    .from("crm_tasks" as any)
-    .update(updates as any)
+    .from("crm_tasks")
+    .update(updates)
     .eq("id", id)
     .select()
     .single();
   if (error) throw error;
-  return (data as unknown) as Task;
+  return data as Task;
 }
 
 export async function deleteTask(id: string): Promise<void> {
-  const { error } = await supabase.from("crm_tasks" as any).delete().eq("id", id);
+  const { error } = await supabase.from("crm_tasks").delete().eq("id", id);
   if (error) throw error;
 }

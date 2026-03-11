@@ -31,7 +31,7 @@ export type QuoteItem = {
 
 export async function getQuotes(companyId?: string | null): Promise<Quote[]> {
   const query = supabase
-    .from("quotes" as any)
+    .from("quotes")
     .select("*, lead:crm_leads(name, email)")
     .order("created_at", { ascending: false });
 
@@ -42,7 +42,7 @@ export async function getQuotes(companyId?: string | null): Promise<Quote[]> {
 
 export async function getQuoteById(id: string): Promise<Quote | null> {
   const { data, error } = await supabase
-    .from("quotes" as any)
+    .from("quotes")
     .select("*, lead:crm_leads(name, email)")
     .eq("id", id)
     .single();
@@ -52,8 +52,8 @@ export async function getQuoteById(id: string): Promise<Quote | null> {
 
 export async function createQuote(quote: Omit<Quote, "id" | "created_at" | "updated_at" | "lead">): Promise<Quote> {
   const { data, error } = await supabase
-    .from("quotes" as any)
-    .insert(quote as any)
+    .from("quotes")
+    .insert(quote)
     .select()
     .single();
   if (error) throw error;
@@ -63,8 +63,8 @@ export async function createQuote(quote: Omit<Quote, "id" | "created_at" | "upda
 export async function updateQuote(id: string, updates: Partial<Quote>): Promise<Quote> {
   const { lead, ...rest } = updates;
   const { data, error } = await supabase
-    .from("quotes" as any)
-    .update(rest as any)
+    .from("quotes")
+    .update(rest)
     .eq("id", id)
     .select()
     .single();
@@ -73,32 +73,32 @@ export async function updateQuote(id: string, updates: Partial<Quote>): Promise<
 }
 
 export async function deleteQuote(id: string): Promise<void> {
-  const { error } = await supabase.from("quotes" as any).delete().eq("id", id);
+  const { error } = await supabase.from("quotes").delete().eq("id", id);
   if (error) throw error;
 }
 
 // Quote Items
 export async function getQuoteItems(quoteId: string): Promise<QuoteItem[]> {
   const { data, error } = await supabase
-    .from("quote_items" as any)
+    .from("quote_items")
     .select("*")
     .eq("quote_id", quoteId)
     .order("created_at");
   if (error) throw error;
-  return (data || []) as unknown as QuoteItem[];
+  return (data || []) as QuoteItem[];
 }
 
 export async function addQuoteItem(item: Omit<QuoteItem, "id" | "created_at">): Promise<QuoteItem> {
   const { data, error } = await supabase
-    .from("quote_items" as any)
-    .insert(item as any)
+    .from("quote_items")
+    .insert(item)
     .select()
     .single();
   if (error) throw error;
-  return data as unknown as QuoteItem;
+  return data as QuoteItem;
 }
 
 export async function deleteQuoteItem(id: string): Promise<void> {
-  const { error } = await supabase.from("quote_items" as any).delete().eq("id", id);
+  const { error } = await supabase.from("quote_items").delete().eq("id", id);
   if (error) throw error;
 }
