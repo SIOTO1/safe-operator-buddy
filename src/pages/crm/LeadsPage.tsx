@@ -21,6 +21,7 @@ const emptyForm = { name: "", email: "", phone: "", company: "", source: "", sta
 const LeadsPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { basePath } = useCompanySlug();
   const { can, crmRoleLabel, userId, companyId, workspaceId } = useCrmPermissions();
   const [search, setSearch] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
