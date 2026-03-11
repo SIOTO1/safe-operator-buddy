@@ -1178,6 +1178,50 @@ export type Database = {
           },
         ]
       }
+      insurance_policies: {
+        Row: {
+          company_id: string
+          coverage_amount: number
+          created_at: string
+          document_url: string | null
+          effective_date: string
+          expiration_date: string
+          id: string
+          policy_number: string
+          provider: string
+        }
+        Insert: {
+          company_id: string
+          coverage_amount?: number
+          created_at?: string
+          document_url?: string | null
+          effective_date: string
+          expiration_date: string
+          id?: string
+          policy_number: string
+          provider: string
+        }
+        Update: {
+          company_id?: string
+          coverage_amount?: number
+          created_at?: string
+          document_url?: string | null
+          effective_date?: string
+          expiration_date?: string
+          id?: string
+          policy_number?: string
+          provider?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_policies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
