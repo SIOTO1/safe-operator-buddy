@@ -524,7 +524,7 @@ const EventDetailPage = () => {
                   {SAFETY_TRAINING_LINKS.map((link) => (
                     <Link
                       key={link.sopId}
-                      to={`/dashboard/sops?article=${link.sopId}`}
+                      to={`${basePath}/sops?article=${link.sopId}`}
                       className="block rounded-md border border-border/60 p-2.5 hover:bg-accent/50 transition-colors group"
                     >
                       <p className="text-xs font-medium group-hover:text-primary transition-colors">{link.label}</p>

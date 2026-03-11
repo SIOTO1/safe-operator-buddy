@@ -203,7 +203,7 @@ const LeadDetailPage = () => {
       if (error) throw error;
       toast.success("Event created from lead");
       setConvertOpen(false);
-      navigate(`/dashboard/scheduling`);
+      navigate(`${basePath}/scheduling`);
     } catch (err: any) {
       toast.error(err.message || "Failed to create event");
     } finally {

@@ -323,7 +323,7 @@ By signing below, the client acknowledges they have read, understood, and agree 
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/crm/quotes")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(`${basePath}/crm/quotes`)}>
           <ArrowLeft size={18} />
         </Button>
         <div className="flex-1">

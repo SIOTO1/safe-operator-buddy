@@ -101,7 +101,7 @@ const QuotesPage = () => {
                 </TableRow>
               ) : (
                 filtered.map((q) => (
-                  <TableRow key={q.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/dashboard/crm/quotes/${q.id}`)}>
+                  <TableRow key={q.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`${basePath}/crm/quotes/${q.id}`)}>
                     <TableCell className="font-medium">{q.title || "Untitled"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{q.lead?.name || "—"}</TableCell>
                     <TableCell>
