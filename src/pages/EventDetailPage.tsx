@@ -226,8 +226,9 @@ const EventDetailPage = () => {
         _products: [{ pid: selectedProductId, quantity: qty }],
       });
       if (error) throw error;
-      if (result?.error) {
-        toast.error(result.error);
+      const resultObj = result as Record<string, unknown> | null;
+      if (resultObj?.error) {
+        toast.error(String(resultObj.error));
         return;
       }
       toast.success("Product assigned");
