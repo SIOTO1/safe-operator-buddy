@@ -91,6 +91,7 @@ const EventDetailPage = () => {
   const [productQty, setProductQty] = useState("1");
   const [addingProduct, setAddingProduct] = useState(false);
   const [dateAllocations, setDateAllocations] = useState<Record<string, number>>({});
+  const [generatingPortalLink, setGeneratingPortalLink] = useState(false);
 
   const fetchEventProducts = useCallback(async () => {
     if (!eventId) return;
