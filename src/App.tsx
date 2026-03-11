@@ -72,7 +72,6 @@ const PageLoader = () => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
       <Sonner />
       <AuthProvider>
         <OrgSettingsProvider>
