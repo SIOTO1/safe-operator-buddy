@@ -1,20 +1,18 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Shield, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Shield, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 const emailSchema = z.string().trim().email("Invalid email address").max(255);
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(128);
-const nameSchema = z.string().trim().min(1, "Name is required").max(100);
+
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,32 +25,13 @@ const AuthPage = () => {
       const validatedEmail = emailSchema.parse(email);
       const validatedPassword = passwordSchema.parse(password);
 
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: validatedEmail,
-          password: validatedPassword,
-        });
-        if (error) throw error;
-        toast.success("Welcome back!");
-        navigate("/dashboard");
-      } else {
-        const validatedName = nameSchema.parse(displayName);
-        const { data, error } = await supabase.auth.signUp({
-          email: validatedEmail,
-          password: validatedPassword,
-          options: {
-            data: { display_name: validatedName },
-            emailRedirectTo: window.location.origin,
-          },
-        });
-        if (error) throw error;
-        if (data.session) {
-          toast.success("Account created! Welcome aboard!");
-          navigate("/dashboard");
-        } else {
-          toast.success("Check your email to confirm your account!");
-        }
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validatedEmail,
+        password: validatedPassword,
+      });
+      if (error) throw error;
+      toast.success("Welcome back!");
+      navigate("/dashboard");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         toast.error(err.errors[0].message);
@@ -81,26 +60,10 @@ const AuthPage = () => {
 
         <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
           <h2 className="font-display font-bold text-xl text-center mb-6">
-            {isLogin ? "Sign In" : "Create Account"}
+            Sign In
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Full Name</label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={e => setDisplayName(e.target.value)}
-                    placeholder="John Smith"
-                    className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    required
-                  />
-                </div>
-              </div>
-            )}
 
             <div>
               <label className="text-sm font-medium mb-1.5 block">Email</label>
@@ -140,22 +103,19 @@ const AuthPage = () => {
             </div>
 
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
+              {loading ? "Please wait..." : "Sign In"}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-primary hover:underline"
-            >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
+            <Link to="/signup" className="text-sm text-primary hover:underline">
+              Don't have an account? Create your company
+            </Link>
           </div>
         </div>
 
         <p className="text-center text-xs text-secondary-foreground/30 mt-6">
-          {!isLogin && "The first account registered becomes the Owner/Admin."}
+          AI-Powered Safety & Operations
         </p>
       </div>
     </div>

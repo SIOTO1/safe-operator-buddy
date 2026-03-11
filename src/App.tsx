@@ -8,6 +8,8 @@ import { OrgSettingsProvider } from "@/contexts/OrgSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
+import SignupPage from "./pages/SignupPage";
+import CompanyDashboardRedirect from "./pages/CompanyDashboardRedirect";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
 import ChatPage from "./pages/ChatPage";
@@ -57,7 +59,12 @@ const App = () => (
             <Route path="/book" element={<BookingPage />} />
             <Route path="/portal/event/:token" element={<CustomerPortalPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/app/:slug/dashboard" element={
+              <ProtectedRoute>
+                <CompanyDashboardRedirect />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <DashboardLayout />
