@@ -1952,6 +1952,7 @@ export type Database = {
         Returns: string
       }
       generate_company_slug: { Args: { _name: string }; Returns: string }
+      get_dashboard_stats: { Args: never; Returns: Json }
       get_product_availability: {
         Args: { _company_id: string; _date: string }
         Returns: {
@@ -1985,6 +1986,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      refresh_dashboard_stats: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "owner" | "manager" | "crew"

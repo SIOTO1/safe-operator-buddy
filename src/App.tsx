@@ -1,8 +1,9 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OrgSettingsProvider } from "@/contexts/OrgSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -12,45 +13,62 @@ import SignupPage from "./pages/SignupPage";
 import DashboardRedirect from "./pages/DashboardRedirect";
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./pages/DashboardHome";
-import ChatPage from "./pages/ChatPage";
-import KnowledgePage from "./pages/KnowledgePage";
-import ChecklistsPage from "./pages/ChecklistsPage";
-import ContractsPage from "./pages/ContractsPage";
-import CrewPage from "./pages/CrewPage";
-import SettingsPage from "./pages/SettingsPage";
-import IncidentReportPage from "./pages/IncidentReportPage";
-import WaiverPage from "./pages/WaiverPage";
-import SOPsPage from "./pages/SOPsPage";
-import InterviewGuidePage from "./pages/InterviewGuidePage";
-import DriverManagementPage from "./pages/DriverManagementPage";
-import DifficultConversationsPage from "./pages/DifficultConversationsPage";
-import SchedulingPage from "./pages/SchedulingPage";
-import EventDetailPage from "./pages/EventDetailPage";
-import EventCalendarPage from "./pages/EventCalendarPage";
-import BookingPage from "./pages/BookingPage";
-import BookingManagementPage from "./pages/BookingManagementPage";
-import EquipmentCatalogPage from "./pages/EquipmentCatalogPage";
-import ProductCatalogPage from "./pages/ProductCatalogPage";
-import DeliverySchedulePage from "./pages/DeliverySchedulePage";
-import RoutePlanningPage from "./pages/RoutePlanningPage";
-import LeadsPage from "./pages/crm/LeadsPage";
-import LeadDetailPage from "./pages/crm/LeadDetailPage";
-import PipelinePage from "./pages/crm/PipelinePage";
-import TasksPage from "./pages/crm/TasksPage";
-import CrmDashboardPage from "./pages/crm/CrmDashboardPage";
-import QuotesPage from "./pages/crm/QuotesPage";
-import QuoteBuilderPage from "./pages/crm/QuoteBuilderPage";
-import QuoteDetailPage from "./pages/crm/QuoteDetailPage";
-import ContractSigningPage from "./pages/crm/ContractSigningPage";
-import CustomerPortalPage from "./pages/CustomerPortalPage";
-import SetupWizardPage from "./pages/SetupWizardPage";
-import EmployeesPage from "./pages/EmployeesPage";
-import StorefrontPage from "./pages/StorefrontPage";
-import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
-import BookingSuccessPage from "./pages/BookingSuccessPage";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Lazy-loaded pages (code-split by route)
+const ChatPage = lazy(() => import("./pages/ChatPage"));
+const KnowledgePage = lazy(() => import("./pages/KnowledgePage"));
+const ChecklistsPage = lazy(() => import("./pages/ChecklistsPage"));
+const ContractsPage = lazy(() => import("./pages/ContractsPage"));
+const CrewPage = lazy(() => import("./pages/CrewPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const IncidentReportPage = lazy(() => import("./pages/IncidentReportPage"));
+const WaiverPage = lazy(() => import("./pages/WaiverPage"));
+const SOPsPage = lazy(() => import("./pages/SOPsPage"));
+const InterviewGuidePage = lazy(() => import("./pages/InterviewGuidePage"));
+const DriverManagementPage = lazy(() => import("./pages/DriverManagementPage"));
+const DifficultConversationsPage = lazy(() => import("./pages/DifficultConversationsPage"));
+const SchedulingPage = lazy(() => import("./pages/SchedulingPage"));
+const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
+const EventCalendarPage = lazy(() => import("./pages/EventCalendarPage"));
+const BookingPage = lazy(() => import("./pages/BookingPage"));
+const BookingManagementPage = lazy(() => import("./pages/BookingManagementPage"));
+const EquipmentCatalogPage = lazy(() => import("./pages/EquipmentCatalogPage"));
+const ProductCatalogPage = lazy(() => import("./pages/ProductCatalogPage"));
+const DeliverySchedulePage = lazy(() => import("./pages/DeliverySchedulePage"));
+const RoutePlanningPage = lazy(() => import("./pages/RoutePlanningPage"));
+const LeadsPage = lazy(() => import("./pages/crm/LeadsPage"));
+const LeadDetailPage = lazy(() => import("./pages/crm/LeadDetailPage"));
+const PipelinePage = lazy(() => import("./pages/crm/PipelinePage"));
+const TasksPage = lazy(() => import("./pages/crm/TasksPage"));
+const CrmDashboardPage = lazy(() => import("./pages/crm/CrmDashboardPage"));
+const QuotesPage = lazy(() => import("./pages/crm/QuotesPage"));
+const QuoteBuilderPage = lazy(() => import("./pages/crm/QuoteBuilderPage"));
+const QuoteDetailPage = lazy(() => import("./pages/crm/QuoteDetailPage"));
+const ContractSigningPage = lazy(() => import("./pages/crm/ContractSigningPage"));
+const CustomerPortalPage = lazy(() => import("./pages/CustomerPortalPage"));
+const SetupWizardPage = lazy(() => import("./pages/SetupWizardPage"));
+const EmployeesPage = lazy(() => import("./pages/EmployeesPage"));
+const StorefrontPage = lazy(() => import("./pages/StorefrontPage"));
+const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPage"));
+const BookingSuccessPage = lazy(() => import("./pages/BookingSuccessPage"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,       // Data stays fresh for 2 minutes
+      gcTime: 10 * 60 * 1000,          // Cache kept for 10 minutes
+      refetchOnWindowFocus: true,       // Background refresh on tab focus
+      retry: 1,
+    },
+  },
+});
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-64">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -60,6 +78,7 @@ const App = () => (
       <AuthProvider>
         <OrgSettingsProvider>
         <BrowserRouter>
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<LandingPage />} />
@@ -126,6 +145,7 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
         </OrgSettingsProvider>
       </AuthProvider>
