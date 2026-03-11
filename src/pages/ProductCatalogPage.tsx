@@ -135,7 +135,7 @@ const ProductCatalogPage = () => {
           image_url: form.image_url.trim() || null,
           price: priceVal,
           quantity_available: qty,
-        } as any).eq("id", editing.id);
+        }).eq("id", editing.id);
         if (error) throw error;
         toast.success("Product updated");
       } else {
@@ -148,7 +148,7 @@ const ProductCatalogPage = () => {
           quantity_available: qty,
           company_id: companyId,
           workspace_id: workspaceId,
-        } as any);
+        });
         if (error) throw error;
         toast.success("Product added");
       }

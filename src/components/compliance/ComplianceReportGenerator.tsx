@@ -59,8 +59,8 @@ const ComplianceReportGenerator = () => {
       ] = await Promise.all([
         supabase.from("employees").select("id, name, status, role"),
         supabase.from("employee_certifications").select("*, employees(name)"),
-        supabase.from("equipment_inspections" as any).select("*, products(name)").order("inspection_date", { ascending: false }),
-        supabase.from("insurance_policies" as any).select("*").order("expiration_date", { ascending: true }),
+        supabase.from("equipment_inspections").select("*, products(name)").order("inspection_date", { ascending: false }),
+        supabase.from("insurance_policies").select("*").order("expiration_date", { ascending: true }),
         supabase.from("incident_reports").select("*, events(title)").order("date_reported", { ascending: false }),
         supabase.from("organization_settings").select("company_name").limit(1).single(),
         supabase.from("profiles").select("display_name, company_id").eq("user_id", user?.id || "").single(),
@@ -204,7 +204,7 @@ const ComplianceReportGenerator = () => {
           allCerts.forEach(cert => {
             const isExpired = cert.expiration_date && isBefore(new Date(cert.expiration_date), now);
             addTableRow([
-              (cert.employees as any)?.name || "Unknown",
+              (cert.employees as { name: string } | null)?.name || "Unknown",
               cert.certification_name,
               cert.certification_status,
               cert.issued_date ? format(new Date(cert.issued_date), "MMM d, yyyy") : "—",
@@ -224,7 +224,7 @@ const ComplianceReportGenerator = () => {
       if (selectedSections.has("inspections")) {
         addSectionHeader("Equipment Inspections");
 
-        const allInspections = (inspectionData || []) as any[];
+        const allInspections = (inspectionData || []) as { inspection_status: string; next_due_date: string | null; products: { name: string } | null; inspection_date: string; notes: string | null }[];
         const passCount = allInspections.filter(i => i.inspection_status === "pass").length;
         const failCount = allInspections.filter(i => i.inspection_status === "fail").length;
         const repairCount = allInspections.filter(i => i.inspection_status === "needs_repair").length;
@@ -249,7 +249,7 @@ const ComplianceReportGenerator = () => {
           allInspections.forEach(ins => {
             const isFail = ins.inspection_status === "fail" || ins.inspection_status === "needs_repair";
             addTableRow([
-              (ins.products as any)?.name || "Equipment",
+              ins.products?.name || "Equipment",
               format(new Date(ins.inspection_date), "MMM d, yyyy"),
               ins.inspection_status === "needs_repair" ? "Needs Repair" : ins.inspection_status === "pass" ? "Pass" : "Fail",
               ins.next_due_date ? format(new Date(ins.next_due_date), "MMM d, yyyy") : "—",
@@ -269,7 +269,7 @@ const ComplianceReportGenerator = () => {
       if (selectedSections.has("insurance")) {
         addSectionHeader("Insurance Policies");
 
-        const pols = (insurancePolicies || []) as any[];
+        const pols = (insurancePolicies || []) as { provider: string; policy_number: string; coverage_amount: number; effective_date: string; expiration_date: string }[];
         const activePols = pols.filter(p => !isBefore(new Date(p.expiration_date), now));
         const expiredPols = pols.filter(p => isBefore(new Date(p.expiration_date), now));
         const totalCoverage = pols.reduce((s, p) => s + Number(p.coverage_amount || 0), 0);
@@ -334,7 +334,7 @@ const ComplianceReportGenerator = () => {
           allIncidents.forEach(inc => {
             addTableRow([
               format(new Date(inc.date_reported), "MMM d, yyyy"),
-              (inc.events as any)?.title || "—",
+              (inc.events as { title: string } | null)?.title || "—",
               (inc.description || "").substring(0, 100),
             ], cols);
           });

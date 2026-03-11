@@ -173,7 +173,7 @@ const EventDetailPage = () => {
   const handleMarkCompleted = async () => {
     if (!confirm("Mark this event as completed? A review request email will be sent to the customer.")) return;
     try {
-      const { error } = await supabase.from("events").update({ status: "completed" } as any).eq("id", eventId!);
+      const { error } = await supabase.from("events").update({ status: "completed" }).eq("id", eventId!);
       if (error) throw error;
 
       // Trigger review request email
@@ -224,7 +224,7 @@ const EventDetailPage = () => {
         event_id: eventId,
         product_id: selectedProductId,
         quantity: qty,
-      } as any);
+      });
       if (error) throw error;
       toast.success("Product assigned");
       setSelectedProductId("");

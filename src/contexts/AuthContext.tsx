@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const [{ data: roles }, { data: prof }] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", userId),
-        supabase.from("profiles").select("display_name, email, company_id, selected_workspace_id" as any).eq("user_id", userId).single(),
+        supabase.from("profiles").select("display_name, email, company_id, selected_workspace_id").eq("user_id", userId).single(),
       ]);
 
       if (roles && roles.length > 0) {
@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const setWorkspaceId = async (workspaceId: string | null) => {
     if (!user) return;
-    await supabase.from("profiles").update({ selected_workspace_id: workspaceId } as any).eq("user_id", user.id);
+    await supabase.from("profiles").update({ selected_workspace_id: workspaceId }).eq("user_id", user.id);
     setProfile((prev) => prev ? { ...prev, selected_workspace_id: workspaceId } : prev);
   };
 

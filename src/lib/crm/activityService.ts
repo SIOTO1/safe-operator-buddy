@@ -10,16 +10,16 @@ export interface ActivityEvent {
 
 export async function getActivityForLead(leadId: string): Promise<ActivityEvent[]> {
   const { data, error } = await supabase
-    .from("crm_activity_log" as any)
+    .from("crm_activity_log")
     .select("*")
     .eq("lead_id", leadId)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return ((data as any[]) || []).map((row) => ({
+  return (data || []).map((row) => ({
     id: row.id,
     type: row.event_type as ActivityEvent["type"],
     description: row.description,
     timestamp: row.created_at,
-    userId: row.performed_by,
+    userId: row.performed_by ?? undefined,
   }));
 }

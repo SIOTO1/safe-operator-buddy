@@ -25,8 +25,8 @@ const DashboardRedirect = () => {
           .select("slug")
           .eq("id", companyId)
           .single();
-        if ((data as any)?.slug) {
-          slug = (data as any).slug;
+        if (data?.slug) {
+          slug = data.slug;
         }
       }
 

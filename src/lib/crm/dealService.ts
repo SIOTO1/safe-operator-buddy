@@ -3,7 +3,7 @@ import type { Deal } from "@/types/crm";
 
 export async function getDeals(workspaceId?: string | null): Promise<Deal[]> {
   let query = supabase
-    .from("crm_deals" as any)
+    .from("crm_deals")
     .select("*")
     .order("created_at", { ascending: false });
   if (workspaceId) {
@@ -11,51 +11,51 @@ export async function getDeals(workspaceId?: string | null): Promise<Deal[]> {
   }
   const { data, error } = await query;
   if (error) throw error;
-  return (data as unknown) as Deal[];
+  return (data || []) as Deal[];
 }
 
 export async function getDealById(id: string): Promise<Deal> {
   const { data, error } = await supabase
-    .from("crm_deals" as any)
+    .from("crm_deals")
     .select("*")
     .eq("id", id)
     .single();
   if (error) throw error;
-  return (data as unknown) as Deal;
+  return data as Deal;
 }
 
 export async function getDealsByLeadId(leadId: string): Promise<Deal[]> {
   const { data, error } = await supabase
-    .from("crm_deals" as any)
+    .from("crm_deals")
     .select("*")
     .eq("lead_id", leadId)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data as unknown) as Deal[];
+  return (data || []) as Deal[];
 }
 
 export async function createDeal(deal: Omit<Deal, "id" | "created_at">): Promise<Deal> {
   const { data, error } = await supabase
-    .from("crm_deals" as any)
+    .from("crm_deals")
     .insert(deal as any)
     .select()
     .single();
   if (error) throw error;
-  return (data as unknown) as Deal;
+  return data as Deal;
 }
 
 export async function updateDeal(id: string, updates: Partial<Deal>): Promise<Deal> {
   const { data, error } = await supabase
-    .from("crm_deals" as any)
-    .update(updates as any)
+    .from("crm_deals")
+    .update(updates)
     .eq("id", id)
     .select()
     .single();
   if (error) throw error;
-  return (data as unknown) as Deal;
+  return data as Deal;
 }
 
 export async function deleteDeal(id: string): Promise<void> {
-  const { error } = await supabase.from("crm_deals" as any).delete().eq("id", id);
+  const { error } = await supabase.from("crm_deals").delete().eq("id", id);
   if (error) throw error;
 }

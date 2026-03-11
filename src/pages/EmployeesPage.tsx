@@ -66,7 +66,7 @@ const EmployeesPage = () => {
       console.error(error);
       toast.error("Failed to load employees");
     } else {
-      setEmployees((data as any) || []);
+      setEmployees((data || []) as Employee[]);
     }
     setLoading(false);
   };
@@ -92,14 +92,14 @@ const EmployeesPage = () => {
       if (editing) {
         const { error } = await supabase.from("employees").update({
           name: form.name, email: form.email || null, phone: form.phone || null, role: form.role, status: form.status,
-        } as any).eq("id", editing.id);
+        }).eq("id", editing.id);
         if (error) throw error;
         toast.success("Employee updated");
       } else {
         const { error } = await supabase.from("employees").insert({
           name: form.name, email: form.email || null, phone: form.phone || null, role: form.role, status: form.status,
-          company_id: companyId, workspace_id: workspaceId,
-        } as any);
+          company_id: companyId!, workspace_id: workspaceId,
+        });
         if (error) throw error;
         toast.success("Employee added");
       }

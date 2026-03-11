@@ -134,8 +134,8 @@ const QuoteDetailPage = () => {
     if (newQty < 1) return removeItemMutation.mutate(item.id);
     const newTotal = item.unit_price * newQty;
     const { error } = await supabase
-      .from("quote_items" as any)
-      .update({ quantity: newQty, total_price: newTotal } as any)
+      .from("quote_items")
+      .update({ quantity: newQty, total_price: newTotal })
       .eq("id", item.id);
     if (error) return toast.error("Failed to update quantity");
     queryClient.invalidateQueries({ queryKey: ["crm-quote-items", id] });
@@ -177,12 +177,12 @@ const QuoteDetailPage = () => {
       let leadNotes = "";
       if (quote.lead_id) {
         const { data: lead } = await supabase
-          .from("crm_leads" as any)
+          .from("crm_leads")
           .select("name, email, phone")
           .eq("id", quote.lead_id)
           .single();
         if (lead) {
-          const l = lead as any;
+          const l = lead;
           leadName = l.name || "";
           leadNotes = [
             l.name && `Customer: ${l.name}`,
@@ -217,7 +217,7 @@ const QuoteDetailPage = () => {
           created_by: user.id,
           notes: eventNotes,
           quote_id: id,
-        } as any)
+        })
         .select()
         .single();
 

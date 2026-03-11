@@ -49,11 +49,11 @@ async function getCrmAnalytics(workspaceId?: string | null) {
   const addWsFilter = (query: any) => workspaceId ? query.eq("workspace_id", workspaceId) : query;
 
   const [leadsRes, tasksRes, dealsRes, notesRes, activityRes] = await Promise.all([
-    addWsFilter(supabase.from("crm_leads" as any).select("*").order("created_at", { ascending: false })),
-    addWsFilter(supabase.from("crm_tasks" as any).select("*")),
-    addWsFilter(supabase.from("crm_deals" as any).select("*")),
-    addWsFilter(supabase.from("crm_notes" as any).select("*, crm_leads(name)" as any).order("created_at", { ascending: false }).limit(10)),
-    addWsFilter(supabase.from("crm_activity_log" as any).select("*").order("created_at", { ascending: false })),
+    addWsFilter(supabase.from("crm_leads").select("*").order("created_at", { ascending: false })),
+    addWsFilter(supabase.from("crm_tasks").select("*")),
+    addWsFilter(supabase.from("crm_deals").select("*")),
+    addWsFilter(supabase.from("crm_notes").select("*, crm_leads(name)").order("created_at", { ascending: false }).limit(10)),
+    addWsFilter(supabase.from("crm_activity_log").select("*").order("created_at", { ascending: false })),
   ]);
 
   if (leadsRes.error) throw leadsRes.error;
@@ -62,11 +62,11 @@ async function getCrmAnalytics(workspaceId?: string | null) {
   if (notesRes.error) throw notesRes.error;
   if (activityRes.error) throw activityRes.error;
 
-  const leads = leadsRes.data as any[];
-  const tasks = tasksRes.data as any[];
-  const deals = dealsRes.data as any[];
-  const notes = notesRes.data as any[];
-  const activities = activityRes.data as any[];
+  const leads = (leadsRes.data || []) as any[];
+  const tasks = (tasksRes.data || []) as any[];
+  const deals = (dealsRes.data || []) as any[];
+  const notes = (notesRes.data || []) as any[];
+  const activities = (activityRes.data || []) as any[];
 
   const now = new Date();
   const todayStr = format(now, "yyyy-MM-dd");
@@ -187,7 +187,7 @@ const CrmDashboardPage = () => {
       const leads = generateFakeLeads(50).map((l) => ({ ...l, company_id: companyId }));
       for (let i = 0; i < leads.length; i += 25) {
         const batch = leads.slice(i, i + 25);
-        const { error } = await supabase.from("crm_leads" as any).insert(batch as any);
+        const { error } = await supabase.from("crm_leads").insert(batch);
         if (error) throw error;
       }
       toast({ title: "Success", description: "50 test leads generated." });

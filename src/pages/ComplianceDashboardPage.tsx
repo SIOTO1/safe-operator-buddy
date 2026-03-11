@@ -94,8 +94,8 @@ const ComplianceDashboardPage = () => {
       supabase.from("employee_certifications").select("*, employees(name)"),
       supabase.from("incident_reports").select("*, events(title)").order("date_reported", { ascending: false }).limit(10),
       supabase.from("products").select("id, name, is_active"),
-      supabase.from("insurance_policies" as any).select("*").order("expiration_date", { ascending: true }),
-      supabase.from("equipment_inspections" as any).select("*, products(name)").order("inspection_date", { ascending: false }),
+      supabase.from("insurance_policies").select("*").order("expiration_date", { ascending: true }),
+      supabase.from("equipment_inspections").select("*, products(name)").order("inspection_date", { ascending: false }),
     ]);
 
     setProductsList((products || []).map(p => ({ id: p.id, name: p.name })));
@@ -128,7 +128,7 @@ const ComplianceDashboardPage = () => {
     const eqStatus: StatusLevel = eqRatio >= 0.95 ? "green" : eqRatio >= 0.8 ? "yellow" : "red";
 
     // Insurance
-    const pols = (insurancePolicies || []) as unknown as InsurancePolicy[];
+    const pols = (insurancePolicies || []) as InsurancePolicy[];
     const expiredPolicies = pols.filter(p => isBefore(new Date(p.expiration_date), now));
     const warningPolicies = pols.filter(p => {
       const exp = new Date(p.expiration_date);
@@ -137,7 +137,7 @@ const ComplianceDashboardPage = () => {
     const insStatus: StatusLevel = expiredPolicies.length > 0 ? "red" : warningPolicies.length > 0 ? "yellow" : pols.length === 0 ? "yellow" : "green";
 
     // Inspections
-    const allInspections = (inspectionData || []) as unknown as Inspection[];
+    const allInspections = (inspectionData || []) as Inspection[];
     const failedOrRepair = allInspections.filter(i => i.inspection_status === "fail" || i.inspection_status === "needs_repair");
     const overdue = allInspections.filter(i => i.next_due_date && isBefore(new Date(i.next_due_date), now));
     const dueSoon = allInspections.filter(i => i.next_due_date && !isBefore(new Date(i.next_due_date), now) && isBefore(new Date(i.next_due_date), in30Days));
@@ -169,7 +169,7 @@ const ComplianceDashboardPage = () => {
   const handleAddPolicy = async () => {
     const { data: profile } = await supabase.from("profiles").select("company_id").eq("user_id", user?.id || "").single();
     if (!profile?.company_id) return;
-    const { error } = await supabase.from("insurance_policies" as any).insert({
+    const { error } = await supabase.from("insurance_policies").insert({
       company_id: profile.company_id,
       provider: newPolicy.provider,
       policy_number: newPolicy.policy_number,
@@ -183,10 +183,10 @@ const ComplianceDashboardPage = () => {
   };
 
   const handleAddInspection = async () => {
-    const { error } = await supabase.from("equipment_inspections" as any).insert({
+    const { error } = await supabase.from("equipment_inspections").insert({
       product_id: newInspection.product_id,
-      inspected_by: user?.id,
-      inspection_status: newInspection.inspection_status,
+      inspected_by: user?.id!,
+      inspection_status: newInspection.inspection_status as "pass" | "fail" | "needs_repair",
       notes: newInspection.notes || null,
       next_due_date: newInspection.next_due_date || null,
     });
@@ -195,7 +195,7 @@ const ComplianceDashboardPage = () => {
   };
 
   const handleDeletePolicy = async (id: string) => {
-    await supabase.from("insurance_policies" as any).delete().eq("id", id);
+    await supabase.from("insurance_policies").delete().eq("id", id);
     loadData();
   };
 
@@ -263,7 +263,7 @@ const ComplianceDashboardPage = () => {
                         return (
                           <div key={cert.id} className="flex items-center justify-between py-1.5 px-3 rounded-md bg-background/80">
                             <div className="flex items-center gap-2 min-w-0">
-                              <span className="text-sm font-medium truncate">{(cert.employees as any)?.name}</span>
+                              <span className="text-sm font-medium truncate">{(cert.employees as { name: string } | null)?.name}</span>
                               <span className="text-xs text-muted-foreground">— {cert.certification_name}</span>
                             </div>
                             <Badge variant="outline" className={`shrink-0 border-0 text-[10px] ${isExpired ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
@@ -357,7 +357,7 @@ const ComplianceDashboardPage = () => {
                   <div key={a.id} className="flex items-center gap-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
                     <AlertTriangle size={16} className="text-destructive shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{(a.products as any)?.name || "Equipment"}</p>
+                      <p className="text-sm font-medium">{(a.products as { name: string } | null)?.name || "Equipment"}</p>
                       <p className="text-xs text-muted-foreground">
                         {isFail && <span className="text-destructive font-medium">{inspectionStatusMap[a.inspection_status]?.label}</span>}
                         {isFail && isOverdue && " · "}
@@ -381,7 +381,7 @@ const ComplianceDashboardPage = () => {
                   <div key={ins.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium truncate">{(ins.products as any)?.name || "Equipment"}</p>
+                        <p className="text-sm font-medium truncate">{(ins.products as { name: string } | null)?.name || "Equipment"}</p>
                         <Badge variant="outline" className={`${sm.color} border-0 text-[10px]`}>{sm.label}</Badge>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
@@ -491,7 +491,7 @@ const ComplianceDashboardPage = () => {
                   return (
                     <div key={cert.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{(cert.employees as any)?.name || "Unknown"}</p>
+                        <p className="text-sm font-medium truncate">{(cert.employees as { name: string } | null)?.name || "Unknown"}</p>
                         <p className="text-xs text-muted-foreground">{cert.certification_name}</p>
                       </div>
                       <Badge variant="outline" className={isExpired ? "bg-destructive/15 text-destructive border-0" : "bg-warning/15 text-warning border-0"}>

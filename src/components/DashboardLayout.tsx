@@ -79,11 +79,11 @@ const DashboardLayout = () => {
             {(() => {
               const filtered = navItems.filter(item => {
                 if (item.ownerOnly) return role === "owner";
-                if ((item as any).minRole === "manager") return role === "owner" || role === "manager";
+                if ('minRole' in item && item.minRole === "manager") return role === "owner" || role === "manager";
                 return true;
               });
-              const mainItems = filtered.filter((i) => !(i as any).section);
-              const crmItems = filtered.filter((i) => (i as any).section === "CRM");
+              const mainItems = filtered.filter((i) => !('section' in i));
+              const crmItems = filtered.filter((i) => 'section' in i && i.section === "CRM");
 
               const renderItem = (item: typeof navItems[0]) => (
                 <NavLink
