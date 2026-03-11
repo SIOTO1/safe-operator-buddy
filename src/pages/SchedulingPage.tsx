@@ -100,7 +100,7 @@ const SchedulingPage = () => {
       const mStart = format(monthDays[0], "yyyy-MM-dd");
       const mEnd = format(monthDays[monthDays.length - 1], "yyyy-MM-dd");
       const { data, error } = await supabase
-        .from("events").select("*")
+        .from("events").select("id, title, event_date, start_time, end_time, location, notes, company_id, workspace_id")
         .gte("event_date", mStart).lte("event_date", mEnd)
         .order("event_date");
       if (error) throw error;
