@@ -37,7 +37,7 @@ export async function getDealsByLeadId(leadId: string): Promise<Deal[]> {
 export async function createDeal(deal: Omit<Deal, "id" | "created_at">): Promise<Deal> {
   const { data, error } = await supabase
     .from("crm_deals")
-    .insert(deal)
+    .insert(deal as any)
     .select()
     .single();
   if (error) throw error;

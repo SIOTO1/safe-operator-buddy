@@ -27,7 +27,7 @@ export async function getTasksByLeadId(leadId: string): Promise<Task[]> {
 export async function createTask(task: Omit<Task, "id">): Promise<Task> {
   const { data, error } = await supabase
     .from("crm_tasks")
-    .insert(task)
+    .insert(task as any)
     .select()
     .single();
   if (error) throw error;
