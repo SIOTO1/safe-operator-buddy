@@ -196,6 +196,41 @@ export type Database = {
         }
         Relationships: []
       }
+      company_users: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["team_role"]
+          status: Database["public"]["Enums"]["team_user_status"]
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["team_role"]
+          status?: Database["public"]["Enums"]["team_user_status"]
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["team_role"]
+          status?: Database["public"]["Enums"]["team_user_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_users_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           contract_text: string
@@ -1987,6 +2022,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_company_admin: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -2035,6 +2071,8 @@ export type Database = {
         | "concessions"
         | "other"
       quote_status: "draft" | "sent" | "accepted" | "expired"
+      team_role: "admin" | "manager" | "staff"
+      team_user_status: "active" | "inactive" | "invited"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2193,6 +2231,8 @@ export const Constants = {
         "other",
       ],
       quote_status: ["draft", "sent", "accepted", "expired"],
+      team_role: ["admin", "manager", "staff"],
+      team_user_status: ["active", "inactive", "invited"],
     },
   },
 } as const
