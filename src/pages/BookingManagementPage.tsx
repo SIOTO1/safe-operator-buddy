@@ -72,14 +72,15 @@ const BookingManagementPage = () => {
 
   const handleApprove = async (booking: BookingRequest) => {
     try {
-      const { data: eventData, error: eventError } = await supabase.from("events" as any).insert({
-        event_name: `${booking.customer_name} - ${booking.equipment[0] || "Rental"}`,
+      const { data: eventData, error: eventError } = await supabase.from("events").insert({
+        title: `${booking.customer_name} - ${booking.equipment[0] || "Rental"}`,
         event_date: booking.event_date,
         start_time: booking.event_time || null,
         end_time: booking.event_end_time || null,
-        location_address: booking.event_location,
+        location: booking.event_location,
+        created_by: user!.id,
         notes: `Customer: ${booking.customer_name}\nEmail: ${booking.customer_email}${booking.customer_phone ? `\nPhone: ${booking.customer_phone}` : ""}\nGuests: ${booking.guest_count || "N/A"}\nEquipment: ${booking.equipment.join(", ")}${booking.special_requests ? `\nNotes: ${booking.special_requests}` : ""}`,
-      } as any).select("id").single();
+      }).select("id").single();
       if (eventError) throw eventError;
 
       const { error: updateError } = await supabase.from("booking_requests").update({
