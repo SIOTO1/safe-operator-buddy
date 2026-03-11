@@ -25,12 +25,32 @@ const AuthPage = () => {
       const validatedEmail = emailSchema.parse(email);
       const validatedPassword = passwordSchema.parse(password);
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email: validatedEmail,
         password: validatedPassword,
       });
       if (error) throw error;
       toast.success("Welcome back!");
+
+      // Resolve company slug for redirect
+      if (signInData.user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("company_id")
+          .eq("user_id", signInData.user.id)
+          .single();
+        if (prof?.company_id) {
+          const { data: company } = await supabase
+            .from("companies")
+            .select("slug")
+            .eq("id", prof.company_id)
+            .single();
+          if ((company as any)?.slug) {
+            navigate(`/app/${(company as any).slug}`);
+            return;
+          }
+        }
+      }
       navigate("/dashboard");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
