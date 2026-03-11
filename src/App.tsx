@@ -39,6 +39,7 @@ import QuotesPage from "./pages/crm/QuotesPage";
 import QuoteBuilderPage from "./pages/crm/QuoteBuilderPage";
 import QuoteDetailPage from "./pages/crm/QuoteDetailPage";
 import ContractSigningPage from "./pages/crm/ContractSigningPage";
+import CustomerPortalPage from "./pages/CustomerPortalPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
