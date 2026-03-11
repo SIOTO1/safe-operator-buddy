@@ -237,20 +237,31 @@ const StorefrontPage = () => {
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-md">
+            <SheetContent className="w-full sm:max-w-md overflow-y-auto">
               <SheetHeader>
-                <SheetTitle>Your Cart ({cartCount} items)</SheetTitle>
+                <SheetTitle>{showBookingForm ? "Booking Details" : `Your Cart (${cartCount} items)`}</SheetTitle>
               </SheetHeader>
-              <div className="mt-6 flex flex-col h-[calc(100vh-8rem)]">
-                {cart.length === 0 ? (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+              <div className="mt-6">
+                {showBookingForm ? (
+                  <BookingForm
+                    cart={cart}
+                    selectedDate={selectedDate}
+                    cartTotal={cartTotal}
+                    onBack={() => setShowBookingForm(false)}
+                    onSuccess={() => {
+                      setCart([]);
+                      setShowBookingForm(false);
+                    }}
+                  />
+                ) : cart.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center text-center py-8">
                     <ShoppingCart size={40} className="text-muted-foreground/40 mb-3" />
                     <p className="text-muted-foreground text-sm">Your cart is empty</p>
                     <p className="text-muted-foreground text-xs mt-1">Browse products and add items to get started.</p>
                   </div>
                 ) : (
                   <>
-                    <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+                    <div className="space-y-1 pr-1">
                       {/* Column headers */}
                       <div className="grid grid-cols-[1fr_80px_80px] gap-2 px-1 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground font-medium border-b border-border">
                         <span>Product</span>
@@ -264,7 +275,6 @@ const StorefrontPage = () => {
 
                         return (
                           <div key={item.product.id} className="grid grid-cols-[1fr_80px_80px] gap-2 items-center py-3 border-b border-border last:border-0">
-                            {/* Product info */}
                             <div className="flex gap-2.5 min-w-0">
                               {item.product.image_url ? (
                                 <img src={item.product.image_url} alt={item.product.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
@@ -281,20 +291,15 @@ const StorefrontPage = () => {
                               </div>
                             </div>
 
-                            {/* Quantity controls */}
                             <div className="flex items-center justify-center gap-1">
                               <Button variant="outline" size="icon" className="h-6 w-6 text-xs" onClick={() => updateCartQty(item.product.id, item.quantity - 1)}>−</Button>
                               <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
                               <Button variant="outline" size="icon" className="h-6 w-6 text-xs" onClick={() => updateCartQty(item.product.id, item.quantity + 1)}>+</Button>
                             </div>
 
-                            {/* Subtotal + remove */}
                             <div className="text-right flex flex-col items-end gap-0.5">
                               <span className="text-sm font-semibold">${subtotal.toFixed(2)}</span>
-                              <button
-                                onClick={() => removeFromCart(item.product.id)}
-                                className="text-[10px] text-destructive hover:underline"
-                              >
+                              <button onClick={() => removeFromCart(item.product.id)} className="text-[10px] text-destructive hover:underline">
                                 Remove
                               </button>
                             </div>
@@ -320,7 +325,7 @@ const StorefrontPage = () => {
                         <span>Total</span>
                         <span>${cartTotal.toFixed(2)}</span>
                       </div>
-                      <Button className="w-full" size="lg" onClick={() => toast.info("Checkout coming soon!")}>
+                      <Button className="w-full" size="lg" onClick={() => setShowBookingForm(true)}>
                         Request Booking
                       </Button>
                       <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={() => setCart([])}>
