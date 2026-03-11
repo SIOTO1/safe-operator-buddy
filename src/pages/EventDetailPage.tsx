@@ -483,6 +483,14 @@ const EventDetailPage = () => {
           />
         </div>
 
+
+          {/* Incident Reports */}
+          <IncidentReportSection
+            eventId={event.id}
+            eventProducts={eventProducts.map(ep => ({ id: ep.product_id, name: ep.product_name }))}
+          />
+        </div>
+
         {/* Right: Payment & Safety */}
         <div className="space-y-6">
           <PaymentSummary
