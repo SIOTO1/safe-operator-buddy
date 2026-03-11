@@ -148,7 +148,7 @@ const ProductCatalogPage = () => {
           quantity_available: qty,
           company_id: companyId,
           workspace_id: workspaceId,
-        } as any);
+        });
         if (error) throw error;
         toast.success("Product added");
       }

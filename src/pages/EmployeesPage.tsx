@@ -98,8 +98,8 @@ const EmployeesPage = () => {
       } else {
         const { error } = await supabase.from("employees").insert({
           name: form.name, email: form.email || null, phone: form.phone || null, role: form.role, status: form.status,
-          company_id: companyId, workspace_id: workspaceId,
-        } as any);
+          company_id: companyId!, workspace_id: workspaceId,
+        });
         if (error) throw error;
         toast.success("Employee added");
       }

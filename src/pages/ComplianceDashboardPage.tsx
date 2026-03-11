@@ -491,7 +491,7 @@ const ComplianceDashboardPage = () => {
                   return (
                     <div key={cert.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{(cert.employees as any)?.name || "Unknown"}</p>
+                        <p className="text-sm font-medium truncate">{(cert.employees as { name: string } | null)?.name || "Unknown"}</p>
                         <p className="text-xs text-muted-foreground">{cert.certification_name}</p>
                       </div>
                       <Badge variant="outline" className={isExpired ? "bg-destructive/15 text-destructive border-0" : "bg-warning/15 text-warning border-0"}>
