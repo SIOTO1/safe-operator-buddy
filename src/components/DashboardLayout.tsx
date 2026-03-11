@@ -62,15 +62,33 @@ const DashboardLayout = () => {
       )}>
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-            {orgLogo ? (
-              <div className="flex items-center gap-2">
-                <img src={orgLogo} alt="Company logo" className="w-7 h-7 rounded object-contain" />
+            {role === "owner" ? (
+              <button
+                onClick={() => { setSidebarOpen(false); navigate(`${basePath}/settings`); }}
+                className="flex items-center gap-2 group min-w-0"
+                title="Edit company branding"
+              >
+                {orgLogo ? (
+                  <img src={orgLogo} alt="Company logo" className="w-7 h-7 rounded object-contain flex-shrink-0" />
+                ) : (
+                  <ShieldLogo size={24} />
+                )}
+                <span className="font-display font-bold text-lg text-sidebar-accent-foreground truncate">
+                  {orgName || "SIOTO"}
+                </span>
+                <Settings size={14} className="text-sidebar-foreground/30 group-hover:text-sidebar-foreground/70 transition-colors flex-shrink-0" />
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 min-w-0">
+                {orgLogo ? (
+                  <img src={orgLogo} alt="Company logo" className="w-7 h-7 rounded object-contain flex-shrink-0" />
+                ) : (
+                  <ShieldLogo size={24} />
+                )}
                 <span className="font-display font-bold text-lg text-sidebar-accent-foreground truncate">
                   {orgName || "SIOTO"}
                 </span>
               </div>
-            ) : (
-              <ShieldLogo size={24} />
             )}
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-sidebar-foreground">
               <X size={20} />
