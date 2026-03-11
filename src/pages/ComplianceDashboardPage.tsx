@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, AlertTriangle, Clock, Package, FileWarning, CheckCircle2, XCircle, ShieldCheck, Plus, Trash2, ExternalLink, Wrench, ClipboardCheck } from "lucide-react";
+import ComplianceReportGenerator from "@/components/compliance/ComplianceReportGenerator";
 import { motion } from "framer-motion";
 import { format, addDays, isBefore, differenceInDays } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
