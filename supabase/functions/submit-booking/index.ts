@@ -137,6 +137,72 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Send booking confirmation email to customer
+    const emailData = {
+      customer_name: customer_name.trim(),
+      event_date,
+      event_time: event_time || undefined,
+      event_end_time: event_end_time || undefined,
+      event_location: event_location.trim(),
+      equipment,
+      special_requests: special_requests?.trim() || undefined,
+    };
+
+    try {
+      await supabase.rpc("enqueue_email", {
+        queue_name: "transactional_emails",
+        payload: {
+          message_id: crypto.randomUUID(),
+          to: customer_email.trim().toLowerCase(),
+          from: "SIOTO <noreply@notify.sioto.com>",
+          sender_domain: "notify.sioto.com",
+          subject: `Booking Confirmation — ${event_date}`,
+          html: `<p>Hey ${customer_name.trim()}! Your booking request for ${event_date} at ${event_location.trim()} has been received. We'll review it and get back to you within 24 hours.</p><p>Equipment: ${equipment.join(", ")}</p>`,
+          purpose: "transactional",
+          label: "booking_confirmation",
+          queued_at: new Date().toISOString(),
+        },
+      });
+
+      // Send owner notification
+      const { data: ownerProfiles } = await supabase
+        .from("profiles")
+        .select("email, user_id")
+        .not("email", "is", null)
+        .limit(100);
+
+      if (ownerProfiles) {
+        for (const profile of ownerProfiles) {
+          const { data: roleData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", profile.user_id)
+            .eq("role", "owner")
+            .maybeSingle();
+
+          if (roleData && profile.email) {
+            await supabase.rpc("enqueue_email", {
+              queue_name: "transactional_emails",
+              payload: {
+                message_id: crypto.randomUUID(),
+                to: profile.email,
+                from: "SIOTO <noreply@notify.sioto.com>",
+                sender_domain: "notify.sioto.com",
+                subject: `New Booking: ${customer_name.trim()} — ${event_date}`,
+                html: `<p>New booking from ${customer_name.trim()} (${customer_email.trim().toLowerCase()}) for ${event_date} at ${event_location.trim()}.</p><p>Equipment: ${equipment.join(", ")}</p><p>Log in to review.</p>`,
+                purpose: "transactional",
+                label: "owner_notification",
+                queued_at: new Date().toISOString(),
+              },
+            });
+            break; // Only notify first owner
+          }
+        }
+      }
+    } catch (emailErr) {
+      console.error("Email send error (non-blocking):", emailErr);
+    }
+
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
