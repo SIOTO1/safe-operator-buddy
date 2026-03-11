@@ -55,6 +55,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Rate limit: 10 lead creations per minute per email
+    const { data: allowed } = await supabase.rpc("check_rate_limit", {
+      _identifier: email.trim().toLowerCase(),
+      _action: "create_lead",
+      _max_requests: 10,
+      _window_seconds: 60,
+    });
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please wait before trying again." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: lead, error } = await supabase
       .from("crm_leads")
       .insert({

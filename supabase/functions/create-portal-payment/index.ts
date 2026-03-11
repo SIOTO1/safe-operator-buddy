@@ -22,6 +22,20 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Rate limit: 5 payment attempts per minute per portal token
+    const { data: rlAllowed } = await supabaseAdmin.rpc("check_rate_limit", {
+      _identifier: token,
+      _action: "portal_payment",
+      _max_requests: 5,
+      _window_seconds: 60,
+    });
+    if (!rlAllowed) {
+      return new Response(JSON.stringify({ error: "Too many payment attempts. Please wait a moment and try again." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 429,
+      });
+    }
+
     // Verify token
     const { data: portalToken, error: tokenError } = await supabaseAdmin
       .from("portal_tokens")

@@ -25,6 +25,24 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
+    // Rate limit: 5 payment attempts per minute per user
+    const supabaseRateLimit = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const { data: rlAllowed } = await supabaseRateLimit.rpc("check_rate_limit", {
+      _identifier: user.id,
+      _action: "payment_attempt",
+      _max_requests: 5,
+      _window_seconds: 60,
+    });
+    if (!rlAllowed) {
+      return new Response(JSON.stringify({ error: "Too many payment attempts. Please wait a moment and try again." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 429,
+      });
+    }
+
     const { quote_id, event_id, contract_id, amount, payment_type, description } = await req.json();
     if (!amount || amount <= 0) throw new Error("Invalid payment amount");
 
