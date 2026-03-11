@@ -1,90 +1,72 @@
 import { motion } from "framer-motion";
-import { MessageSquare, ClipboardCheck, FileText, Users, TrendingUp, Shield, AlertTriangle } from "lucide-react";
+import { CalendarDays, ClipboardCheck, Users, TrendingUp, DollarSign, AlertTriangle, Package, UserPlus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const stats = [
-  { label: "Active Users", value: "12", icon: Users, trend: "+3 this week" },
-  { label: "Questions Asked", value: "248", icon: MessageSquare, trend: "+42 today" },
-  { label: "Checklists Done", value: "89", icon: ClipboardCheck, trend: "92% completion" },
-  { label: "Risk Alerts", value: "3", icon: AlertTriangle, trend: "2 resolved" },
-];
-
-const recentQuestions = [
-  { q: "What are the wind speed limits for a bounce house?", time: "5 min ago" },
-  { q: "How many sandbags needed for 15x15 inflatable?", time: "12 min ago" },
-  { q: "Extension cord gauge requirements for blower?", time: "28 min ago" },
-  { q: "Can we set up on gravel surface?", time: "1 hr ago" },
-];
+interface DashboardStats {
+  total_events: number;
+  upcoming_events: number;
+  today_events: number;
+  total_leads: number;
+  new_leads: number;
+  total_deals: number;
+  won_revenue: number;
+  open_tasks: number;
+  active_employees: number;
+  total_payments: number;
+  pending_bookings: number;
+}
 
 const DashboardHome = () => {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_dashboard_stats");
+      if (error) throw error;
+      return data as unknown as DashboardStats | null;
+    },
+    staleTime: 60_000, // 1 minute
+  });
+
+  const statCards = [
+    { label: "Upcoming Events", value: stats?.upcoming_events ?? 0, icon: CalendarDays, sub: `${stats?.today_events ?? 0} today` },
+    { label: "Total Leads", value: stats?.total_leads ?? 0, icon: UserPlus, sub: `${stats?.new_leads ?? 0} new` },
+    { label: "Open Tasks", value: stats?.open_tasks ?? 0, icon: ClipboardCheck, sub: `${stats?.total_deals ?? 0} deals` },
+    { label: "Revenue", value: `$${((stats?.won_revenue ?? 0) / 100).toLocaleString()}`, icon: DollarSign, sub: `$${((stats?.total_payments ?? 0) / 100).toLocaleString()} collected` },
+    { label: "Active Employees", value: stats?.active_employees ?? 0, icon: Users, sub: "on roster" },
+    { label: "Pending Bookings", value: stats?.pending_bookings ?? 0, icon: Package, sub: "awaiting review" },
+  ];
+
   return (
     <div className="p-6 lg:p-8 space-y-8">
       <div>
         <h1 className="text-2xl font-display font-bold">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Overview of your safety operations</p>
+        <p className="text-muted-foreground text-sm mt-1">Overview of your operations</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((s, i) => (
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        {statCards.map((s, i) => (
           <motion.div
             key={s.label}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+            transition={{ delay: i * 0.06 }}
             className="p-5 rounded-xl border border-border bg-card"
           >
             <div className="flex items-center justify-between mb-3">
               <s.icon size={20} className="text-primary" />
               <TrendingUp size={14} className="text-success" />
             </div>
-            <div className="text-2xl font-display font-bold">{s.value}</div>
+            {isLoading ? (
+              <Skeleton className="h-8 w-16 mb-1" />
+            ) : (
+              <div className="text-2xl font-display font-bold">{s.value}</div>
+            )}
             <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
-            <div className="text-xs text-success mt-1">{s.trend}</div>
+            <div className="text-xs text-success mt-1">{s.sub}</div>
           </motion.div>
         ))}
-      </div>
-
-      {/* Recent Activity */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold text-lg mb-4">Recent Questions</h2>
-          <div className="space-y-3">
-            {recentQuestions.map((q, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                <MessageSquare size={16} className="text-primary mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate">{q.q}</p>
-                  <span className="text-xs text-muted-foreground">{q.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold text-lg mb-4">Compliance Status</h2>
-          <div className="space-y-4">
-            {[
-              { label: "Setup Procedures", pct: 95 },
-              { label: "Wind Compliance", pct: 88 },
-              { label: "Electrical Safety", pct: 100 },
-              { label: "Inspection Protocols", pct: 72 },
-            ].map((item) => (
-              <div key={item.label}>
-                <div className="flex justify-between text-sm mb-1.5">
-                  <span>{item.label}</span>
-                  <span className="font-medium">{item.pct}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all duration-500"
-                    style={{ width: `${item.pct}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
