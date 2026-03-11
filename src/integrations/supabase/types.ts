@@ -1860,6 +1860,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_invites: {
+        Row: {
+          company_id: string
+          created_at: string
+          email: string
+          id: string
+          invite_token: string
+          invited_by: string
+          role: Database["public"]["Enums"]["team_role"]
+          status: Database["public"]["Enums"]["invite_status"]
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          email: string
+          id?: string
+          invite_token?: string
+          invited_by: string
+          role?: Database["public"]["Enums"]["team_role"]
+          status?: Database["public"]["Enums"]["invite_status"]
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          invite_token?: string
+          invited_by?: string
+          role?: Database["public"]["Enums"]["team_role"]
+          status?: Database["public"]["Enums"]["invite_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invites_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -2054,6 +2095,7 @@ export type Database = {
       employee_status: "active" | "inactive" | "on_leave"
       event_staff_role: "driver" | "setup_crew" | "supervisor"
       inspection_status: "pass" | "fail" | "needs_repair"
+      invite_status: "pending" | "accepted" | "expired" | "revoked"
       job_status: "pending" | "processing" | "completed" | "failed" | "retrying"
       job_type:
         | "email_notification"
@@ -2212,6 +2254,7 @@ export const Constants = {
       employee_status: ["active", "inactive", "on_leave"],
       event_staff_role: ["driver", "setup_crew", "supervisor"],
       inspection_status: ["pass", "fail", "needs_repair"],
+      invite_status: ["pending", "accepted", "expired", "revoked"],
       job_status: ["pending", "processing", "completed", "failed", "retrying"],
       job_type: [
         "email_notification",
