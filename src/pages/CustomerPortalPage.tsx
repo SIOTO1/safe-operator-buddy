@@ -4,12 +4,14 @@ import { format } from "date-fns";
 import {
   CalendarDays, MapPin, Package, DollarSign, FileText, Phone, Mail,
   Download, CreditCard, CheckCircle2, Clock, AlertCircle, Globe,
+  History, XCircle, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
