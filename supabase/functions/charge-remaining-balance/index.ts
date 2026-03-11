@@ -230,6 +230,34 @@ serve(async (req) => {
             });
           }
 
+          // Send payment receipt email to customer
+          try {
+            const { data: booking } = await supabaseAdmin
+              .from("booking_requests")
+              .select("customer_email, customer_name")
+              .eq("event_id", event.id)
+              .maybeSingle();
+
+            if (booking?.customer_email) {
+              await supabaseAdmin.rpc("enqueue_email", {
+                queue_name: "transactional_emails",
+                payload: {
+                  message_id: crypto.randomUUID(),
+                  to: booking.customer_email,
+                  from: "SIOTO <noreply@notify.sioto.com>",
+                  sender_domain: "notify.sioto.com",
+                  subject: `Payment Collected — ${event.title}`,
+                  html: `<p>Hey ${booking.customer_name || "there"}! The remaining balance of $${remaining.toFixed(2)} for "${event.title}" (${event.event_date}) has been automatically charged to your card on file. No action needed — we look forward to your event!</p>`,
+                  purpose: "transactional",
+                  label: "auto_charge_alert",
+                  queued_at: new Date().toISOString(),
+                },
+              });
+            }
+          } catch (emailErr) {
+            console.error("Failed to enqueue auto-charge success email:", emailErr);
+          }
+
           results.push({ event_id: event.id, status: "charged" });
         } else {
           results.push({ event_id: event.id, status: "pending", error: `Intent status: ${paymentIntent.status}` });
