@@ -239,44 +239,92 @@ const StorefrontPage = () => {
               <SheetHeader>
                 <SheetTitle>Your Cart ({cartCount} items)</SheetTitle>
               </SheetHeader>
-              <div className="mt-6 flex-1 space-y-4 overflow-y-auto">
+              <div className="mt-6 flex flex-col h-[calc(100vh-8rem)]">
                 {cart.length === 0 ? (
-                  <p className="text-muted-foreground text-sm text-center py-8">Your cart is empty</p>
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                    <ShoppingCart size={40} className="text-muted-foreground/40 mb-3" />
+                    <p className="text-muted-foreground text-sm">Your cart is empty</p>
+                    <p className="text-muted-foreground text-xs mt-1">Browse products and add items to get started.</p>
+                  </div>
                 ) : (
                   <>
-                    {cart.map((item) => (
-                      <div key={item.product.id} className="flex gap-3 py-3 border-b border-border last:border-0">
-                        {item.product.image_url ? (
-                          <img src={item.product.image_url} alt={item.product.name} className="w-16 h-16 rounded-lg object-cover shrink-0" />
-                        ) : (
-                          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                            <Package size={20} className="text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{item.product.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.product.price != null ? `$${item.product.price.toFixed(2)}/ea` : "Price TBD"}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateCartQty(item.product.id, item.quantity - 1)}>-</Button>
-                            <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
-                            <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateCartQty(item.product.id, item.quantity + 1)}>+</Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => removeFromCart(item.product.id)}>
-                              <X size={14} className="text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
+                    <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+                      {/* Column headers */}
+                      <div className="grid grid-cols-[1fr_80px_80px] gap-2 px-1 pb-2 text-[10px] uppercase tracking-wider text-muted-foreground font-medium border-b border-border">
+                        <span>Product</span>
+                        <span className="text-center">Qty</span>
+                        <span className="text-right">Subtotal</span>
                       </div>
-                    ))}
-                    <Separator />
-                    <div className="flex items-center justify-between font-display font-bold text-lg">
-                      <span>Total</span>
-                      <span>${cartTotal.toFixed(2)}</span>
+
+                      {cart.map((item) => {
+                        const unitPrice = item.product.price || 0;
+                        const subtotal = unitPrice * item.quantity;
+
+                        return (
+                          <div key={item.product.id} className="grid grid-cols-[1fr_80px_80px] gap-2 items-center py-3 border-b border-border last:border-0">
+                            {/* Product info */}
+                            <div className="flex gap-2.5 min-w-0">
+                              {item.product.image_url ? (
+                                <img src={item.product.image_url} alt={item.product.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                              ) : (
+                                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                                  <Package size={16} className="text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">{item.product.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {unitPrice > 0 ? `$${unitPrice.toFixed(2)} each` : "Price TBD"}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Quantity controls */}
+                            <div className="flex items-center justify-center gap-1">
+                              <Button variant="outline" size="icon" className="h-6 w-6 text-xs" onClick={() => updateCartQty(item.product.id, item.quantity - 1)}>−</Button>
+                              <span className="text-sm font-medium w-6 text-center">{item.quantity}</span>
+                              <Button variant="outline" size="icon" className="h-6 w-6 text-xs" onClick={() => updateCartQty(item.product.id, item.quantity + 1)}>+</Button>
+                            </div>
+
+                            {/* Subtotal + remove */}
+                            <div className="text-right flex flex-col items-end gap-0.5">
+                              <span className="text-sm font-semibold">${subtotal.toFixed(2)}</span>
+                              <button
+                                onClick={() => removeFromCart(item.product.id)}
+                                className="text-[10px] text-destructive hover:underline"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <Button className="w-full" size="lg" onClick={() => toast.info("Checkout coming soon!")}>
-                      Request Booking
-                    </Button>
+
+                    {/* Cart summary */}
+                    <div className="border-t border-border pt-4 mt-4 space-y-3">
+                      {selectedDate && (
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span>Event Date</span>
+                          <span className="font-medium text-foreground">{format(selectedDate, "MMM d, yyyy")}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>Items</span>
+                        <span>{cartCount}</span>
+                      </div>
+                      <Separator />
+                      <div className="flex items-center justify-between font-display font-bold text-lg">
+                        <span>Total</span>
+                        <span>${cartTotal.toFixed(2)}</span>
+                      </div>
+                      <Button className="w-full" size="lg" onClick={() => toast.info("Checkout coming soon!")}>
+                        Request Booking
+                      </Button>
+                      <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={() => setCart([])}>
+                        Clear Cart
+                      </Button>
+                    </div>
                   </>
                 )}
               </div>
