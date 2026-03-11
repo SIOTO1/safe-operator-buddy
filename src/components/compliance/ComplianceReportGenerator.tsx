@@ -269,7 +269,7 @@ const ComplianceReportGenerator = () => {
       if (selectedSections.has("insurance")) {
         addSectionHeader("Insurance Policies");
 
-        const pols = (insurancePolicies || []) as any[];
+        const pols = (insurancePolicies || []) as { provider: string; policy_number: string; coverage_amount: number; effective_date: string; expiration_date: string }[];
         const activePols = pols.filter(p => !isBefore(new Date(p.expiration_date), now));
         const expiredPols = pols.filter(p => isBefore(new Date(p.expiration_date), now));
         const totalCoverage = pols.reduce((s, p) => s + Number(p.coverage_amount || 0), 0);
