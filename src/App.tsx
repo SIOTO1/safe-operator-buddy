@@ -120,6 +120,7 @@ const App = () => (
               <Route path="drivers" element={<DriverManagementPage />} />
               <Route path="conversations" element={<DifficultConversationsPage />} />
               <Route path="crew" element={<CrewPage />} />
+              <Route path="team" element={<TeamPage />} />
               <Route path="scheduling" element={<SchedulingPage />} />
               <Route path="scheduling/:eventId" element={<EventDetailPage />} />
               <Route path="events/calendar" element={<EventCalendarPage />} />
