@@ -11,10 +11,8 @@ const passwordSchema = z.string().min(6, "Password must be at least 6 characters
 const nameSchema = z.string().trim().min(1, "Name is required").max(100);
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,32 +25,13 @@ const AuthPage = () => {
       const validatedEmail = emailSchema.parse(email);
       const validatedPassword = passwordSchema.parse(password);
 
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: validatedEmail,
-          password: validatedPassword,
-        });
-        if (error) throw error;
-        toast.success("Welcome back!");
-        navigate("/dashboard");
-      } else {
-        const validatedName = nameSchema.parse(displayName);
-        const { data, error } = await supabase.auth.signUp({
-          email: validatedEmail,
-          password: validatedPassword,
-          options: {
-            data: { display_name: validatedName },
-            emailRedirectTo: window.location.origin,
-          },
-        });
-        if (error) throw error;
-        if (data.session) {
-          toast.success("Account created! Welcome aboard!");
-          navigate("/dashboard");
-        } else {
-          toast.success("Check your email to confirm your account!");
-        }
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validatedEmail,
+        password: validatedPassword,
+      });
+      if (error) throw error;
+      toast.success("Welcome back!");
+      navigate("/dashboard");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
         toast.error(err.errors[0].message);
