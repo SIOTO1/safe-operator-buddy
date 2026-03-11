@@ -779,6 +779,60 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          company_id: string
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          role: Database["public"]["Enums"]["employee_role"]
+          status: Database["public"]["Enums"]["employee_status"]
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["employee_role"]
+          status?: Database["public"]["Enums"]["employee_status"]
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["employee_role"]
+          status?: Database["public"]["Enums"]["employee_status"]
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment_catalog: {
         Row: {
           created_at: string
@@ -1636,6 +1690,13 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "manager" | "crew"
+      employee_role:
+        | "driver"
+        | "installer"
+        | "crew_lead"
+        | "warehouse"
+        | "manager"
+      employee_status: "active" | "inactive" | "on_leave"
       job_status: "pending" | "processing" | "completed" | "failed" | "retrying"
       job_type:
         | "email_notification"
@@ -1781,6 +1842,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "manager", "crew"],
+      employee_role: [
+        "driver",
+        "installer",
+        "crew_lead",
+        "warehouse",
+        "manager",
+      ],
+      employee_status: ["active", "inactive", "on_leave"],
       job_status: ["pending", "processing", "completed", "failed", "retrying"],
       job_type: [
         "email_notification",
