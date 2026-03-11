@@ -82,11 +82,8 @@ const AuthPage = () => {
     <div className="min-h-screen bg-hero flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Shield className="text-primary" size={36} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-            <span className="font-display font-bold text-2xl text-secondary-foreground">
-              SIOTO<span className="text-primary">.AI</span>
-            </span>
+          <div className="flex items-center justify-center mb-4">
+            <ShieldLogo size={36} />
           </div>
           <p className="text-secondary-foreground/50 text-sm">
             AI-Powered Safety & Operations

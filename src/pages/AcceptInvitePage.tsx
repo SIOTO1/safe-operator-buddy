@@ -117,11 +117,8 @@ const AcceptInvitePage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Shield className="text-primary" size={32} strokeWidth={2.5} fill="hsl(24, 95%, 53%)" />
-          <span className="font-display font-bold text-2xl">
-            SIOTO<span className="text-primary">.AI</span>
-          </span>
+        <div className="flex items-center justify-center mb-8">
+          <ShieldLogo size={32} />
         </div>
 
         {step === "loading" && (

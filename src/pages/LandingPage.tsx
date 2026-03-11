@@ -214,10 +214,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Shield className="text-primary" size={20} strokeWidth={2.5} />
-            <span className="font-display font-bold text-sm">SIOTO.AI</span>
-          </div>
+          <ShieldLogo size={20} />
           <p className="text-xs text-muted-foreground">© 2026 SIOTO.AI. All rights reserved.</p>
         </div>
       </footer>
