@@ -64,22 +64,6 @@ const AuthPage = () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Full Name</label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={e => setDisplayName(e.target.value)}
-                    placeholder="John Smith"
-                    className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    required
-                  />
-                </div>
-              </div>
-            )}
 
             <div>
               <label className="text-sm font-medium mb-1.5 block">Email</label>
