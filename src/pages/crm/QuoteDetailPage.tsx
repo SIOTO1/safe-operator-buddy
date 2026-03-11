@@ -182,7 +182,7 @@ const QuoteDetailPage = () => {
           .eq("id", quote.lead_id)
           .single();
         if (lead) {
-          const l = lead as any;
+          const l = lead;
           leadName = l.name || "";
           leadNotes = [
             l.name && `Customer: ${l.name}`,
