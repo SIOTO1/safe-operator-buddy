@@ -1,10 +1,14 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { render } from "npm:@react-email/render@0.0.12";
+import { EventReminderEmail } from "../_shared/email-templates/event-reminder.tsx";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const SENDER_DOMAIN = "notify.sioto.com";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,24 +32,13 @@ Deno.serve(async (req) => {
     in1Day.setDate(in1Day.getDate() + 1);
     const in1DayStr = in1Day.toISOString().split("T")[0];
 
-    // Determine which reminder types to send based on current hour (UTC)
-    const currentHour = now.getUTCHours();
-    const reminderTargets: { date: string; type: "3_day" | "1_day" | "morning" }[] = [];
+    // Send all reminder types in morning window
+    const reminderTargets: { date: string; type: "3_day" | "1_day" | "morning" }[] = [
+      { date: in3DaysStr, type: "3_day" },
+      { date: in1DayStr, type: "1_day" },
+      { date: today, type: "morning" },
+    ];
 
-    // 3-day and 1-day reminders: send during morning check (6-10 UTC)
-    if (currentHour >= 6 && currentHour < 10) {
-      reminderTargets.push({ date: in3DaysStr, type: "3_day" });
-      reminderTargets.push({ date: in1DayStr, type: "1_day" });
-      reminderTargets.push({ date: today, type: "morning" });
-    }
-
-    if (reminderTargets.length === 0) {
-      return new Response(JSON.stringify({ message: "Outside reminder window" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Get all target dates
     const targetDates = [...new Set(reminderTargets.map((t) => t.date))];
 
     // Fetch events for all target dates
@@ -63,7 +56,7 @@ Deno.serve(async (req) => {
 
     const eventIds = events.map((e) => e.id);
 
-    // Fetch booking requests to get customer emails (parallel)
+    // Fetch related data in parallel
     const [bookingsRes, productsRes, paymentsRes] = await Promise.all([
       supabase
         .from("booking_requests")
@@ -84,7 +77,7 @@ Deno.serve(async (req) => {
     const products = productsRes.data || [];
     const payments = paymentsRes.data || [];
 
-    // Check which reminders have already been sent today to prevent duplicates
+    // Dedup: check which reminders already sent today
     const { data: sentToday } = await supabase
       .from("email_send_log")
       .select("recipient_email, template_name")
@@ -101,15 +94,14 @@ Deno.serve(async (req) => {
       const dateEvents = events.filter((e) => e.event_date === target.date);
 
       for (const event of dateEvents) {
-        // Find booking with customer email
         const booking = bookings.find((b) => b.event_id === event.id);
         if (!booking?.customer_email) continue;
 
-        // Dedup check
+        // Dedup
         const dedupKey = `${booking.customer_email}:event_reminder_${target.type}`;
         if (sentSet.has(dedupKey)) continue;
 
-        // Get products for this event
+        // Products for this event
         const eventProducts = products
           .filter((p) => p.event_id === event.id)
           .map((p) => {
@@ -122,18 +114,14 @@ Deno.serve(async (req) => {
         const totalPaid = eventPayments
           .filter((p) => p.payment_status === "completed")
           .reduce((sum, p) => sum + Number(p.amount), 0);
-
-        // Estimate total from deposit (deposit = 25%, so total = deposit / 0.25)
         const depositPayment = eventPayments.find(
           (p) => p.payment_type === "deposit" && p.payment_status === "completed"
         );
         const estimatedTotal = depositPayment ? Number(depositPayment.amount) / 0.25 : totalPaid;
         const remainingBalance = Math.max(0, estimatedTotal - totalPaid);
 
-        // Format time
+        // Format
         const formatTime = (t: string | null) => (t ? t.slice(0, 5) : undefined);
-
-        // Format date nicely
         const eventDateObj = new Date(event.event_date + "T12:00:00Z");
         const formattedDate = eventDateObj.toLocaleDateString("en-US", {
           weekday: "long",
@@ -142,37 +130,39 @@ Deno.serve(async (req) => {
           day: "numeric",
         });
 
-        // Enqueue via send-transactional-email pattern (direct enqueue)
+        // Render email HTML
+        const templateData = {
+          customer_name: booking.customer_name,
+          event_date: formattedDate,
+          event_time: formatTime(event.start_time),
+          event_end_time: formatTime(event.end_time),
+          location: event.location || "TBD",
+          products: eventProducts,
+          remaining_balance: remainingBalance,
+          reminder_type: target.type,
+        };
+
+        const html = render(EventReminderEmail(templateData));
+        const subject =
+          target.type === "morning"
+            ? `Today's the Day! — ${event.title}`
+            : target.type === "1_day"
+            ? `Tomorrow: ${event.title}`
+            : `Upcoming Event: ${event.title} — 3 Days Away`;
+
         const messageId = crypto.randomUUID();
         const { error: enqueueErr } = await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
             message_id: messageId,
             to: booking.customer_email,
-            from: "SIOTO <noreply@notify.sioto.com>",
-            sender_domain: "notify.sioto.com",
-            subject:
-              target.type === "morning"
-                ? `Today's the Day! — ${event.title}`
-                : target.type === "1_day"
-                ? `Tomorrow: ${event.title}`
-                : `Upcoming Event: ${event.title} — 3 Days Away`,
-            html: "__RENDER_TEMPLATE__",
+            from: `SIOTO <noreply@${SENDER_DOMAIN}>`,
+            sender_domain: SENDER_DOMAIN,
+            subject,
+            html,
             purpose: "transactional",
             label: `event_reminder_${target.type}`,
             queued_at: new Date().toISOString(),
-            // Template data for rendering
-            _template: "event_reminder",
-            _template_data: {
-              customer_name: booking.customer_name,
-              event_date: formattedDate,
-              event_time: formatTime(event.start_time),
-              event_end_time: formatTime(event.end_time),
-              location: event.location || "TBD",
-              products: eventProducts,
-              remaining_balance: remainingBalance,
-              reminder_type: target.type,
-            },
           },
         });
 
