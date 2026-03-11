@@ -98,11 +98,25 @@ const CustomerPortalPage = () => {
     if (!data || data.remainingBalance <= 0) return;
     setPayingBalance(true);
     try {
+      const payAmount = paymentMode === "custom" ? parseFloat(customAmount) : undefined;
+      if (paymentMode === "custom") {
+        if (!payAmount || payAmount < 0.50) {
+          toast.error("Minimum payment is $0.50");
+          setPayingBalance(false);
+          return;
+        }
+        if (payAmount > data.remainingBalance) {
+          toast.error(`Amount cannot exceed remaining balance of $${data.remainingBalance.toFixed(2)}`);
+          setPayingBalance(false);
+          return;
+        }
+      }
       const { data: result, error: fnError } = await supabase.functions.invoke("create-portal-payment", {
         body: {
           token,
           customer_email: data.customer?.customer_email,
           customer_name: data.customer?.customer_name,
+          amount: payAmount,
         },
       });
       if (fnError) throw fnError;
