@@ -25,7 +25,6 @@ const QuotesPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { basePath } = useCompanySlug();
-  const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const { data: quotes = [], isLoading } = useQuery({
