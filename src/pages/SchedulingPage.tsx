@@ -187,6 +187,14 @@ const SchedulingPage = () => {
 
   const handleRescheduleEvent = async (eventId: string, newDate: string) => {
     try {
+      // Quick conflict check for reschedule
+      const warnings = await checkConflicts({ eventDate: newDate, eventId });
+      if (warnings.length > 0) {
+        const proceed = confirm(
+          `Scheduling conflicts detected:\n${warnings.map(w => `• ${w.message}`).join("\n")}\n\nReschedule anyway?`
+        );
+        if (!proceed) return;
+      }
       const { error } = await supabase.from("events").update({ event_date: newDate }).eq("id", eventId);
       if (error) throw error;
       toast.success("Event rescheduled!");
