@@ -94,11 +94,8 @@ const SignupPage = () => {
       {/* Left side — benefits */}
       <div className="hidden lg:flex flex-col justify-center flex-1 px-16 xl:px-24">
         <div className="max-w-md">
-          <div className="flex items-center gap-2 mb-8">
-            <Shield className="text-primary" size={40} strokeWidth={2.5} fill="hsl(24 95% 53%)" />
-            <span className="font-display font-bold text-3xl text-secondary-foreground">
-              SIOTO<span className="text-primary">.AI</span>
-            </span>
+          <div className="mb-8">
+            <ShieldLogo size={40} />
           </div>
           <h1 className="font-display font-bold text-4xl text-foreground mb-4 leading-tight">
             Start running your business smarter
