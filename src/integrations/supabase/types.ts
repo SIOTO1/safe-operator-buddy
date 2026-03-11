@@ -1082,6 +1082,38 @@ export type Database = {
           },
         ]
       }
+      portal_tokens: {
+        Row: {
+          created_at: string
+          event_id: string
+          expires_at: string
+          id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          expires_at?: string
+          id?: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          expires_at?: string
+          id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_tokens_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: Database["public"]["Enums"]["product_category"]

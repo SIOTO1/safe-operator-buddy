@@ -25,3 +25,9 @@ project_id = "atdpdxocpjnldajapjyp"
     verify_jwt = false
   [functions.verify-payment]
     verify_jwt = false
+  [functions.portal-event-data]
+    verify_jwt = false
+  [functions.generate-portal-token]
+    verify_jwt = false
+  [functions.create-portal-payment]
+    verify_jwt = false
