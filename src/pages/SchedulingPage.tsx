@@ -124,10 +124,28 @@ const SchedulingPage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [fetchData, fetchMonthEvents, activeTab]);
 
-  const handleCreateEvent = async () => {
+  const runConflictCheck = useCallback(async () => {
+    if (!selectedDate) return;
+    await checkConflicts({ eventDate: format(selectedDate, "yyyy-MM-dd") });
+  }, [selectedDate, checkConflicts]);
+
+  // Auto-check conflicts when date changes in dialog
+  useEffect(() => {
+    if (createEventOpen && selectedDate) {
+      runConflictCheck();
+    }
+  }, [createEventOpen, selectedDate, runConflictCheck]);
+
+  const handleCreateEvent = async (force = false) => {
     if (!newEvent.event_name || !selectedDate) return;
+
+    // If conflicts exist and user hasn't confirmed, show confirmation
+    if (!force && conflicts.length > 0 && !showConfirmWithConflicts) {
+      setShowConfirmWithConflicts(true);
+      return;
+    }
+
     try {
-      // Build full location string from address parts
       const locationParts = [newEvent.location_address, newEvent.city, newEvent.state, newEvent.zip].filter(Boolean);
       const fullLocation = locationParts.length > 0 ? locationParts.join(", ") : null;
       const { error } = await supabase.from("events").insert({
@@ -142,6 +160,8 @@ const SchedulingPage = () => {
       if (error) throw error;
       toast.success("Event created!");
       setCreateEventOpen(false);
+      setShowConfirmWithConflicts(false);
+      clearConflicts();
       setNewEvent({ event_name: "", location_address: "", city: "", state: "", zip: "", start_time: "08:00", end_time: "16:00", notes: "" });
       fetchData();
       if (activeTab === "month") fetchMonthEvents();
