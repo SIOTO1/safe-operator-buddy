@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
       await supabase.rpc("enqueue_email", {
         queue_name: "transactional_emails",
         payload: {
-          message_id: crypto.randomUUID(),
+          run_id: crypto.randomUUID(),
           to: customer_email.trim().toLowerCase(),
           from: "SIOTO <noreply@notify.sioto.com>",
           sender_domain: "notify.sioto.com",
