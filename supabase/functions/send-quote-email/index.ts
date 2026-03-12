@@ -76,6 +76,7 @@ Deno.serve(async (req) => {
       queue_name: "transactional_emails",
       payload: {
         run_id: crypto.randomUUID(),
+        message_id: crypto.randomUUID(),
         to: lead.email,
         from: `${companyName} <noreply@${SENDER_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,

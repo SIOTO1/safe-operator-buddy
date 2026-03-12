@@ -193,6 +193,7 @@ serve(async (req) => {
         queue_name: "transactional_emails",
         payload: {
           run_id: crypto.randomUUID(),
+          message_id: crypto.randomUUID(),
           to: customerEmail,
           from: "SIOTO <noreply@notify.sioto.com>",
           sender_domain: "notify.sioto.com",
