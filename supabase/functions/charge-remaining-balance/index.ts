@@ -197,6 +197,7 @@ serve(async (req) => {
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
+                  run_id: crypto.randomUUID(),
                   message_id: crypto.randomUUID(),
                   to: booking.customer_email,
                   from: "SIOTO <noreply@notify.sioto.com>",
@@ -270,6 +271,7 @@ serve(async (req) => {
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
+                  run_id: crypto.randomUUID(),
                   message_id: crypto.randomUUID(),
                   to: booking.customer_email,
                   from: "SIOTO <noreply@notify.sioto.com>",
