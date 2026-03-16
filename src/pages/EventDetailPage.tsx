@@ -541,6 +541,7 @@ const EventDetailPage = () => {
             eventDate={event.event_date}
             quoteId={event.quote_id}
           />
+          <PaymentActivityLog eventId={event.id} />
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
