@@ -443,14 +443,26 @@ const TeamPage = () => {
                   <span className="text-sm font-medium">{inv.email}</span>
                   <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive text-xs"
-                  onClick={() => handleRevokeInvite(inv.id)}
-                >
-                  Revoke
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs gap-1"
+                    disabled={resendingId === inv.id}
+                    onClick={() => handleResendInvite([inv.id])}
+                  >
+                    {resendingId === inv.id ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                    Resend
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive text-xs"
+                    onClick={() => handleRevokeInvite(inv.id)}
+                  >
+                    Revoke
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
