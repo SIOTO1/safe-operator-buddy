@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Users, UserPlus, MoreVertical, ShieldCheck, Briefcase, User, Crown, Mail, Loader2 } from "lucide-react";
+import { Users, UserPlus, MoreVertical, ShieldCheck, Briefcase, User, Crown, Mail, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -68,6 +68,8 @@ const TeamPage = () => {
   const [inviting, setInviting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState<any[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<TeamRole | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  const [resendingAll, setResendingAll] = useState(false);
 
   const isAdmin = currentUserRole === "admin";
 
@@ -167,6 +169,26 @@ const TeamPage = () => {
       toast.error(err.message || "Failed to send invitation");
     } finally {
       setInviting(false);
+    }
+  };
+
+  const handleResendInvite = async (inviteIds: string[]) => {
+    const isSingle = inviteIds.length === 1;
+    if (isSingle) setResendingId(inviteIds[0]);
+    else setResendingAll(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("resend-invite", {
+        body: { invite_ids: inviteIds },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(isSingle ? "Invitation resent" : `${data.sent} invitation(s) resent`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend invitation");
+    } finally {
+      setResendingId(null);
+      setResendingAll(false);
     }
   };
 
@@ -396,10 +418,24 @@ const TeamPage = () => {
       {/* Pending Invites */}
       {isAdmin && pendingInvites.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Mail size={16} className="text-primary" />
-            Pending Invitations ({pendingInvites.length})
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold flex items-center gap-2">
+              <Mail size={16} className="text-primary" />
+              Pending Invitations ({pendingInvites.length})
+            </h2>
+            {pendingInvites.length > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                disabled={resendingAll}
+                onClick={() => handleResendInvite(pendingInvites.map((inv) => inv.id))}
+              >
+                {resendingAll ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                Resend All
+              </Button>
+            )}
+          </div>
           <div className="space-y-2">
             {pendingInvites.map((inv) => (
               <div key={inv.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
@@ -407,14 +443,26 @@ const TeamPage = () => {
                   <span className="text-sm font-medium">{inv.email}</span>
                   <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive text-xs"
-                  onClick={() => handleRevokeInvite(inv.id)}
-                >
-                  Revoke
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs gap-1"
+                    disabled={resendingId === inv.id}
+                    onClick={() => handleResendInvite([inv.id])}
+                  >
+                    {resendingId === inv.id ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                    Resend
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive text-xs"
+                    onClick={() => handleRevokeInvite(inv.id)}
+                  >
+                    Revoke
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
