@@ -172,6 +172,26 @@ const TeamPage = () => {
     }
   };
 
+  const handleResendInvite = async (inviteIds: string[]) => {
+    const isSingle = inviteIds.length === 1;
+    if (isSingle) setResendingId(inviteIds[0]);
+    else setResendingAll(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("resend-invite", {
+        body: { invite_ids: inviteIds },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(isSingle ? "Invitation resent" : `${data.sent} invitation(s) resent`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend invitation");
+    } finally {
+      setResendingId(null);
+      setResendingAll(false);
+    }
+  };
+
   const handleRevokeInvite = async (inviteId: string) => {
     try {
       const { error } = await supabase
