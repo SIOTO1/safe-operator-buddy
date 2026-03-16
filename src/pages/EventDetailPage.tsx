@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
 import { PaymentSummary } from "@/components/scheduling/PaymentSummary";
+import { PaymentActivityLog } from "@/components/scheduling/PaymentActivityLog";
 import type { WeatherData } from "@/components/scheduling/WeatherSafetyBadge";
 import { getInflatableSafetyLevel } from "@/components/scheduling/WeatherSafetyBadge";
 import { EventStaffAssignment } from "@/components/scheduling/EventStaffAssignment";
