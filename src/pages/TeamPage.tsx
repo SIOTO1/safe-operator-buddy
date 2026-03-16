@@ -418,10 +418,24 @@ const TeamPage = () => {
       {/* Pending Invites */}
       {isAdmin && pendingInvites.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-            <Mail size={16} className="text-primary" />
-            Pending Invitations ({pendingInvites.length})
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold flex items-center gap-2">
+              <Mail size={16} className="text-primary" />
+              Pending Invitations ({pendingInvites.length})
+            </h2>
+            {pendingInvites.length > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                disabled={resendingAll}
+                onClick={() => handleResendInvite(pendingInvites.map((inv) => inv.id))}
+              >
+                {resendingAll ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                Resend All
+              </Button>
+            )}
+          </div>
           <div className="space-y-2">
             {pendingInvites.map((inv) => (
               <div key={inv.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
