@@ -1439,6 +1439,64 @@ export type Database = {
           },
         ]
       }
+      payment_activity_logs: {
+        Row: {
+          action_type: string
+          amount: number
+          company_id: string | null
+          created_at: string
+          event_id: string | null
+          id: string
+          notes: string | null
+          payment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          amount?: number
+          company_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          notes?: string | null
+          payment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          amount?: number
+          company_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          notes?: string | null
+          payment_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_activity_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_activity_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_activity_logs_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number

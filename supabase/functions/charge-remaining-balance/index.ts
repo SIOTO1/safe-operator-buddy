@@ -145,7 +145,7 @@ serve(async (req) => {
           });
         } catch (stripeErr: any) {
           // Payment failed - create failed payment record and notify
-          await supabaseAdmin.from("payments").insert({
+          const { data: failedPayment } = await supabaseAdmin.from("payments").insert({
             event_id: event.id,
             contract_id: contract.id,
             quote_id: contract.quote_id,
@@ -156,6 +156,20 @@ serve(async (req) => {
             stripe_customer_id,
             stripe_payment_method_id,
             transaction_id: stripeErr.payment_intent?.id || null,
+          }).select("id").single();
+
+          // Get company_id from event
+          const { data: evCompany } = await supabaseAdmin.from("events").select("company_id, created_by").eq("id", event.id).single();
+
+          // Log payment failed
+          await supabaseAdmin.from("payment_activity_logs").insert({
+            company_id: evCompany?.company_id || null,
+            event_id: event.id,
+            payment_id: failedPayment?.id || null,
+            user_id: evCompany?.created_by || "00000000-0000-0000-0000-000000000000",
+            action_type: "payment_failed",
+            amount: remaining,
+            notes: `Auto-charge of $${remaining.toFixed(2)} failed: ${stripeErr.message}`,
           });
 
           // Create notification for company (event creator)
@@ -220,7 +234,7 @@ serve(async (req) => {
 
         // Payment succeeded
         if (paymentIntent.status === "succeeded") {
-          await supabaseAdmin.from("payments").insert({
+          const { data: successPayment } = await supabaseAdmin.from("payments").insert({
             event_id: event.id,
             contract_id: contract.id,
             quote_id: contract.quote_id,
@@ -231,6 +245,20 @@ serve(async (req) => {
             stripe_customer_id,
             stripe_payment_method_id,
             transaction_id: paymentIntent.id,
+          }).select("id").single();
+
+          // Get company_id from event
+          const { data: evCompany2 } = await supabaseAdmin.from("events").select("company_id, created_by").eq("id", event.id).single();
+
+          // Log payment completed
+          await supabaseAdmin.from("payment_activity_logs").insert({
+            company_id: evCompany2?.company_id || null,
+            event_id: event.id,
+            payment_id: successPayment?.id || null,
+            user_id: evCompany2?.created_by || "00000000-0000-0000-0000-000000000000",
+            action_type: "payment_completed",
+            amount: remaining,
+            notes: `Auto-charge of $${remaining.toFixed(2)} completed successfully`,
           });
 
           // Notify the company owner

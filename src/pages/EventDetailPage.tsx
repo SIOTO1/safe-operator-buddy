@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { WeatherSafetyBadge } from "@/components/scheduling/WeatherSafetyBadge";
 import { PaymentSummary } from "@/components/scheduling/PaymentSummary";
+import { PaymentActivityLog } from "@/components/scheduling/PaymentActivityLog";
 import type { WeatherData } from "@/components/scheduling/WeatherSafetyBadge";
 import { getInflatableSafetyLevel } from "@/components/scheduling/WeatherSafetyBadge";
 import { EventStaffAssignment } from "@/components/scheduling/EventStaffAssignment";
@@ -540,6 +541,7 @@ const EventDetailPage = () => {
             eventDate={event.event_date}
             quoteId={event.quote_id}
           />
+          <PaymentActivityLog eventId={event.id} />
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">

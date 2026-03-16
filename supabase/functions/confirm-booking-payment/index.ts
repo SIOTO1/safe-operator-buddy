@@ -158,7 +158,7 @@ serve(async (req) => {
       paymentMethodId = (pi.payment_method as string) || null;
     }
 
-    await supabaseAdmin.from("payments").insert({
+    const { data: paymentRecord } = await supabaseAdmin.from("payments").insert({
       event_id: event.id,
       amount: depositAmount,
       payment_type: "deposit",
@@ -168,6 +168,17 @@ serve(async (req) => {
       stripe_customer_id: (session.customer as string) || null,
       stripe_payment_method_id: paymentMethodId,
       transaction_id: (session.payment_intent as string) || null,
+    }).select("id").single();
+
+    // Log deposit received
+    await supabaseAdmin.from("payment_activity_logs").insert({
+      company_id: companyId,
+      event_id: event.id,
+      payment_id: paymentRecord?.id || null,
+      user_id: creatorId,
+      action_type: "deposit_received",
+      amount: depositAmount,
+      notes: `Booking deposit of $${depositAmount.toFixed(2)} received from ${customerName}`,
     });
 
     // 4. Create a booking request record too for tracking
