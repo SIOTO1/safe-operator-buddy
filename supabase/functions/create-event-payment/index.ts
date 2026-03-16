@@ -96,7 +96,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { error: insertErr } = await supabaseAdmin.from("payments").insert({
+    const { data: paymentRecord, error: insertErr } = await supabaseAdmin.from("payments").insert({
       quote_id,
       event_id,
       contract_id,
@@ -106,7 +106,7 @@ serve(async (req) => {
       payment_method: "stripe",
       stripe_session_id: session.id,
       stripe_customer_id: customerId,
-    });
+    }).select("id").single();
 
     if (insertErr) {
       if (insertErr.code === "23505") {
@@ -117,6 +117,24 @@ serve(async (req) => {
       }
       throw new Error("Failed to create payment record");
     }
+
+    // Get company_id for audit log
+    let companyId: string | null = null;
+    if (event_id) {
+      const { data: ev } = await supabaseAdmin.from("events").select("company_id").eq("id", event_id).single();
+      companyId = ev?.company_id || null;
+    }
+
+    // Log payment creation
+    await supabaseAdmin.from("payment_activity_logs").insert({
+      company_id: companyId,
+      event_id: event_id || null,
+      payment_id: paymentRecord?.id || null,
+      user_id: user.id,
+      action_type: "payment_created",
+      amount,
+      notes: `${payment_type} payment of $${amount.toFixed(2)} initiated via Stripe`,
+    });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
