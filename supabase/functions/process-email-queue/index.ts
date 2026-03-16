@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
             sender_domain: payload.sender_domain,
             subject: payload.subject,
             html: payload.html,
-            text: payload.text,
+            text: payload.text || payload.subject || ' ',
             purpose: payload.purpose,
             label: payload.label,
             external_id: payload.external_id,
