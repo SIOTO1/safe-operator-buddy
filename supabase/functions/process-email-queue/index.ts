@@ -25,6 +25,30 @@ function getRetryAfterSeconds(error: unknown): number {
   return 60
 }
 
+function isRunNotFound(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'type' in error) {
+    return (error as { type?: string }).type === 'run_not_found'
+  }
+  return error instanceof Error && error.message.includes('run_not_found')
+}
+
+function buildEmailRequest(payload: Record<string, any>, includeRunId = true) {
+  return {
+    ...(includeRunId && payload.run_id ? { run_id: payload.run_id } : {}),
+    to: payload.to,
+    from: payload.from,
+    sender_domain: payload.sender_domain,
+    subject: payload.subject,
+    html: payload.html,
+    text: payload.text || payload.subject || ' ',
+    purpose: payload.purpose,
+    label: payload.label,
+    external_id: payload.external_id,
+    idempotency_key: payload.idempotency_key,
+    unsubscribe_token: payload.unsubscribe_token,
+  }
+}
+
 Deno.serve(async (req) => {
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
