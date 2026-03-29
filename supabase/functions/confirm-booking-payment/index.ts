@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -201,6 +202,7 @@ serve(async (req) => {
 
     // 5. Send confirmation email
     try {
+      const unsub_token = await getUnsubscribeToken(supabaseAdmin, customerEmail);
       await supabaseAdmin.rpc("enqueue_email", {
         queue_name: "transactional_emails",
         payload: {
@@ -220,6 +222,7 @@ serve(async (req) => {
 <p>We'll be in touch with setup details closer to your event date. Thank you!</p>`,
           purpose: "transactional",
           label: "booking_confirmation",
+          unsubscribe_token: unsub_token,
           queued_at: new Date().toISOString(),
         },
       });

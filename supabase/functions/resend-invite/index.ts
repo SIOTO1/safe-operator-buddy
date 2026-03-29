@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { render } from "npm:@react-email/render@0.0.12";
 import { TeamInviteEmail } from "../_shared/email-templates/team-invite.tsx";
+import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -121,6 +122,7 @@ Deno.serve(async (req) => {
 
       const subject = `You're invited to join ${company?.name || "the team"}`;
       const messageId = crypto.randomUUID();
+      const unsubscribe_token = await getUnsubscribeToken(supabase, invite.email);
       const { error: enqueueError } = await supabase.rpc("enqueue_email", {
         queue_name: "transactional_emails",
         payload: {
@@ -134,6 +136,7 @@ Deno.serve(async (req) => {
           text: subject,
           purpose: "transactional",
           label: "team_invite_resend",
+          unsubscribe_token,
           queued_at: new Date().toISOString(),
         },
       });

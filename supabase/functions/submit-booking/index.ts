@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -149,6 +150,7 @@ Deno.serve(async (req) => {
     };
 
     try {
+      const unsub_token_customer = await getUnsubscribeToken(supabase, customer_email.trim().toLowerCase());
       await supabase.rpc("enqueue_email", {
         queue_name: "transactional_emails",
         payload: {
@@ -161,6 +163,7 @@ Deno.serve(async (req) => {
           html: `<p>Hey ${customer_name.trim()}! Your booking request for ${event_date} at ${event_location.trim()} has been received. We'll review it and get back to you within 24 hours.</p><p>Equipment: ${equipment.join(", ")}</p>`,
           purpose: "transactional",
           label: "booking_confirmation",
+          unsubscribe_token: unsub_token_customer,
           queued_at: new Date().toISOString(),
         },
       });
@@ -197,6 +200,7 @@ Deno.serve(async (req) => {
             .maybeSingle();
 
           if (roleData && profile.email) {
+            const unsub_token_owner = await getUnsubscribeToken(supabase, profile.email);
             await supabase.rpc("enqueue_email", {
               queue_name: "transactional_emails",
               payload: {
@@ -209,6 +213,7 @@ Deno.serve(async (req) => {
                 html: `<p>New booking from ${customer_name.trim()} (${customer_email.trim().toLowerCase()}) for ${event_date} at ${event_location.trim()}.</p><p>Equipment: ${equipment.join(", ")}</p><p>Log in to review.</p>`,
                 purpose: "transactional",
                 label: "owner_notification",
+                unsubscribe_token: unsub_token_owner,
                 queued_at: new Date().toISOString(),
               },
             });

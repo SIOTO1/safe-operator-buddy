@@ -4,6 +4,7 @@ import { BookingConfirmationEmail } from "../_shared/email-templates/booking-con
 import { PaymentReceiptEmail } from "../_shared/email-templates/payment-receipt.tsx";
 import { OwnerNotificationEmail } from "../_shared/email-templates/owner-notification.tsx";
 import { AutoChargeAlertEmail } from "../_shared/email-templates/auto-charge-alert.tsx";
+import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,6 +72,7 @@ Deno.serve(async (req) => {
 
     const { subject, html } = renderTemplate(template, data);
     const messageId = crypto.randomUUID();
+    const unsubscribe_token = await getUnsubscribeToken(supabase, to);
 
     const { error } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
@@ -85,6 +87,7 @@ Deno.serve(async (req) => {
         text: subject,
         purpose: "transactional",
         label: template,
+        unsubscribe_token,
         queued_at: new Date().toISOString(),
       },
     });

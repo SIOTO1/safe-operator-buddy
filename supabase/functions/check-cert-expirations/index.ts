@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { render } from "npm:@react-email/render@0.0.12";
 import { CertExpirationAlertEmail } from "../_shared/email-templates/cert-expiration-alert.tsx";
+import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -111,6 +112,7 @@ Deno.serve(async (req) => {
       // Send to each admin
       for (const email of adminEmails) {
         const messageId = crypto.randomUUID();
+        const unsub_token = await getUnsubscribeToken(supabase, email);
         await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
@@ -123,6 +125,7 @@ Deno.serve(async (req) => {
             html,
             purpose: "transactional",
             label: "cert_expiration_alert",
+            unsubscribe_token: unsub_token,
             queued_at: new Date().toISOString(),
           },
         });

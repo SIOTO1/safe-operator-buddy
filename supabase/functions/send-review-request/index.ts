@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { render } from "npm:@react-email/render@0.0.12";
 import { ReviewRequestEmail } from "../_shared/email-templates/review-request.tsx";
+import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -138,6 +139,7 @@ Deno.serve(async (req) => {
 
       const reviewSubject = `How was your event? We'd love your review! ⭐`;
       const messageId = crypto.randomUUID();
+      const unsubscribe_token = await getUnsubscribeToken(supabase, customerEmail);
       const { error: enqueueErr } = await supabase.rpc("enqueue_email", {
         queue_name: "transactional_emails",
           payload: {
@@ -151,6 +153,7 @@ Deno.serve(async (req) => {
           text: reviewSubject,
           purpose: "transactional",
           label: "review_request",
+          unsubscribe_token,
           queued_at: new Date().toISOString(),
         },
       });

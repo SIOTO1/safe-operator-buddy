@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { render } from "npm:@react-email/render@0.0.12";
 import { AutoChargeAlertEmail } from "../_shared/email-templates/auto-charge-alert.tsx";
+import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -209,6 +210,7 @@ serve(async (req) => {
                 error_message: stripeErr.message,
               }));
 
+              const unsub_token_fail = await getUnsubscribeToken(supabaseAdmin, booking.customer_email);
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
@@ -221,6 +223,7 @@ serve(async (req) => {
                   html,
                   purpose: "transactional",
                   label: "auto_charge_alert",
+                  unsubscribe_token: unsub_token_fail,
                   queued_at: new Date().toISOString(),
                 },
               });
@@ -298,6 +301,7 @@ serve(async (req) => {
                 success: true,
               }));
 
+              const unsub_token_success = await getUnsubscribeToken(supabaseAdmin, booking.customer_email);
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
@@ -310,6 +314,7 @@ serve(async (req) => {
                   html,
                   purpose: "transactional",
                   label: "auto_charge_alert",
+                  unsubscribe_token: unsub_token_success,
                   queued_at: new Date().toISOString(),
                 },
               });
