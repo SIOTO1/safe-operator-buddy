@@ -102,15 +102,11 @@ serve(async (req) => {
     });
 
     // Create payment record
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
     const { data: paymentRecord, error: insertErr } = await supabaseAdmin.from("payments").insert({
       quote_id,
       event_id,
       contract_id,
+      company_id: paymentCompanyId,
       amount,
       payment_type,
       payment_status: "pending",

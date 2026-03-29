@@ -138,6 +138,7 @@ serve(async (req) => {
     const { error: insertErr } = await supabaseAdmin.from("payments").insert({
       event_id: eventId,
       quote_id: event.quote_id,
+      company_id: event.company_id,
       amount: chargeAmount,
       payment_type: paymentType,
       payment_status: "pending",
