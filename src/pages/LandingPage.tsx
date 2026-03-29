@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import FeatureCard from "@/components/landing/FeatureCard";
 import KnowledgeCategories from "@/components/landing/KnowledgeCategories";
+import DemoModal from "@/components/landing/DemoModal";
 
 const features = [
   { icon: MessageSquare, title: "AI Safety Assistant", desc: "Get instant answers to safety questions using SIOTO-approved guidelines.", detail: "Powered by AI trained on thousands of industry-specific safety scenarios. Ask about anchoring in high winds, electrical clearance distances, or age-appropriate equipment — and get a clear, actionable answer in seconds." },
