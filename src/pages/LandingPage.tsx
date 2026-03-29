@@ -205,6 +205,8 @@ const LandingPage = () => {
           <p className="text-xs text-muted-foreground">© 2026 SIOTO.AI. All rights reserved.</p>
         </div>
       </footer>
+
+      <DemoModal open={demoOpen} onOpenChange={setDemoOpen} />
     </div>
   );
 };
