@@ -82,6 +82,7 @@ Deno.serve(async (req) => {
         sender_domain: SENDER_DOMAIN,
         subject,
         html,
+        text: subject,
         purpose: "transactional",
         label: template,
         queued_at: new Date().toISOString(),
