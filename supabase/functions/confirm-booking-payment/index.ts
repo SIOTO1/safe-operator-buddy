@@ -207,8 +207,8 @@ serve(async (req) => {
           idempotency_key: `booking-pay-${crypto.randomUUID()}`,
           message_id: crypto.randomUUID(),
           to: customerEmail,
-          from: "SIOTO <noreply@notify.sioto.com>",
-          sender_domain: "notify.sioto.com",
+          from: "SIOTO <noreply@notify.sioto.ai>",
+          sender_domain: "notify.sioto.ai",
           subject: `Booking Confirmed — ${eventDate}`,
           html: `<h2>Booking Confirmed!</h2>
 <p>Hey ${customerName}! Your booking for <strong>${eventDate}</strong> has been confirmed.</p>
