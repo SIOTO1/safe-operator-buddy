@@ -4,6 +4,7 @@ import { BookingConfirmationEmail } from "../_shared/email-templates/booking-con
 import { PaymentReceiptEmail } from "../_shared/email-templates/payment-receipt.tsx";
 import { OwnerNotificationEmail } from "../_shared/email-templates/owner-notification.tsx";
 import { AutoChargeAlertEmail } from "../_shared/email-templates/auto-charge-alert.tsx";
+import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
