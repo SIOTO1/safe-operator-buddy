@@ -149,6 +149,7 @@ serve(async (req) => {
             event_id: event.id,
             contract_id: contract.id,
             quote_id: contract.quote_id,
+            company_id: event.company_id,
             amount: remaining,
             payment_type: "auto_balance",
             payment_status: "failed",
