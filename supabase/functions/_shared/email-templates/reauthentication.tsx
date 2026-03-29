@@ -25,8 +25,8 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
       <Container style={container}>
         <Img
           src="https://atdpdxocpjnldajapjyp.supabase.co/storage/v1/object/public/logos/logo-1773269498760.png"
-          width="48"
-          height="48"
+          width="120"
+          height="120"
           alt="SIOTO"
           style={{ marginBottom: '24px' }}
         />
