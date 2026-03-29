@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { CheckCircle2, Circle, ClipboardCheck, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, Circle, ClipboardCheck, AlertTriangle, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import jsPDF from "jspdf";
 
 interface ChecklistItem {
   id: string;
