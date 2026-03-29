@@ -1,26 +1,25 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, ClipboardCheck, FileText, Users, BarChart3, ChevronRight, Zap, BookOpen, Wind } from "lucide-react";
+import { MessageSquare, ClipboardCheck, FileText, Users, BarChart3, ChevronRight, Zap, BookOpen } from "lucide-react";
 import ShieldLogo from "@/components/ShieldLogo";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import DemoModal from "@/components/landing/DemoModal";
+import FeatureCard from "@/components/landing/FeatureCard";
+import KnowledgeCategories from "@/components/landing/KnowledgeCategories";
 
 const features = [
-  { icon: MessageSquare, title: "AI Safety Assistant", desc: "Get instant answers to safety questions using SIOTO-approved guidelines." },
-  { icon: ClipboardCheck, title: "Smart Checklists", desc: "Interactive pre-delivery, setup, wind check, and post-event checklists." },
-  { icon: FileText, title: "Contract Generator", desc: "Create professional rental agreements with custom branding in seconds." },
-  { icon: Users, title: "Crew Mode", desc: "Simplified interface with large buttons and quick guidance for field crews." },
-  { icon: BookOpen, title: "Knowledge Base", desc: "Searchable library of setup procedures, anchoring rules, and compliance." },
-  { icon: BarChart3, title: "Admin Dashboard", desc: "Track users, questions, risk trends, and compliance in real-time." },
-];
-
-const categories = [
-  "Setup Procedures", "Takedown Procedures", "Anchoring Rules",
-  "Wind & Weather", "Electrical Safety", "Inspection Protocols",
-  "Safety Tip Guides", "Smart Clips", "Rental Agreements", "State Compliance"
+  { icon: MessageSquare, title: "AI Safety Assistant", desc: "Get instant answers to safety questions using SIOTO-approved guidelines.", detail: "Powered by AI trained on thousands of industry-specific safety scenarios. Ask about anchoring in high winds, electrical clearance distances, or age-appropriate equipment — and get a clear, actionable answer in seconds." },
+  { icon: ClipboardCheck, title: "Smart Checklists", desc: "Interactive pre-delivery, setup, wind check, and post-event checklists.", detail: "Checklists auto-adapt to your equipment type, weather conditions, and venue. Crew members check off items on their phone, and supervisors see completion status in real-time." },
+  { icon: FileText, title: "Contract Generator", desc: "Create professional rental agreements with custom branding in seconds.", detail: "Choose from industry-standard templates, add your logo and terms, and send for e-signature. Includes liability waivers, damage clauses, and weather cancellation policies." },
+  { icon: Users, title: "Crew Mode", desc: "Simplified interface with large buttons and quick guidance for field crews.", detail: "Designed for outdoor use with gloves. Large tap targets, high-contrast text, and offline-ready checklists so your crew stays safe even without cell service." },
+  { icon: BookOpen, title: "Knowledge Base", desc: "Searchable library of setup procedures, anchoring rules, and compliance.", detail: "Over 500 guidelines across 10 safety categories — from state-by-state compliance requirements to manufacturer-specific setup procedures. Always current." },
+  { icon: BarChart3, title: "Admin Dashboard", desc: "Track users, questions, risk trends, and compliance in real-time.", detail: "See which questions your crew asks most, identify training gaps, monitor checklist completion rates, and generate compliance reports for insurance providers." },
 ];
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [demoOpen, setDemoOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,7 +68,7 @@ const LandingPage = () => {
               <Button variant="hero" onClick={() => navigate("/auth")}>
                 Start Free Trial <ChevronRight size={18} />
               </Button>
-              <Button variant="hero-outline">
+              <Button variant="hero-outline" onClick={() => setDemoOpen(true)}>
                 Watch Demo
               </Button>
             </div>
@@ -109,20 +108,14 @@ const LandingPage = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f, i) => (
-              <motion.div
+              <FeatureCard
                 key={f.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="group p-6 rounded-xl border border-border bg-card hover:shadow-[var(--card-hover-shadow)] transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-lg bg-accent flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <f.icon size={24} />
-                </div>
-                <h3 className="font-display font-semibold text-lg mb-2">{f.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
-              </motion.div>
+                icon={f.icon}
+                title={f.title}
+                desc={f.desc}
+                detail={f.detail}
+                index={i}
+              />
             ))}
           </div>
         </div>
@@ -139,17 +132,7 @@ const LandingPage = () => {
               10 categories of SIOTO-approved safety guidelines, always up to date.
             </p>
           </div>
-          <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
-            {categories.map((cat) => (
-              <motion.div
-                key={cat}
-                whileHover={{ scale: 1.05 }}
-                className="px-5 py-2.5 rounded-full border border-border bg-card font-medium text-sm cursor-pointer hover:border-primary hover:text-primary transition-colors"
-              >
-                {cat}
-              </motion.div>
-            ))}
-          </div>
+          <KnowledgeCategories />
         </div>
       </section>
 
@@ -218,6 +201,8 @@ const LandingPage = () => {
           <p className="text-xs text-muted-foreground">© 2026 SIOTO.AI. All rights reserved.</p>
         </div>
       </footer>
+
+      <DemoModal open={demoOpen} onOpenChange={setDemoOpen} />
     </div>
   );
 };
