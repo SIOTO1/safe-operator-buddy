@@ -72,6 +72,7 @@ Deno.serve(async (req) => {
 
     const { subject, html } = renderTemplate(template, data);
     const messageId = crypto.randomUUID();
+    const unsubscribe_token = await getUnsubscribeToken(supabase, to);
 
     const { error } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
@@ -86,6 +87,7 @@ Deno.serve(async (req) => {
         text: subject,
         purpose: "transactional",
         label: template,
+        unsubscribe_token,
         queued_at: new Date().toISOString(),
       },
     });

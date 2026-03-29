@@ -152,6 +152,7 @@ Deno.serve(async (req) => {
             : `Upcoming Event: ${event.title} — 3 Days Away`;
 
         const messageId = crypto.randomUUID();
+        const unsubscribe_token = await getUnsubscribeToken(supabase, booking.customer_email);
         const { error: enqueueErr } = await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
@@ -165,6 +166,7 @@ Deno.serve(async (req) => {
             text: subject,
             purpose: "transactional",
             label: `event_reminder_${target.type}`,
+            unsubscribe_token,
             queued_at: new Date().toISOString(),
           },
         });

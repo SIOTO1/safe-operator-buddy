@@ -122,6 +122,7 @@ Deno.serve(async (req) => {
 
       const subject = `You're invited to join ${company?.name || "the team"}`;
       const messageId = crypto.randomUUID();
+      const unsubscribe_token = await getUnsubscribeToken(supabase, invite.email);
       const { error: enqueueError } = await supabase.rpc("enqueue_email", {
         queue_name: "transactional_emails",
         payload: {
@@ -135,6 +136,7 @@ Deno.serve(async (req) => {
           text: subject,
           purpose: "transactional",
           label: "team_invite_resend",
+          unsubscribe_token,
           queued_at: new Date().toISOString(),
         },
       });

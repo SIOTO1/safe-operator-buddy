@@ -74,11 +74,13 @@ Deno.serve(async (req) => {
     }));
 
     const quoteSubject = `Quote Ready — ${quote.title}`;
+    const quoteMessageId = crypto.randomUUID();
+    const unsubscribe_token = await getUnsubscribeToken(supabase, lead.email);
     const { error: enqueueErr } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
-        idempotency_key: `quote-${crypto.randomUUID()}`,
-        message_id: crypto.randomUUID(),
+        idempotency_key: `quote-${quoteMessageId}`,
+        message_id: quoteMessageId,
         to: lead.email,
         from: `${companyName} <noreply@${SENDER_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
@@ -87,6 +89,7 @@ Deno.serve(async (req) => {
         text: quoteSubject,
         purpose: "transactional",
         label: "quote_sent",
+        unsubscribe_token,
         queued_at: new Date().toISOString(),
       },
     });
