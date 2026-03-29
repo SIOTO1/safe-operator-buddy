@@ -150,6 +150,7 @@ Deno.serve(async (req) => {
     };
 
     try {
+      const unsub_token_customer = await getUnsubscribeToken(supabase, customer_email.trim().toLowerCase());
       await supabase.rpc("enqueue_email", {
         queue_name: "transactional_emails",
         payload: {
@@ -162,6 +163,7 @@ Deno.serve(async (req) => {
           html: `<p>Hey ${customer_name.trim()}! Your booking request for ${event_date} at ${event_location.trim()} has been received. We'll review it and get back to you within 24 hours.</p><p>Equipment: ${equipment.join(", ")}</p>`,
           purpose: "transactional",
           label: "booking_confirmation",
+          unsubscribe_token: unsub_token_customer,
           queued_at: new Date().toISOString(),
         },
       });
