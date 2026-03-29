@@ -72,6 +72,7 @@ Deno.serve(async (req) => {
       })),
     }));
 
+    const quoteSubject = `Quote Ready — ${quote.title}`;
     const { error: enqueueErr } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
@@ -80,8 +81,9 @@ Deno.serve(async (req) => {
         to: lead.email,
         from: `${companyName} <noreply@${SENDER_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
-        subject: `Quote Ready — ${quote.title}`,
+        subject: quoteSubject,
         html,
+        text: quoteSubject,
         purpose: "transactional",
         label: "quote_sent",
         queued_at: new Date().toISOString(),

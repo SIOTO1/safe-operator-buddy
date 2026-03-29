@@ -161,6 +161,7 @@ Deno.serve(async (req) => {
             sender_domain: SENDER_DOMAIN,
             subject,
             html,
+            text: subject,
             purpose: "transactional",
             label: `event_reminder_${target.type}`,
             queued_at: new Date().toISOString(),
