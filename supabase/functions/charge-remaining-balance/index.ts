@@ -210,6 +210,7 @@ serve(async (req) => {
                 error_message: stripeErr.message,
               }));
 
+              const unsub_token_fail = await getUnsubscribeToken(supabaseAdmin, booking.customer_email);
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
@@ -222,6 +223,7 @@ serve(async (req) => {
                   html,
                   purpose: "transactional",
                   label: "auto_charge_alert",
+                  unsubscribe_token: unsub_token_fail,
                   queued_at: new Date().toISOString(),
                 },
               });
