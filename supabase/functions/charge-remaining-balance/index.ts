@@ -212,7 +212,7 @@ serve(async (req) => {
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
-                  run_id: crypto.randomUUID(),
+                  idempotency_key: `charge-fail-${crypto.randomUUID()}`,
                   message_id: crypto.randomUUID(),
                   to: booking.customer_email,
                   from: "SIOTO <noreply@notify.sioto.com>",
@@ -301,7 +301,7 @@ serve(async (req) => {
               await supabaseAdmin.rpc("enqueue_email", {
                 queue_name: "transactional_emails",
                 payload: {
-                  run_id: crypto.randomUUID(),
+                  idempotency_key: `charge-success-${crypto.randomUUID()}`,
                   message_id: crypto.randomUUID(),
                   to: booking.customer_email,
                   from: "SIOTO <noreply@notify.sioto.com>",

@@ -117,7 +117,7 @@ async function handleEmailNotification(supabase: any, payload: any) {
   // Enqueue into the existing email queue via pgmq
   await supabase.rpc("enqueue_email", {
     queue_name: "transactional_emails",
-    payload: { run_id: crypto.randomUUID(), template_name, recipient_email, ...template_data },
+    payload: { idempotency_key: `job-${crypto.randomUUID()}`, template_name, recipient_email, ...template_data },
   });
 }
 
