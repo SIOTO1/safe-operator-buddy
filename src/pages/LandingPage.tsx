@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, ClipboardCheck, FileText, Users, BarChart3, ChevronRight, Zap, BookOpen } from "lucide-react";
 import ShieldLogo from "@/components/ShieldLogo";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import DemoModal from "@/components/landing/DemoModal";
 import FeatureCard from "@/components/landing/FeatureCard";
 import KnowledgeCategories from "@/components/landing/KnowledgeCategories";
 
@@ -19,7 +18,13 @@ const features = [
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const [demoOpen, setDemoOpen] = useState(false);
+  const featuresRef = useRef<HTMLDivElement>(null);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  const handleExploreFeatures = () => {
+    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => setExpandedIndex(0), 600);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,8 +73,8 @@ const LandingPage = () => {
               <Button variant="hero" onClick={() => navigate("/auth")}>
                 Start Free Trial <ChevronRight size={18} />
               </Button>
-              <Button variant="hero-outline" onClick={() => setDemoOpen(true)}>
-                Watch Demo
+              <Button variant="hero-outline" onClick={handleExploreFeatures}>
+                Explore Features
               </Button>
             </div>
           </motion.div>
@@ -96,7 +101,7 @@ const LandingPage = () => {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-24">
+      <section id="features" ref={featuresRef} className="py-24">
         <div className="container">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
@@ -115,6 +120,8 @@ const LandingPage = () => {
                 desc={f.desc}
                 detail={f.detail}
                 index={i}
+                expanded={expandedIndex === i}
+                onToggle={() => setExpandedIndex(expandedIndex === i ? null : i)}
               />
             ))}
           </div>
@@ -201,8 +208,6 @@ const LandingPage = () => {
           <p className="text-xs text-muted-foreground">© 2026 SIOTO.AI. All rights reserved.</p>
         </div>
       </footer>
-
-      <DemoModal open={demoOpen} onOpenChange={setDemoOpen} />
     </div>
   );
 };

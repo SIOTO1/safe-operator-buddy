@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,11 @@ interface FeatureCardProps {
   desc: string;
   detail: string;
   index: number;
+  expanded: boolean;
+  onToggle: () => void;
 }
 
-const FeatureCard = ({ icon: Icon, title, desc, detail, index }: FeatureCardProps) => {
-  const [expanded, setExpanded] = useState(false);
+const FeatureCard = ({ icon: Icon, title, desc, detail, index, expanded, onToggle }: FeatureCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -23,7 +23,7 @@ const FeatureCard = ({ icon: Icon, title, desc, detail, index }: FeatureCardProp
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
-      onClick={() => setExpanded(!expanded)}
+      onClick={onToggle}
       className="group p-6 rounded-xl border border-border bg-card hover:shadow-[var(--card-hover-shadow)] transition-all duration-300 cursor-pointer"
     >
       <div className="flex items-start justify-between">
