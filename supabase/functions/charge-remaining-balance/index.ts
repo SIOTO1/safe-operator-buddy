@@ -44,7 +44,7 @@ serve(async (req) => {
 
     const { data: upcomingEvents, error: eventsError } = await supabaseAdmin
       .from("events")
-      .select("id, title, event_date")
+      .select("id, title, event_date, company_id")
       .gte("event_date", nowISO)
       .lte("event_date", in48hISO);
 

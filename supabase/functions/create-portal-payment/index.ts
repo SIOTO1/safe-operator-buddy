@@ -51,7 +51,7 @@ serve(async (req) => {
     // Get event and quote
     const { data: event } = await supabaseAdmin
       .from("events")
-      .select("id, title, quote_id")
+      .select("id, title, quote_id, company_id")
       .eq("id", eventId)
       .single();
 

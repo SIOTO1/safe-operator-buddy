@@ -46,6 +46,17 @@ serve(async (req) => {
     const { quote_id, event_id, contract_id, amount, payment_type, description } = await req.json();
     if (!amount || amount <= 0) throw new Error("Invalid payment amount");
 
+    // Resolve company_id from event
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    let paymentCompanyId: string | null = null;
+    if (event_id) {
+      const { data: ev } = await supabaseAdmin.from("events").select("company_id").eq("id", event_id).single();
+      paymentCompanyId = ev?.company_id ?? null;
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
