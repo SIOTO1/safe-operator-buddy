@@ -230,12 +230,23 @@ const ChecklistsPage = () => {
                           </span>
                         </button>
                       ))}
-                      {pct === 100 && (
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm font-medium">
-                          <CheckCircle2 size={16} />
-                          Checklist complete!
-                        </div>
-                      )}
+                      <div className="flex items-center justify-between pt-2">
+                        {pct === 100 && (
+                          <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm font-medium">
+                            <CheckCircle2 size={16} />
+                            Checklist complete!
+                          </div>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="ml-auto gap-1.5"
+                          onClick={(e) => { e.stopPropagation(); handleDownloadPdf(cl); }}
+                        >
+                          <Download size={14} />
+                          Download PDF
+                        </Button>
+                      </div>
                     </div>
                   </motion.div>
                 )}
