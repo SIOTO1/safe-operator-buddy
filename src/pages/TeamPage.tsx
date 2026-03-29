@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Users, UserPlus, MoreVertical, ShieldCheck, Briefcase, User, Crown, Mail, Loader2, RefreshCw } from "lucide-react";
+import { Users, UserPlus, MoreVertical, ShieldCheck, Briefcase, User, Crown, Mail, Loader2, RefreshCw, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,6 +23,15 @@ interface TeamMember {
   created_at: string;
   display_name: string | null;
   email: string | null;
+}
+
+interface PendingInvite {
+  id: string;
+  email: string;
+  role: TeamRole;
+  status: "pending";
+  created_at: string;
+  invite_token: string;
 }
 
 const roleConfig: Record<TeamRole, { label: string; icon: React.ReactNode; color: string }> = {
@@ -66,7 +75,7 @@ const TeamPage = () => {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<TeamRole>("staff");
   const [inviting, setInviting] = useState(false);
-  const [pendingInvites, setPendingInvites] = useState<any[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<TeamRole | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [resendingAll, setResendingAll] = useState(false);
@@ -76,7 +85,6 @@ const TeamPage = () => {
   const fetchMembers = useCallback(async () => {
     if (!companyId) return;
     try {
-      // Fetch company_users joined with profiles
       const { data: companyUsers, error: cuError } = await supabase
         .from("company_users")
         .select("id, user_id, role, status, created_at")
@@ -111,13 +119,11 @@ const TeamPage = () => {
         };
       });
 
-      // Sort: admin first, then manager, then staff
       const order: Record<TeamRole, number> = { admin: 0, manager: 1, staff: 2 };
       merged.sort((a, b) => order[a.role] - order[b.role]);
 
       setMembers(merged);
 
-      // Find current user's role
       const me = merged.find((m) => m.user_id === user?.id);
       setCurrentUserRole(me?.role ?? null);
     } catch (err: any) {
@@ -133,11 +139,11 @@ const TeamPage = () => {
     try {
       const { data } = await supabase
         .from("user_invites")
-        .select("id, email, role, status, created_at")
+        .select("id, email, role, status, created_at, invite_token")
         .eq("company_id", companyId)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
-      setPendingInvites(data || []);
+      setPendingInvites((data as PendingInvite[]) || []);
     } catch (err) {
       console.error("Error fetching invites:", err);
     }
@@ -155,12 +161,13 @@ const TeamPage = () => {
     }
     setInviting(true);
     try {
+      const normalizedEmail = inviteEmail.trim().toLowerCase();
       const { data, error } = await supabase.functions.invoke("send-invite", {
-        body: { email: inviteEmail.trim().toLowerCase(), role: inviteRole },
+        body: { email: normalizedEmail, role: inviteRole },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(`Invitation sent to ${inviteEmail}`);
+      toast.success(`Invitation created for ${normalizedEmail}. You can copy the link below if email is delayed.`);
       setInviteEmail("");
       setInviteRole("staff");
       setInviteOpen(false);
@@ -189,6 +196,17 @@ const TeamPage = () => {
     } finally {
       setResendingId(null);
       setResendingAll(false);
+    }
+  };
+
+  const handleCopyInviteLink = async (inviteToken: string, email: string) => {
+    try {
+      const inviteUrl = `${window.location.origin}/invite/${inviteToken}`;
+      await navigator.clipboard.writeText(inviteUrl);
+      toast.success(`Invite link copied for ${email}`);
+    } catch (err) {
+      console.error("Error copying invite link:", err);
+      toast.error("Failed to copy invite link");
     }
   };
 
@@ -257,7 +275,6 @@ const TeamPage = () => {
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">Team Management</h1>
@@ -273,7 +290,6 @@ const TeamPage = () => {
         )}
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-xl border border-border bg-card p-4">
@@ -286,7 +302,6 @@ const TeamPage = () => {
         ))}
       </div>
 
-      {/* Permissions Overview */}
       <div className="rounded-xl border border-border bg-card p-5">
         <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
           <ShieldCheck size={16} className="text-primary" />
@@ -314,7 +329,6 @@ const TeamPage = () => {
         </div>
       </div>
 
-      {/* Members Table */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-muted-foreground">Loading team members...</div>
@@ -415,7 +429,6 @@ const TeamPage = () => {
         )}
       </div>
 
-      {/* Pending Invites */}
       {isAdmin && pendingInvites.length > 0 && (
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex items-center justify-between mb-3">
@@ -436,14 +449,28 @@ const TeamPage = () => {
               </Button>
             )}
           </div>
+
+          <div className="mb-4 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            If email delivery is delayed, copy an invite link and send it manually by text or email.
+          </div>
+
           <div className="space-y-2">
             {pendingInvites.map((inv) => (
-              <div key={inv.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium">{inv.email}</span>
+              <div key={inv.id} className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-sm font-medium truncate">{inv.email}</span>
                   <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1"
+                    onClick={() => handleCopyInviteLink(inv.invite_token, inv.email)}
+                  >
+                    <Link2 size={12} />
+                    Copy Link
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -469,13 +496,12 @@ const TeamPage = () => {
         </div>
       )}
 
-      {/* Invite Dialog */}
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Invite Team Member</DialogTitle>
             <DialogDescription>
-              Send an email invitation. They'll receive a link to create their account and join your team.
+              Create an invite for a new team member. If email is delayed, you can copy the invite link from the pending list and send it manually.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
