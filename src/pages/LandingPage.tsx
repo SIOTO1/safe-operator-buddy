@@ -70,8 +70,8 @@ const LandingPage = () => {
               <Button variant="hero" onClick={() => navigate("/auth")}>
                 Start Free Trial <ChevronRight size={18} />
               </Button>
-              <Button variant="hero-outline" onClick={handleExploreFeatures}>
-                Explore Features
+              <Button variant="hero-outline" onClick={() => setDemoOpen(true)}>
+                Watch Demo
               </Button>
             </div>
           </motion.div>
