@@ -160,6 +160,7 @@ serve(async (req) => {
 
     const { data: paymentRecord } = await supabaseAdmin.from("payments").insert({
       event_id: event.id,
+      company_id: companyId,
       amount: depositAmount,
       payment_type: "deposit",
       payment_status: "completed",

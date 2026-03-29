@@ -44,7 +44,7 @@ serve(async (req) => {
 
     const { data: upcomingEvents, error: eventsError } = await supabaseAdmin
       .from("events")
-      .select("id, title, event_date")
+      .select("id, title, event_date, company_id")
       .gte("event_date", nowISO)
       .lte("event_date", in48hISO);
 
@@ -149,6 +149,7 @@ serve(async (req) => {
             event_id: event.id,
             contract_id: contract.id,
             quote_id: contract.quote_id,
+            company_id: event.company_id,
             amount: remaining,
             payment_type: "auto_balance",
             payment_status: "failed",
@@ -238,6 +239,7 @@ serve(async (req) => {
             event_id: event.id,
             contract_id: contract.id,
             quote_id: contract.quote_id,
+            company_id: event.company_id,
             amount: remaining,
             payment_type: "auto_balance",
             payment_status: "completed",

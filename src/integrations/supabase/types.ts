@@ -1500,6 +1500,7 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          company_id: string | null
           contract_id: string | null
           created_at: string
           event_id: string | null
@@ -1515,6 +1516,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          company_id?: string | null
           contract_id?: string | null
           created_at?: string
           event_id?: string | null
@@ -1530,6 +1532,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          company_id?: string | null
           contract_id?: string | null
           created_at?: string
           event_id?: string | null
@@ -1544,6 +1547,13 @@ export type Database = {
           transaction_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "payments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payments_contract_id_fkey"
             columns: ["contract_id"]
