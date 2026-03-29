@@ -182,11 +182,11 @@ const ChatPage = () => {
                   {msg.role === "assistant" ? <Shield size={16} /> : <User size={16} />}
                 </div>
                 <div className={cn(
-                  "rounded-xl px-4 py-3 max-w-[80%] text-sm leading-relaxed",
+                  "rounded-xl px-4 py-3 max-w-[80%] text-sm",
                   msg.role === "assistant" ? "bg-card border border-border" : "bg-primary text-primary-foreground"
                 )}>
                   {msg.role === "assistant" ? (
-                    <div className="prose prose-sm max-w-none prose-headings:font-display prose-strong:text-foreground">
+                    <div className="prose prose-sm max-w-none prose-headings:font-display prose-headings:mt-5 prose-headings:mb-2 prose-strong:text-foreground prose-p:leading-relaxed prose-p:my-2 prose-li:my-1 prose-ul:my-2 prose-ol:my-2 [&_hr]:my-4 [&_h2]:text-base [&_h3]:text-sm [&_h2]:border-b [&_h2]:border-border [&_h2]:pb-1">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                   ) : (
