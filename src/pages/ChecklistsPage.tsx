@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { CheckCircle2, Circle, ClipboardCheck, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, Circle, ClipboardCheck, AlertTriangle, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import jsPDF from "jspdf";
 
 interface ChecklistItem {
   id: string;
@@ -109,6 +110,57 @@ const ChecklistsPage = () => {
     return { done, total: cl.items.length, pct: Math.round((done / cl.items.length) * 100) };
   };
 
+  const handleDownloadPdf = (cl: Checklist) => {
+    const doc = new jsPDF();
+    const margin = 20;
+    let y = 25;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(cl.title, margin, y);
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(120, 120, 120);
+    doc.text(cl.description, margin, y);
+    y += 12;
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, y, 190, y);
+    y += 10;
+
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(11);
+
+    cl.items.forEach((item, idx) => {
+      if (y > 270) { doc.addPage(); y = 25; }
+
+      // Draw checkbox
+      doc.setDrawColor(160, 160, 160);
+      doc.rect(margin, y - 4, 5, 5);
+      if (item.checked) {
+        doc.setFont("helvetica", "bold");
+        doc.text("✓", margin + 1, y);
+        doc.setFont("helvetica", "normal");
+      }
+
+      const lines = doc.splitTextToSize(item.label, 155);
+      doc.text(lines, margin + 9, y);
+      y += lines.length * 6 + 4;
+    });
+
+    // Footer
+    y += 6;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, y, 190, y);
+    y += 8;
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, margin, y);
+
+    doc.save(`${cl.id}-checklist.pdf`);
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
@@ -178,12 +230,23 @@ const ChecklistsPage = () => {
                           </span>
                         </button>
                       ))}
-                      {pct === 100 && (
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm font-medium">
-                          <CheckCircle2 size={16} />
-                          Checklist complete!
-                        </div>
-                      )}
+                      <div className="flex items-center justify-between pt-2">
+                        {pct === 100 && (
+                          <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-success text-sm font-medium">
+                            <CheckCircle2 size={16} />
+                            Checklist complete!
+                          </div>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="ml-auto gap-1.5"
+                          onClick={(e) => { e.stopPropagation(); handleDownloadPdf(cl); }}
+                        >
+                          <Download size={14} />
+                          Download PDF
+                        </Button>
+                      </div>
                     </div>
                   </motion.div>
                 )}
