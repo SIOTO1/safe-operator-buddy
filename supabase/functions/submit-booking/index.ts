@@ -200,6 +200,7 @@ Deno.serve(async (req) => {
             .maybeSingle();
 
           if (roleData && profile.email) {
+            const unsub_token_owner = await getUnsubscribeToken(supabase, profile.email);
             await supabase.rpc("enqueue_email", {
               queue_name: "transactional_emails",
               payload: {
@@ -212,6 +213,7 @@ Deno.serve(async (req) => {
                 html: `<p>New booking from ${customer_name.trim()} (${customer_email.trim().toLowerCase()}) for ${event_date} at ${event_location.trim()}.</p><p>Equipment: ${equipment.join(", ")}</p><p>Log in to review.</p>`,
                 purpose: "transactional",
                 label: "owner_notification",
+                unsubscribe_token: unsub_token_owner,
                 queued_at: new Date().toISOString(),
               },
             });

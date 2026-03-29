@@ -173,6 +173,7 @@ serve(async (req) => {
           signed_at: signedAtFormatted,
         }));
 
+        const unsub_token = await getUnsubscribeToken(supabaseAdmin, customerEmail);
         await supabaseAdmin.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
@@ -185,6 +186,7 @@ serve(async (req) => {
             html,
             purpose: "transactional",
             label: "contract_signed",
+            unsubscribe_token: unsub_token,
             queued_at: new Date().toISOString(),
           },
         });

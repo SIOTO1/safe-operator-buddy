@@ -202,6 +202,7 @@ serve(async (req) => {
 
     // 5. Send confirmation email
     try {
+      const unsub_token = await getUnsubscribeToken(supabaseAdmin, customerEmail);
       await supabaseAdmin.rpc("enqueue_email", {
         queue_name: "transactional_emails",
         payload: {
@@ -221,6 +222,7 @@ serve(async (req) => {
 <p>We'll be in touch with setup details closer to your event date. Thank you!</p>`,
           purpose: "transactional",
           label: "booking_confirmation",
+          unsubscribe_token: unsub_token,
           queued_at: new Date().toISOString(),
         },
       });

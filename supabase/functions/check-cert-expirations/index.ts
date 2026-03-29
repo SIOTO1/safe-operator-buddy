@@ -112,6 +112,7 @@ Deno.serve(async (req) => {
       // Send to each admin
       for (const email of adminEmails) {
         const messageId = crypto.randomUUID();
+        const unsub_token = await getUnsubscribeToken(supabase, email);
         await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
@@ -124,6 +125,7 @@ Deno.serve(async (req) => {
             html,
             purpose: "transactional",
             label: "cert_expiration_alert",
+            unsubscribe_token: unsub_token,
             queued_at: new Date().toISOString(),
           },
         });
