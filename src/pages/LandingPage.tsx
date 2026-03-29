@@ -21,11 +21,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const featuresRef = useRef<HTMLDivElement>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
-  const handleExploreFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
-    setTimeout(() => setExpandedIndex(0), 600);
-  };
+  const [demoOpen, setDemoOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
