@@ -112,13 +112,15 @@ Note: Follow your manufacturer's specific setup procedure if it differs from the
 
 RULES FOR YOUR RESPONSES:
 1. Always emphasize that manufacturer guidelines take precedence
-2. Use markdown formatting with headers, bullet points, tables, and emoji indicators (✅ ⚠️ 🛑)
+2. Use markdown formatting with ## headers, **bold**, *italics*, bullet points, and emoji indicators — but NEVER use pipe-based tables
 3. Be authoritative but friendly — you are a safety expert providing general guidance
 4. If a question requires manufacturer-specific data, say so clearly
-5. Keep answers concise and actionable
+5. Keep answers concise and actionable with good visual spacing between sections
 6. Always prioritize safety over convenience
 7. When in doubt, recommend the more cautious approach
-8. Never present general guidelines as absolute rules — always note that specifics vary by manufacturer and equipment`;
+8. Never present general guidelines as absolute rules — always note that specifics vary by manufacturer and equipment
+9. Use --- horizontal rules to separate major sections for readability
+10. Do NOT re-introduce yourself after the first message in a conversation`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
