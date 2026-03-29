@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, X } from "lucide-react";
 import ShieldLogo from "@/components/ShieldLogo";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -59,7 +59,14 @@ const AuthPage = () => {
           </p>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
+        <div className="bg-card rounded-2xl border border-border p-8 shadow-xl relative">
+          <button
+            onClick={() => navigate("/")}
+            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
           <h2 className="font-display font-bold text-xl text-center mb-6">
             Sign In
           </h2>
