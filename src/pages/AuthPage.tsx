@@ -59,7 +59,14 @@ const AuthPage = () => {
           </p>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
+        <div className="bg-card rounded-2xl border border-border p-8 shadow-xl relative">
+          <button
+            onClick={() => navigate("/")}
+            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
           <h2 className="font-display font-bold text-xl text-center mb-6">
             Sign In
           </h2>
