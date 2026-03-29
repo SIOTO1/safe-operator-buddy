@@ -166,6 +166,7 @@ Deno.serve(async (req) => {
 
     // Enqueue email
     const messageId = crypto.randomUUID();
+    const inviteSubject = `You're invited to join ${company?.name || "the team"}`;
     const { error: enqueueError } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
@@ -174,8 +175,9 @@ Deno.serve(async (req) => {
         to: email.toLowerCase(),
         from: `${company?.name || "SIOTO"} <noreply@${SENDER_DOMAIN}>`,
         sender_domain: SENDER_DOMAIN,
-        subject: `You're invited to join ${company?.name || "the team"}`,
+        subject: inviteSubject,
         html,
+        text: inviteSubject,
         purpose: "transactional",
         label: "team_invite",
         queued_at: new Date().toISOString(),

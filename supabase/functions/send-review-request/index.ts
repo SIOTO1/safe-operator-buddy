@@ -136,6 +136,7 @@ Deno.serve(async (req) => {
         review_link: reviewLink,
       }));
 
+      const reviewSubject = `How was your event? We'd love your review! ⭐`;
       const messageId = crypto.randomUUID();
       const { error: enqueueErr } = await supabase.rpc("enqueue_email", {
         queue_name: "transactional_emails",
@@ -145,8 +146,9 @@ Deno.serve(async (req) => {
           to: customerEmail,
           from: `${companyName} <noreply@${SENDER_DOMAIN}>`,
           sender_domain: SENDER_DOMAIN,
-          subject: `How was your event? We'd love your review! ⭐`,
+          subject: reviewSubject,
           html,
+          text: reviewSubject,
           purpose: "transactional",
           label: "review_request",
           queued_at: new Date().toISOString(),
