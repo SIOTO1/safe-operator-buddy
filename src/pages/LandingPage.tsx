@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import FeatureCard from "@/components/landing/FeatureCard";
 import KnowledgeCategories from "@/components/landing/KnowledgeCategories";
+import DemoModal from "@/components/landing/DemoModal";
 
 const features = [
   { icon: MessageSquare, title: "AI Safety Assistant", desc: "Get instant answers to safety questions using SIOTO-approved guidelines.", detail: "Powered by AI trained on thousands of industry-specific safety scenarios. Ask about anchoring in high winds, electrical clearance distances, or age-appropriate equipment — and get a clear, actionable answer in seconds." },
@@ -20,11 +21,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const featuresRef = useRef<HTMLDivElement>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
-  const handleExploreFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
-    setTimeout(() => setExpandedIndex(0), 600);
-  };
+  const [demoOpen, setDemoOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,8 +70,8 @@ const LandingPage = () => {
               <Button variant="hero" onClick={() => navigate("/auth")}>
                 Start Free Trial <ChevronRight size={18} />
               </Button>
-              <Button variant="hero-outline" onClick={handleExploreFeatures}>
-                Explore Features
+              <Button variant="hero-outline" onClick={() => setDemoOpen(true)}>
+                Watch Demo
               </Button>
             </div>
           </motion.div>
@@ -208,6 +205,8 @@ const LandingPage = () => {
           <p className="text-xs text-muted-foreground">© 2026 SIOTO.AI. All rights reserved.</p>
         </div>
       </footer>
+
+      <DemoModal open={demoOpen} onOpenChange={setDemoOpen} />
     </div>
   );
 };
