@@ -185,10 +185,18 @@ const DriverManagementPage = () => {
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
       for (const rule of driverRules.filter(r => r.category === cat)) {
-        const sev = rule.severity === "critical" ? "🔴" : rule.severity === "important" ? "🟡" : "⚪";
-        const lines = doc.splitTextToSize(`${sev} ${rule.rule}`, maxW - 5);
+        const sevColor = rule.severity === "critical" ? [220, 38, 38] as const
+          : rule.severity === "important" ? [217, 169, 26] as const
+          : [156, 163, 175] as const;
+
+        const lines = doc.splitTextToSize(rule.rule, maxW - 15);
         if (y + lines.length * 5 > 270) { doc.addPage(); y = 20; }
-        doc.text(lines, margin + 5, y);
+
+        // Draw colored bullet circle
+        doc.setFillColor(sevColor[0], sevColor[1], sevColor[2]);
+        doc.circle(margin + 7, y - 1.2, 1.8, "F");
+
+        doc.text(lines, margin + 13, y);
         y += lines.length * 5 + 2;
       }
       y += 4;
