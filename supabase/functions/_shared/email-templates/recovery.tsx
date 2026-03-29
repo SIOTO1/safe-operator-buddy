@@ -29,9 +29,9 @@ export const RecoveryEmail = ({
     <Body style={main}>
       <Container style={container}>
         <Img
-          src="https://atdpdxocpjnldajapjyp.supabase.co/storage/v1/object/public/logos/email-logo.png"
-          width="48"
-          height="48"
+          src="https://atdpdxocpjnldajapjyp.supabase.co/storage/v1/object/public/logos/logo-1773269498760.png"
+          width="120"
+          height="120"
           alt={siteName}
           style={{ marginBottom: '24px' }}
         />
