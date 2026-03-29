@@ -8,7 +8,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SENDER_DOMAIN = "notify.sioto.com";
+const SENDER_DOMAIN = "notify.sioto.ai";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "https://sioto.com";
+    const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "https://sioto.ai";
     let sent = 0;
 
     for (const invite of invites) {
