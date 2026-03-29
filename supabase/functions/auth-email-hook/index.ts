@@ -251,6 +251,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     status: 'pending',
   })
 
+  const unsub_token = await getUnsubscribeToken(supabase, payload.data.email);
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
     queue_name: 'auth_emails',
     payload: {
@@ -264,6 +265,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       text,
       purpose: 'transactional',
       label: emailType,
+      unsubscribe_token: unsub_token,
       queued_at: new Date().toISOString(),
     },
   })
