@@ -104,11 +104,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const publishedUrl = "https://safe-operator-buddy.lovable.app";
-    const originUrl = req.headers.get("origin") || publishedUrl;
-    const siteUrl = originUrl.includes("lovable.app") && originUrl.includes("preview")
-      ? publishedUrl
-      : originUrl;
+    const siteUrl = "https://sioto.ai";
     let sent = 0;
 
     for (const invite of invites) {
