@@ -143,7 +143,7 @@ serve(async (req) => {
       customerId = newCust.id;
     }
 
-    const origin = req.headers.get("origin") || "https://id-preview--9c9e3625-06c4-4d28-87a2-b1e5d562271a.lovable.app";
+    const origin = req.headers.get("origin") || "https://sioto.ai";
 
     const bookingMeta = {
       customer_name: customer_name.trim().substring(0, 100),
@@ -165,11 +165,42 @@ serve(async (req) => {
       }))).substring(0, 500),
     };
 
+    // Stripe Connect: route payment to connected account if available
+    let connectParams: Record<string, any> = {};
+    if (companyId) {
+      const { data: comp } = await supabaseAdmin
+        .from("companies")
+        .select("stripe_account_id, stripe_onboarding_complete, platform_fee_percent")
+        .eq("id", companyId)
+        .single();
+
+      if (comp?.stripe_account_id && comp.stripe_onboarding_complete) {
+        const feePercent = comp.platform_fee_percent ?? 5;
+        const applicationFee = Math.round(depositCents * (feePercent / 100));
+        connectParams = {
+          payment_intent_data: {
+            setup_future_usage: "off_session" as const,
+            application_fee_amount: applicationFee,
+            transfer_data: {
+              destination: comp.stripe_account_id,
+            },
+          },
+        };
+      }
+    }
+
+    // If no connect params, use default payment_intent_data
+    if (!connectParams.payment_intent_data) {
+      connectParams = {
+        payment_intent_data: {
+          setup_future_usage: "off_session" as const,
+        },
+      };
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_intent_data: {
-        setup_future_usage: "off_session",
-      },
+      ...connectParams,
       line_items: [
         {
           price_data: {
