@@ -1005,7 +1005,7 @@ const CustomerPortalPage = () => {
       {/* Footer */}
       <footer className="border-t border-border mt-12 py-6 text-center">
         <p className="text-xs text-muted-foreground">
-          Powered by {organization?.company_name || "SIOTO"} • Customer Portal
+          &copy; {new Date().getFullYear()} {organization?.company_name || "Company"} &bull; Customer Portal
         </p>
       </footer>
     </div>
