@@ -73,11 +73,41 @@ serve(async (req) => {
 
     const amountInCents = Math.round(amount * 100);
 
+    // Stripe Connect: route to connected account if available
+    let connectParams: Record<string, any> = {};
+    if (paymentCompanyId) {
+      const { data: comp } = await supabaseAdmin
+        .from("companies")
+        .select("stripe_account_id, stripe_onboarding_complete, platform_fee_percent")
+        .eq("id", paymentCompanyId)
+        .single();
+
+      if (comp?.stripe_account_id && comp.stripe_onboarding_complete) {
+        const feePercent = comp.platform_fee_percent ?? 5;
+        const applicationFee = Math.round(amountInCents * (feePercent / 100));
+        connectParams = {
+          payment_intent_data: {
+            setup_future_usage: "off_session" as const,
+            application_fee_amount: applicationFee,
+            transfer_data: {
+              destination: comp.stripe_account_id,
+            },
+          },
+        };
+      }
+    }
+
+    if (!connectParams.payment_intent_data) {
+      connectParams = {
+        payment_intent_data: {
+          setup_future_usage: "off_session" as const,
+        },
+      };
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_intent_data: {
-        setup_future_usage: "off_session",
-      },
+      ...connectParams,
       line_items: [
         {
           price_data: {

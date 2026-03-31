@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import { Settings, Upload, Save, Building2, Phone, Mail, Globe, MapPin, DollarSign, Star } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Settings, Upload, Save, Building2, Phone, Mail, Globe, MapPin, DollarSign, Star, CreditCard, CheckCircle2, AlertCircle, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
@@ -316,11 +317,158 @@ const SettingsPage = () => {
         </div>
       </div>
 
+      {/* Payment Processing (Stripe Connect) */}
+      {isOwner && <PaymentSetupSection />}
+
       {isOwner && (
         <Button onClick={handleSave} disabled={saving} className="gap-2">
           <Save size={16} />
           {saving ? "Saving..." : "Save Settings"}
         </Button>
+      )}
+    </div>
+  );
+};
+
+/* ─── Stripe Connect Setup Section ─── */
+interface ConnectStatus {
+  connected: boolean;
+  charges_enabled: boolean;
+  payouts_enabled: boolean;
+  onboarding_complete: boolean;
+  platform_fee_percent: number;
+  details_submitted?: boolean;
+}
+
+const PaymentSetupSection = () => {
+  const [status, setStatus] = useState<ConnectStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState(false);
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("get-connect-status");
+      if (error) throw error;
+      setStatus(data);
+    } catch (err) {
+      console.error("Failed to fetch Connect status:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  const handleConnect = async () => {
+    setConnecting(true);
+    try {
+      const returnUrl = `${window.location.origin}${window.location.pathname}`;
+      const { data, error } = await supabase.functions.invoke("create-connect-account", {
+        body: { return_url: returnUrl },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start payment setup");
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <CreditCard size={18} />
+          <h3 className="font-display font-semibold">Payment Processing</h3>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 size={16} className="animate-spin" />
+          Checking payment status...
+        </div>
+      </div>
+    );
+  }
+
+  const isFullyActive = status?.onboarding_complete && status?.charges_enabled && status?.payouts_enabled;
+  const isPartial = status?.connected && !isFullyActive;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <CreditCard size={18} />
+          <h3 className="font-display font-semibold">Payment Processing</h3>
+        </div>
+        {isFullyActive && (
+          <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/10">
+            <CheckCircle2 size={12} className="mr-1" /> Active
+          </Badge>
+        )}
+        {isPartial && (
+          <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/10">
+            <AlertCircle size={12} className="mr-1" /> Setup Incomplete
+          </Badge>
+        )}
+        {!status?.connected && (
+          <Badge variant="secondary" className="bg-muted text-muted-foreground">
+            Not Connected
+          </Badge>
+        )}
+      </div>
+
+      <p className="text-sm text-muted-foreground">
+        {isFullyActive
+          ? "Your Stripe account is connected and ready to accept payments. Customer payments will be deposited directly to your bank account."
+          : isPartial
+          ? "Your Stripe account has been created but setup isn't complete. Please finish the onboarding process to start accepting payments."
+          : "Connect your Stripe account to accept payments directly from your customers. Funds are deposited straight into your bank account."}
+      </p>
+
+      {isFullyActive && (
+        <div className="grid sm:grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg bg-muted/50 p-3">
+            <span className="text-muted-foreground">Charges</span>
+            <p className="font-medium text-emerald-600">Enabled</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <span className="text-muted-foreground">Payouts</span>
+            <p className="font-medium text-emerald-600">Enabled</p>
+          </div>
+        </div>
+      )}
+
+      {!isFullyActive && (
+        <Button onClick={handleConnect} disabled={connecting} className="gap-2">
+          {connecting ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Setting up...
+            </>
+          ) : (
+            <>
+              <ExternalLink size={16} />
+              {isPartial ? "Complete Setup" : "Connect Stripe Account"}
+            </>
+          )}
+        </Button>
+      )}
+
+      {isFullyActive && (
+        <Button variant="outline" size="sm" onClick={handleConnect} disabled={connecting} className="gap-2">
+          <ExternalLink size={14} />
+          Manage Stripe Account
+        </Button>
+      )}
+
+      {status?.platform_fee_percent !== undefined && (
+        <p className="text-xs text-muted-foreground">
+          Platform fee: {status.platform_fee_percent}% per transaction
+        </p>
       )}
     </div>
   );

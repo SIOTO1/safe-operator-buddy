@@ -180,19 +180,28 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          platform_fee_percent: number
           slug: string
+          stripe_account_id: string | null
+          stripe_onboarding_complete: boolean
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          platform_fee_percent?: number
           slug: string
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          platform_fee_percent?: number
           slug?: string
+          stripe_account_id?: string | null
+          stripe_onboarding_complete?: boolean
         }
         Relationships: []
       }
