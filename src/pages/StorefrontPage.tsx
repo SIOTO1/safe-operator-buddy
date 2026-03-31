@@ -101,6 +101,7 @@ const StorefrontPage = () => {
       const orgRow = Array.isArray(orgSettings) ? orgSettings[0] : orgSettings;
       if (orgRow?.logo_url) setLogoUrl(orgRow.logo_url);
       setProducts((prods || []) as Product[]);
+      document.title = `${comp.name} — Equipment Rentals`;
       setLoading(false);
     };
     fetchData();
