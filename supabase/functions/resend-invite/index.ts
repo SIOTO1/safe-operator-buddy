@@ -104,7 +104,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "https://sioto.ai";
+    const publishedUrl = "https://safe-operator-buddy.lovable.app";
+    const originUrl = req.headers.get("origin") || publishedUrl;
+    const siteUrl = originUrl.includes("lovable.app") && originUrl.includes("preview")
+      ? publishedUrl
+      : originUrl;
     let sent = 0;
 
     for (const invite of invites) {

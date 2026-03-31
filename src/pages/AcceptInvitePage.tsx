@@ -60,12 +60,16 @@ const AcceptInvitePage = () => {
     setSubmitting(true);
 
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/accept-invite`,
+        `${supabaseUrl}/functions/v1/accept-invite`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": anonKey,
+          },
           body: JSON.stringify({
             token,
             password,
