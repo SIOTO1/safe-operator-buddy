@@ -149,9 +149,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Build invite URL
-    const siteUrl = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "https://sioto.ai";
-    const inviteUrl = `${siteUrl}/invite/${invite.invite_token}`;
+    // Build invite URL — always use the published app URL so team members
+    // without Lovable editor access can open the link.
+    const publishedUrl = "https://safe-operator-buddy.lovable.app";
+    const siteUrl = req.headers.get("origin") || publishedUrl;
+    // If the origin is a Lovable preview/editor URL, override to published URL
+    const finalUrl = siteUrl.includes("lovable.app") && siteUrl.includes("preview")
+      ? publishedUrl
+      : siteUrl;
+    const inviteUrl = `${finalUrl}/invite/${invite.invite_token}`;
 
     const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
 
