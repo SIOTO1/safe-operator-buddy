@@ -101,6 +101,7 @@ const StorefrontPage = () => {
       const orgRow = Array.isArray(orgSettings) ? orgSettings[0] : orgSettings;
       if (orgRow?.logo_url) setLogoUrl(orgRow.logo_url);
       setProducts((prods || []) as Product[]);
+      document.title = `${comp.name} — Equipment Rentals`;
       setLoading(false);
     };
     fetchData();
@@ -480,7 +481,7 @@ const StorefrontPage = () => {
       {/* Footer */}
       <footer className="border-t border-border bg-card py-8">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} {company?.name}. Powered by SIOTO.AI</p>
+          <p>&copy; {new Date().getFullYear()} {company?.name}. All rights reserved.</p>
         </div>
       </footer>
     </div>
