@@ -473,10 +473,14 @@ const CustomerPortalPage = () => {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-display font-bold text-foreground">
-              {organization?.company_name || "Event Portal"}
-            </h1>
+          <div className="flex items-center gap-3">
+            {organization?.logo_url && (
+              <img src={organization.logo_url} alt={organization.company_name} className="h-9 w-9 rounded-lg object-contain" />
+            )}
+            <div>
+              <h1 className="text-lg font-display font-bold text-foreground">
+                {organization?.company_name || "Event Portal"}
+              </h1>
             {organization?.website && (
               <a
                 href={organization.website.startsWith("http") ? organization.website : `https://${organization.website}`}
