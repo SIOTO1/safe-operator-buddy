@@ -1,8 +1,18 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
+import { getTierByProductId, SubscriptionTier } from "@/lib/subscriptionTiers";
 
 type AppRole = "owner" | "manager" | "crew";
+
+interface SubscriptionState {
+  subscribed: boolean;
+  tier: SubscriptionTier | null;
+  isTrialing: boolean;
+  trialEnd: string | null;
+  subscriptionEnd: string | null;
+  loading: boolean;
+}
 
 interface AuthContextType {
   session: Session | null;
@@ -12,8 +22,10 @@ interface AuthContextType {
   companyId: string | null;
   workspaceId: string | null;
   loading: boolean;
+  subscription: SubscriptionState;
   signOut: () => Promise<void>;
   setWorkspaceId: (id: string | null) => Promise<void>;
+  refreshSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,8 +36,10 @@ const AuthContext = createContext<AuthContextType>({
   companyId: null,
   workspaceId: null,
   loading: true,
+  subscription: { subscribed: false, tier: null, isTrialing: false, trialEnd: null, subscriptionEnd: null, loading: true },
   signOut: async () => {},
   setWorkspaceId: async () => {},
+  refreshSubscription: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -36,6 +50,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<AppRole | null>(null);
   const [profile, setProfile] = useState<{ display_name: string | null; email: string | null; company_id: string | null; selected_workspace_id: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState<SubscriptionState>({
+    subscribed: false, tier: null, isTrialing: false, trialEnd: null, subscriptionEnd: null, loading: true,
+  });
+
+  const checkSubscription = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error) {
+        console.error("Subscription check error:", error);
+        setSubscription(prev => ({ ...prev, loading: false }));
+        return;
+      }
+      setSubscription({
+        subscribed: data.subscribed || false,
+        tier: getTierByProductId(data.product_id),
+        isTrialing: data.is_trialing || false,
+        trialEnd: data.trial_end || null,
+        subscriptionEnd: data.subscription_end || null,
+        loading: false,
+      });
+    } catch (err) {
+      console.error("Subscription check failed:", err);
+      setSubscription(prev => ({ ...prev, loading: false }));
+    }
+  }, []);
 
   const fetchUserData = useCallback(async (userId: string) => {
     try {
@@ -65,22 +104,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
       (_event, nextSession) => {
         if (!mounted) return;
         setSession(nextSession);
         setUser(nextSession?.user ?? null);
 
         if (nextSession?.user) {
-          // Avoid auth deadlocks by deferring DB calls outside the auth callback stack
           setTimeout(() => {
             void fetchUserData(nextSession.user.id).finally(() => {
               if (mounted) setLoading(false);
             });
+            void checkSubscription();
           }, 0);
         } else {
           setRole(null);
           setProfile(null);
+          setSubscription({ subscribed: false, tier: null, isTrialing: false, trialEnd: null, subscriptionEnd: null, loading: false });
           setLoading(false);
         }
       }
@@ -94,18 +134,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         void fetchUserData(currentSession.user.id).finally(() => {
           if (mounted) setLoading(false);
         });
+        void checkSubscription();
       } else {
         setRole(null);
         setProfile(null);
+        setSubscription(prev => ({ ...prev, loading: false }));
         setLoading(false);
       }
     });
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      authSub.unsubscribe();
     };
-  }, [fetchUserData]);
+  }, [fetchUserData, checkSubscription]);
+
+  // Periodic subscription check every 60 seconds
+  useEffect(() => {
+    if (!session) return;
+    const interval = setInterval(checkSubscription, 60_000);
+    return () => clearInterval(interval);
+  }, [session, checkSubscription]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -113,6 +162,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setRole(null);
     setProfile(null);
+    setSubscription({ subscribed: false, tier: null, isTrialing: false, trialEnd: null, subscriptionEnd: null, loading: false });
   };
 
   const setWorkspaceId = async (workspaceId: string | null) => {
@@ -122,7 +172,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, role, profile, companyId: profile?.company_id ?? null, workspaceId: profile?.selected_workspace_id ?? null, loading, signOut, setWorkspaceId }}>
+    <AuthContext.Provider value={{
+      session, user, role, profile,
+      companyId: profile?.company_id ?? null,
+      workspaceId: profile?.selected_workspace_id ?? null,
+      loading, subscription, signOut, setWorkspaceId,
+      refreshSubscription: checkSubscription,
+    }}>
       {children}
     </AuthContext.Provider>
   );
