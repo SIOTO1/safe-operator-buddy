@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { format } from "date-fns";
 import { CalendarIcon, Send, CheckCircle, ArrowLeft } from "lucide-react";
-import ShieldLogo from "@/components/ShieldLogo";
+import { motion } from "framer-motion";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
