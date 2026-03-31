@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, User, Building2, Phone, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, User, Building2, Phone, Eye, EyeOff, ArrowRight, CheckCircle2, X } from "lucide-react";
 import ShieldLogo from "@/components/ShieldLogo";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -122,7 +122,14 @@ const SignupPage = () => {
             <ShieldLogo size={32} />
           </div>
 
-          <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
+          <div className="bg-card rounded-2xl border border-border p-8 shadow-xl relative">
+            <button
+              onClick={() => navigate("/")}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
             <h2 className="font-display font-bold text-xl text-center mb-1">Create Your Company</h2>
             <p className="text-muted-foreground text-sm text-center mb-6">
               Get started with your free account
