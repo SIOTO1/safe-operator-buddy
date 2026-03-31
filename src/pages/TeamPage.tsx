@@ -201,7 +201,12 @@ const TeamPage = () => {
 
   const handleCopyInviteLink = async (inviteToken: string, email: string) => {
     try {
-      const inviteUrl = `${window.location.origin}/invite/${inviteToken}`;
+      // Always use the published URL so team members can access without Lovable editor access
+      const publishedUrl = "https://safe-operator-buddy.lovable.app";
+      const baseUrl = window.location.origin.includes("lovable.app") && window.location.origin.includes("preview")
+        ? publishedUrl
+        : window.location.origin;
+      const inviteUrl = `${baseUrl}/invite/${inviteToken}`;
       await navigator.clipboard.writeText(inviteUrl);
       toast.success(`Invite link copied for ${email}`);
     } catch (err) {
