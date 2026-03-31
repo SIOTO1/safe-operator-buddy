@@ -53,6 +53,7 @@ const EmployeesPage = lazy(() => import("./pages/EmployeesPage"));
 const StorefrontPage = lazy(() => import("./pages/StorefrontPage"));
 const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPage"));
 const BookingSuccessPage = lazy(() => import("./pages/BookingSuccessPage"));
+const PricingPage = lazy(() => import("./pages/PricingPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
