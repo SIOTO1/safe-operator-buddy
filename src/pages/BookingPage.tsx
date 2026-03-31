@@ -164,7 +164,7 @@ const BookingPage = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <ShieldLogo size={24} />
+          <span className="font-display font-bold text-lg">Request a Rental</span>
           <Button variant="ghost" size="sm" onClick={() => navigate("/")}><ArrowLeft size={16} className="mr-1" /> Home</Button>
         </div>
       </header>

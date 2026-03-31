@@ -491,6 +491,7 @@ const CustomerPortalPage = () => {
                 <Globe size={10} /> {organization.website}
               </a>
             )}
+            </div>
           </div>
           <Badge variant="outline" className="text-xs">Customer Portal</Badge>
         </div>
