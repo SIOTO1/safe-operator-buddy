@@ -132,6 +132,27 @@ serve(async (req) => {
         const { stripe_customer_id, stripe_payment_method_id } = paymentWithMethod;
         const amountInCents = Math.round(remaining * 100);
 
+        // Stripe Connect: route auto-charge to connected account if available
+        let connectParams: Record<string, any> = {};
+        if (event.company_id) {
+          const { data: comp } = await supabaseAdmin
+            .from("companies")
+            .select("stripe_account_id, stripe_onboarding_complete, platform_fee_percent")
+            .eq("id", event.company_id)
+            .single();
+
+          if (comp?.stripe_account_id && comp.stripe_onboarding_complete) {
+            const feePercent = comp.platform_fee_percent ?? 5;
+            const applicationFee = Math.round(amountInCents * (feePercent / 100));
+            connectParams = {
+              application_fee_amount: applicationFee,
+              transfer_data: {
+                destination: comp.stripe_account_id,
+              },
+            };
+          }
+        }
+
         // Create off-session payment intent
         let paymentIntent;
         try {
@@ -143,6 +164,7 @@ serve(async (req) => {
             off_session: true,
             confirm: true,
             description: `Auto-charge remaining balance for "${event.title}"`,
+            ...connectParams,
           });
         } catch (stripeErr: any) {
           // Payment failed - create failed payment record and notify
