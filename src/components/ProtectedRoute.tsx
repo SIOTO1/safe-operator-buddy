@@ -9,9 +9,8 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { session, role, loading, subscription } = useAuth();
+  const { session, role, loading } = useAuth();
   const hasShownToast = useRef(false);
-  const hasShownSubToast = useRef(false);
 
   const shouldRedirectRole =
     requiredRole && role
@@ -28,16 +27,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     }
   }, [shouldRedirectRole]);
 
-  const needsSubscription = session && !subscription.loading && !subscription.subscribed && role === "owner";
-
-  useEffect(() => {
-    if (needsSubscription && !hasShownSubToast.current) {
-      hasShownSubToast.current = true;
-      toast.info("Please subscribe to access the dashboard.");
-    }
-  }, [needsSubscription]);
-
-  if (loading || subscription.loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
@@ -50,11 +40,6 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
   if (!session) {
     return <Navigate to="/auth" replace />;
-  }
-
-  // Owners without subscription get redirected to pricing
-  if (needsSubscription) {
-    return <Navigate to="/pricing" replace />;
   }
 
   if (shouldRedirectRole) {
