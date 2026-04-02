@@ -57,6 +57,7 @@ interface Props {
 }
 
 const BookingDetailDialog = ({ booking, open, onOpenChange, onApprove, onDecline }: Props) => {
+  if (!booking) return null;
   const { user } = useAuth();
   const [notes, setNotes] = useState<BookingNote[]>([]);
   const [newNote, setNewNote] = useState("");
