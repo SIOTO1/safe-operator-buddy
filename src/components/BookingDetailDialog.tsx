@@ -57,7 +57,6 @@ interface Props {
 }
 
 const BookingDetailDialog = ({ booking, open, onOpenChange, onApprove, onDecline }: Props) => {
-  if (!booking) return null;
   const { user } = useAuth();
   const [notes, setNotes] = useState<BookingNote[]>([]);
   const [newNote, setNewNote] = useState("");
@@ -65,6 +64,8 @@ const BookingDetailDialog = ({ booking, open, onOpenChange, onApprove, onDecline
   const [pastBookings, setPastBookings] = useState<PastBooking[]>([]);
   const [deliveryFee, setDeliveryFee] = useState("");
   const [savingFee, setSavingFee] = useState(false);
+
+  if (!booking) return null;
 
   useEffect(() => {
     if (!booking || !open) return;
