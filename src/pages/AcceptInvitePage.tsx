@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, XCircle, Loader2, Building2 } from "lucide-react";
 import ShieldLogo from "@/components/ShieldLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -20,6 +21,7 @@ const AcceptInvitePage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [companySlug, setCompanySlug] = useState("");
   const [inviteRole, setInviteRole] = useState("");
 
   useEffect(() => {
@@ -29,11 +31,33 @@ const AcceptInvitePage = () => {
       return;
     }
 
-    // Verify the token is valid by checking user_invites
     const verifyToken = async () => {
       try {
-        // We can't directly query user_invites without auth, so we'll just show the form
-        // The accept-invite function will validate the token server-side
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const response = await fetch(
+          `${supabaseUrl}/functions/v1/accept-invite`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": anonKey,
+            },
+            body: JSON.stringify({ token, verify_only: true }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setStep("error");
+          setErrorMessage(data.error || "Invalid invitation");
+          return;
+        }
+
+        setInviteEmail(data.email || "");
+        setCompanyName(data.company_name || "");
+        setInviteRole(data.role || "");
         setStep("form");
       } catch {
         setStep("error");
@@ -43,6 +67,12 @@ const AcceptInvitePage = () => {
 
     verifyToken();
   }, [token]);
+
+  const roleLabelMap: Record<string, string> = {
+    admin: "Administrator",
+    manager: "Manager",
+    staff: "Team Member",
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +114,8 @@ const AcceptInvitePage = () => {
         throw new Error(data.error || "Failed to accept invite");
       }
 
-      setInviteEmail(data.email || "");
+      setCompanyName(data.company_name || companyName);
+      setCompanySlug(data.company_slug || "");
       setStep("success");
       toast.success("Account created successfully!");
     } catch (err: any) {
@@ -111,7 +142,7 @@ const AcceptInvitePage = () => {
       });
 
       if (error) throw error;
-      navigate("/dashboard");
+      navigate(companySlug ? `/app/${companySlug}` : "/dashboard");
     } catch {
       navigate("/auth");
     }
@@ -146,9 +177,35 @@ const AcceptInvitePage = () => {
         {step === "form" && (
           <div className="rounded-xl border border-border bg-card p-8">
             <h2 className="text-xl font-display font-bold mb-1">Accept Invitation</h2>
-            <p className="text-muted-foreground text-sm mb-6">
-              Create your account to join the team.
-            </p>
+
+            {companyName && (
+              <div className="flex items-center gap-2 mt-2 mb-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                <Building2 size={18} className="text-primary flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    You've been invited to join <span className="font-bold">{companyName}</span>
+                  </p>
+                  {inviteRole && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Role: <Badge variant="secondary" className="text-xs ml-1">{roleLabelMap[inviteRole] || inviteRole}</Badge>
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!companyName && (
+              <p className="text-muted-foreground text-sm mb-6">
+                Create your account to join the team.
+              </p>
+            )}
+
+            {inviteEmail && (
+              <div className="mb-4">
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <p className="text-sm font-medium text-foreground">{inviteEmail}</p>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -202,7 +259,7 @@ const AcceptInvitePage = () => {
                     Creating Account...
                   </>
                 ) : (
-                  "Create Account & Join"
+                  companyName ? `Join ${companyName}` : "Create Account & Join"
                 )}
               </Button>
             </form>
@@ -222,9 +279,9 @@ const AcceptInvitePage = () => {
         {step === "success" && (
           <div className="rounded-xl border border-border bg-card p-8 text-center">
             <CheckCircle className="mx-auto mb-4 text-primary" size={48} />
-            <h2 className="text-xl font-display font-bold mb-2">Welcome aboard!</h2>
+            <h2 className="text-xl font-display font-bold mb-2">Welcome to {companyName || "the team"}!</h2>
             <p className="text-muted-foreground mb-6">
-              Your account has been created and you've been added to the team.
+              Your account has been created and you've been added to <span className="font-semibold">{companyName || "the team"}</span>.
             </p>
             <Button onClick={handleSignIn} className="w-full">
               Sign In Now
