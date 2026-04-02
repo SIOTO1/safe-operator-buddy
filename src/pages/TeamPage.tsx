@@ -199,6 +199,7 @@ const TeamPage = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success(isSingle ? "Invitation resent" : `${data.sent} invitation(s) resent`);
+      fetchInvites();
     } catch (err: any) {
       toast.error(err.message || "Failed to resend invitation");
     } finally {
@@ -559,10 +560,24 @@ const TeamPage = () => {
             {/* Expired Invitations */}
             {expired.length > 0 && (
               <div className="rounded-xl border border-border bg-card p-5">
-                <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <XCircle size={16} className="text-destructive" />
-                  Expired Invitations ({expired.length})
-                </h2>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold flex items-center gap-2">
+                    <XCircle size={16} className="text-destructive" />
+                    Expired Invitations ({expired.length})
+                  </h2>
+                  {expired.length > 1 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs gap-1.5"
+                      disabled={resendingAll}
+                      onClick={() => handleResendInvite(expired.map((inv) => inv.id))}
+                    >
+                      {resendingAll ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                      Resend All Expired
+                    </Button>
+                  )}
+                </div>
                 <div className="space-y-2">
                   {expired.map((inv) => (
                     <div key={inv.id} className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-destructive/5 border border-destructive/20">
@@ -571,7 +586,26 @@ const TeamPage = () => {
                         <span className="text-sm font-medium truncate text-muted-foreground">{inv.email}</span>
                         <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
                       </div>
-                      <span className="text-xs text-destructive shrink-0">Expired — resend needed</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs gap-1"
+                          disabled={resendingId === inv.id}
+                          onClick={() => handleResendInvite([inv.id])}
+                        >
+                          {resendingId === inv.id ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                          Resend
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive text-xs"
+                          onClick={() => handleRevokeInvite(inv.id)}
+                        >
+                          Revoke
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
