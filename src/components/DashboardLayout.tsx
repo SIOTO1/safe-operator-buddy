@@ -54,9 +54,9 @@ const getNavGroups = (basePath: string): NavGroup[] => [
       { to: `${basePath}/scheduling`, icon: CalendarDays, label: "Scheduling" },
       { to: `${basePath}/checklists`, icon: ClipboardCheck, label: "Checklists" },
       { to: `${basePath}/incident-report`, icon: AlertTriangle, label: "Incident Report" },
-      { to: `${basePath}/bookings`, icon: Inbox, label: "Bookings", minRole: "manager" },
-      { to: `${basePath}/deliveries`, icon: MapPin, label: "Delivery Schedule", minRole: "manager" },
-      { to: `${basePath}/routes`, icon: Route, label: "Route Planning", minRole: "manager" },
+      { to: `${basePath}/bookings`, icon: Inbox, label: "Bookings" },
+      { to: `${basePath}/deliveries`, icon: MapPin, label: "Delivery Schedule" },
+      { to: `${basePath}/routes`, icon: Route, label: "Route Planning" },
     ],
   },
   {
@@ -93,10 +93,10 @@ const getNavGroups = (basePath: string): NavGroup[] => [
     label: "CRM",
     icon: Briefcase,
     items: [
-      { to: `${basePath}/crm/leads`, icon: Contact, label: "Leads", minRole: "manager" },
-      { to: `${basePath}/crm/pipeline`, icon: Kanban, label: "Pipeline", minRole: "manager" },
-      { to: `${basePath}/crm/tasks`, icon: ListTodo, label: "Tasks", minRole: "manager" },
-      { to: `${basePath}/crm/quotes`, icon: Receipt, label: "Quotes", minRole: "manager" },
+      { to: `${basePath}/crm/leads`, icon: Contact, label: "Leads" },
+      { to: `${basePath}/crm/pipeline`, icon: Kanban, label: "Pipeline" },
+      { to: `${basePath}/crm/tasks`, icon: ListTodo, label: "Tasks" },
+      { to: `${basePath}/crm/quotes`, icon: Receipt, label: "Quotes" },
     ],
   },
   {

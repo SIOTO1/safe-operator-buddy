@@ -127,6 +127,8 @@ const BookingDetailDialog = ({ booking, open, onOpenChange, onApprove, onDecline
     setSavingFee(false);
   };
 
+  if (!booking) return null;
+
   const status = statusConfig[booking.status] || statusConfig.pending;
 
   return (
