@@ -16,17 +16,11 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { token, password, display_name } = await req.json();
+    const body = await req.json();
+    const { token, password, display_name, verify_only } = body;
 
-    if (!token || !password) {
-      return new Response(JSON.stringify({ error: "Missing token or password" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (password.length < 8) {
-      return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), {
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Missing token" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -51,7 +45,6 @@ Deno.serve(async (req) => {
     const createdAt = new Date(invite.created_at);
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     if (createdAt < sevenDaysAgo) {
-      // Mark as expired
       await supabase
         .from("user_invites")
         .update({ status: "expired" })
@@ -59,6 +52,43 @@ Deno.serve(async (req) => {
 
       return new Response(JSON.stringify({ error: "This invitation has expired" }), {
         status: 410,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Look up the company name
+    const { data: company } = await supabase
+      .from("companies")
+      .select("name, slug")
+      .eq("id", invite.company_id)
+      .single();
+
+    const companyName = company?.name || "your team";
+    const companySlug = company?.slug || "";
+
+    // If verify_only, just return invite details without creating account
+    if (verify_only) {
+      return new Response(
+        JSON.stringify({
+          valid: true,
+          email: invite.email,
+          role: invite.role,
+          company_name: companyName,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!password) {
+      return new Response(JSON.stringify({ error: "Missing password" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (password.length < 8) {
+      return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -152,6 +182,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         email: invite.email,
+        company_name: companyName,
+        company_slug: companySlug,
         message: "Account created successfully. You can now sign in.",
       }),
       {
