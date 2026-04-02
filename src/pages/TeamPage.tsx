@@ -29,7 +29,7 @@ interface PendingInvite {
   id: string;
   email: string;
   role: TeamRole;
-  status: "pending";
+  status: "pending" | "accepted" | "expired" | "revoked";
   created_at: string;
   invite_token: string;
 }
