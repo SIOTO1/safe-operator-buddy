@@ -21,7 +21,6 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify the caller is authenticated
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -43,7 +42,6 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Verify user is an admin
     const { data: adminCheck } = await supabase
       .from("company_users")
       .select("role")
@@ -68,7 +66,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get user's profile for company info
     const { data: profile } = await supabase
       .from("profiles")
       .select("company_id, display_name")
@@ -82,23 +79,22 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get company name
     const { data: company } = await supabase
       .from("companies")
       .select("name")
       .eq("id", profile.company_id)
       .single();
 
-    // Fetch pending invites belonging to this company
+    // Fetch pending OR expired invites belonging to this company
     const { data: invites, error: invErr } = await supabase
       .from("user_invites")
-      .select("id, email, role, invite_token")
+      .select("id, email, role, invite_token, status")
       .in("id", invite_ids)
       .eq("company_id", profile.company_id)
-      .eq("status", "pending");
+      .in("status", ["pending", "expired"]);
 
     if (invErr || !invites || invites.length === 0) {
-      return new Response(JSON.stringify({ error: "No valid pending invites found" }), {
+      return new Response(JSON.stringify({ error: "No valid invites found to resend" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -108,7 +104,18 @@ Deno.serve(async (req) => {
     let sent = 0;
 
     for (const invite of invites) {
-      const inviteUrl = `${siteUrl}/invite/${invite.invite_token}`;
+      // Generate a fresh token and reset created_at for a new 7-day window
+      const newToken = crypto.randomUUID();
+      await supabase
+        .from("user_invites")
+        .update({
+          invite_token: newToken,
+          status: "pending",
+          created_at: new Date().toISOString(),
+        })
+        .eq("id", invite.id);
+
+      const inviteUrl = `${siteUrl}/invite/${newToken}`;
       const roleLabel = invite.role.charAt(0).toUpperCase() + invite.role.slice(1);
 
       const html = render(
