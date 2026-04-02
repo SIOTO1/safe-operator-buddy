@@ -141,13 +141,21 @@ const TeamPage = () => {
         .from("user_invites")
         .select("id, email, role, status, created_at, invite_token")
         .eq("company_id", companyId)
-        .eq("status", "pending")
+        .in("status", ["pending", "accepted", "expired"])
         .order("created_at", { ascending: false });
       setPendingInvites((data as PendingInvite[]) || []);
     } catch (err) {
       console.error("Error fetching invites:", err);
     }
   }, [companyId]);
+
+  const getInviteExpiry = (createdAt: string) => {
+    const created = new Date(createdAt);
+    const expiresAt = new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return { expiresAt, daysLeft, isExpired: daysLeft <= 0 };
+  };
 
   useEffect(() => {
     fetchMembers();
