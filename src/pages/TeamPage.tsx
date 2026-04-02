@@ -199,6 +199,7 @@ const TeamPage = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success(isSingle ? "Invitation resent" : `${data.sent} invitation(s) resent`);
+      fetchInvites();
     } catch (err: any) {
       toast.error(err.message || "Failed to resend invitation");
     } finally {
