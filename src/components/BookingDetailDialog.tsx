@@ -65,8 +65,6 @@ const BookingDetailDialog = ({ booking, open, onOpenChange, onApprove, onDecline
   const [deliveryFee, setDeliveryFee] = useState("");
   const [savingFee, setSavingFee] = useState(false);
 
-  if (!booking) return null;
-
   useEffect(() => {
     if (!booking || !open) return;
     setDeliveryFee(booking.delivery_fee != null ? booking.delivery_fee.toString() : "");
