@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Users, UserPlus, MoreVertical, ShieldCheck, Briefcase, User, Crown, Mail, Loader2, RefreshCw, Link2 } from "lucide-react";
+import { Users, UserPlus, MoreVertical, ShieldCheck, Briefcase, User, Crown, Mail, Loader2, RefreshCw, Link2, CheckCircle2, Clock, AlertTriangle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
