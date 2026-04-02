@@ -93,10 +93,10 @@ const getNavGroups = (basePath: string): NavGroup[] => [
     label: "CRM",
     icon: Briefcase,
     items: [
-      { to: `${basePath}/crm/leads`, icon: Contact, label: "Leads", minRole: "manager" },
-      { to: `${basePath}/crm/pipeline`, icon: Kanban, label: "Pipeline", minRole: "manager" },
-      { to: `${basePath}/crm/tasks`, icon: ListTodo, label: "Tasks", minRole: "manager" },
-      { to: `${basePath}/crm/quotes`, icon: Receipt, label: "Quotes", minRole: "manager" },
+      { to: `${basePath}/crm/leads`, icon: Contact, label: "Leads" },
+      { to: `${basePath}/crm/pipeline`, icon: Kanban, label: "Pipeline" },
+      { to: `${basePath}/crm/tasks`, icon: ListTodo, label: "Tasks" },
+      { to: `${basePath}/crm/quotes`, icon: Receipt, label: "Quotes" },
     ],
   },
   {
