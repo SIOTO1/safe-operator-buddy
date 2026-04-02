@@ -442,72 +442,144 @@ const TeamPage = () => {
         )}
       </div>
 
-      {isAdmin && pendingInvites.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold flex items-center gap-2">
-              <Mail size={16} className="text-primary" />
-              Pending Invitations ({pendingInvites.length})
-            </h2>
-            {pendingInvites.length > 1 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs gap-1.5"
-                disabled={resendingAll}
-                onClick={() => handleResendInvite(pendingInvites.map((inv) => inv.id))}
-              >
-                {resendingAll ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                Resend All
-              </Button>
-            )}
-          </div>
+      {isAdmin && pendingInvites.length > 0 && (() => {
+        const accepted = pendingInvites.filter((inv) => inv.status === "accepted");
+        const pending = pendingInvites.filter((inv) => inv.status === "pending");
+        const expired = pendingInvites.filter((inv) => inv.status === "expired");
 
-          <div className="mb-4 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-            If email delivery is delayed, copy an invite link and send it manually by text or email.
-          </div>
-
-          <div className="space-y-2">
-            {pendingInvites.map((inv) => (
-              <div key={inv.id} className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-muted/50">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-sm font-medium truncate">{inv.email}</span>
-                  <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs gap-1"
-                    onClick={() => handleCopyInviteLink(inv.invite_token, inv.email)}
-                  >
-                    <Link2 size={12} />
-                    Copy Link
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs gap-1"
-                    disabled={resendingId === inv.id}
-                    onClick={() => handleResendInvite([inv.id])}
-                  >
-                    {resendingId === inv.id ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-                    Resend
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive text-xs"
-                    onClick={() => handleRevokeInvite(inv.id)}
-                  >
-                    Revoke
-                  </Button>
+        return (
+          <div className="space-y-6">
+            {/* Accepted Invitations */}
+            {accepted.length > 0 && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-green-600" />
+                  Accepted Invitations ({accepted.length})
+                </h2>
+                <div className="space-y-2">
+                  {accepted.map((inv) => (
+                    <div key={inv.id} className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <CheckCircle2 size={16} className="text-green-600 shrink-0" />
+                        <span className="text-sm font-medium truncate">{inv.email}</span>
+                        <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
+                      </div>
+                      <span className="text-xs text-green-700 dark:text-green-400 font-medium shrink-0">Accepted ✓</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Pending Invitations */}
+            {pending.length > 0 && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold flex items-center gap-2">
+                    <Mail size={16} className="text-primary" />
+                    Pending Invitations ({pending.length})
+                  </h2>
+                  {pending.length > 1 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs gap-1.5"
+                      disabled={resendingAll}
+                      onClick={() => handleResendInvite(pending.map((inv) => inv.id))}
+                    >
+                      {resendingAll ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                      Resend All
+                    </Button>
+                  )}
+                </div>
+
+                <div className="mb-4 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                  Invitations expire after <strong>7 days</strong>. If email delivery is delayed, copy an invite link and send it manually by text or email.
+                </div>
+
+                <div className="space-y-2">
+                  {pending.map((inv) => {
+                    const { daysLeft, isExpired } = getInviteExpiry(inv.created_at);
+                    return (
+                      <div key={inv.id} className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Clock size={14} className="text-muted-foreground shrink-0" />
+                          <span className="text-sm font-medium truncate">{inv.email}</span>
+                          <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
+                          {isExpired ? (
+                            <Badge variant="destructive" className="text-[10px] gap-1 shrink-0">
+                              <AlertTriangle size={10} />
+                              Expired
+                            </Badge>
+                          ) : daysLeft <= 2 ? (
+                            <Badge variant="secondary" className="text-[10px] gap-1 text-orange-600 dark:text-orange-400 shrink-0">
+                              <AlertTriangle size={10} />
+                              {daysLeft}d left
+                            </Badge>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground shrink-0">{daysLeft}d left</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs gap-1"
+                            onClick={() => handleCopyInviteLink(inv.invite_token, inv.email)}
+                          >
+                            <Link2 size={12} />
+                            Copy Link
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs gap-1"
+                            disabled={resendingId === inv.id}
+                            onClick={() => handleResendInvite([inv.id])}
+                          >
+                            {resendingId === inv.id ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                            Resend
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive text-xs"
+                            onClick={() => handleRevokeInvite(inv.id)}
+                          >
+                            Revoke
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Expired Invitations */}
+            {expired.length > 0 && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h2 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <XCircle size={16} className="text-destructive" />
+                  Expired Invitations ({expired.length})
+                </h2>
+                <div className="space-y-2">
+                  {expired.map((inv) => (
+                    <div key={inv.id} className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <XCircle size={14} className="text-destructive shrink-0" />
+                        <span className="text-sm font-medium truncate text-muted-foreground">{inv.email}</span>
+                        <Badge variant="outline" className="text-xs capitalize">{inv.role}</Badge>
+                      </div>
+                      <span className="text-xs text-destructive shrink-0">Expired — resend needed</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
