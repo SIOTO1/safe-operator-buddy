@@ -26,17 +26,36 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Look up the invite
+    // Look up the invite - check pending first, then accepted
     const { data: invite, error: inviteError } = await supabase
       .from("user_invites")
       .select("*")
       .eq("invite_token", token)
-      .eq("status", "pending")
+      .in("status", ["pending", "accepted"])
       .single();
 
     if (inviteError || !invite) {
       return new Response(JSON.stringify({ error: "Invalid or expired invitation" }), {
         status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // If already accepted, return a helpful message
+    if (invite.status === "accepted") {
+      const { data: company } = await supabase
+        .from("companies")
+        .select("name, slug")
+        .eq("id", invite.company_id)
+        .single();
+
+      return new Response(JSON.stringify({
+        already_accepted: true,
+        email: invite.email,
+        company_name: company?.name || "your team",
+        company_slug: company?.slug || "",
+        message: "This invitation has already been accepted. Please sign in with your account.",
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

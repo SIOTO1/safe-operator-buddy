@@ -12,7 +12,7 @@ import { toast } from "sonner";
 const AcceptInvitePage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const [step, setStep] = useState<"loading" | "form" | "success" | "error">("loading");
+  const [step, setStep] = useState<"loading" | "form" | "success" | "error" | "already_accepted">("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
@@ -52,6 +52,15 @@ const AcceptInvitePage = () => {
         if (!response.ok) {
           setStep("error");
           setErrorMessage(data.error || "Invalid invitation");
+          return;
+        }
+
+        // Handle already-accepted invites
+        if (data.already_accepted) {
+          setInviteEmail(data.email || "");
+          setCompanyName(data.company_name || "");
+          setCompanySlug(data.company_slug || "");
+          setStep("already_accepted");
           return;
         }
 
@@ -273,6 +282,19 @@ const AcceptInvitePage = () => {
                 Sign in instead
               </button>
             </p>
+          </div>
+        )}
+
+        {step === "already_accepted" && (
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <CheckCircle className="mx-auto mb-4 text-primary" size={48} />
+            <h2 className="text-xl font-display font-bold mb-2">Already Accepted</h2>
+            <p className="text-muted-foreground mb-6">
+              This invitation has already been accepted. Sign in to access <span className="font-semibold">{companyName || "your team"}</span>.
+            </p>
+            <Button onClick={() => navigate("/auth")} className="w-full">
+              Go to Sign In
+            </Button>
           </div>
         )}
 
