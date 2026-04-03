@@ -12,7 +12,7 @@ import { toast } from "sonner";
 const AcceptInvitePage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const [step, setStep] = useState<"loading" | "form" | "success" | "error">("loading");
+  const [step, setStep] = useState<"loading" | "form" | "success" | "error" | "already_accepted">("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
