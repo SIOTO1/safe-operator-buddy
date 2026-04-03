@@ -104,6 +104,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    // Use onAuthStateChange as the single source of truth.
+    // It fires INITIAL_SESSION on setup, so a separate getSession() call
+    // is unnecessary and causes concurrent token refresh race conditions
+    // that revoke tokens and log users out immediately.
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
       (_event, nextSession) => {
         if (!mounted) return;
@@ -125,23 +129,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     );
-
-    void supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      if (!mounted) return;
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      if (currentSession?.user) {
-        void fetchUserData(currentSession.user.id).finally(() => {
-          if (mounted) setLoading(false);
-        });
-        void checkSubscription();
-      } else {
-        setRole(null);
-        setProfile(null);
-        setSubscription(prev => ({ ...prev, loading: false }));
-        setLoading(false);
-      }
-    });
 
     return () => {
       mounted = false;
