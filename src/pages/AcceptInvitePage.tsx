@@ -285,6 +285,19 @@ const AcceptInvitePage = () => {
           </div>
         )}
 
+        {step === "already_accepted" && (
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <CheckCircle className="mx-auto mb-4 text-primary" size={48} />
+            <h2 className="text-xl font-display font-bold mb-2">Already Accepted</h2>
+            <p className="text-muted-foreground mb-6">
+              This invitation has already been accepted. Sign in to access <span className="font-semibold">{companyName || "your team"}</span>.
+            </p>
+            <Button onClick={() => navigate("/auth")} className="w-full">
+              Go to Sign In
+            </Button>
+          </div>
+        )}
+
         {step === "success" && (
           <div className="rounded-xl border border-border bg-card p-8 text-center">
             <CheckCircle className="mx-auto mb-4 text-primary" size={48} />
