@@ -55,6 +55,15 @@ const AcceptInvitePage = () => {
           return;
         }
 
+        // Handle already-accepted invites
+        if (data.already_accepted) {
+          setInviteEmail(data.email || "");
+          setCompanyName(data.company_name || "");
+          setCompanySlug(data.company_slug || "");
+          setStep("already_accepted");
+          return;
+        }
+
         setInviteEmail(data.email || "");
         setCompanyName(data.company_name || "");
         setInviteRole(data.role || "");
