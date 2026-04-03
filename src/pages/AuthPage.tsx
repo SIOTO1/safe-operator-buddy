@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Mail, Lock, Eye, EyeOff, X } from "lucide-react";
 import ShieldLogo from "@/components/ShieldLogo";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useAuth } from "@/contexts/AuthContext";
 
 const emailSchema = z.string().trim().email("Invalid email address").max(255);
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(128);
@@ -16,34 +17,40 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
   const navigate = useNavigate();
+  const { session } = useAuth();
+
+  useEffect(() => {
+    if (session && pendingRedirect) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [session, pendingRedirect, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setPendingRedirect(false);
 
     try {
       const validatedEmail = emailSchema.parse(email);
       const validatedPassword = passwordSchema.parse(password);
-
-      // Sign in
 
       const { error } = await supabase.auth.signInWithPassword({
         email: validatedEmail,
         password: validatedPassword,
       });
       if (error) throw error;
+
       toast.success("Welcome back!");
-      // Let DashboardRedirect handle slug resolution
-      navigate("/dashboard");
+      setPendingRedirect(true);
     } catch (err: any) {
+      setLoading(false);
       if (err instanceof z.ZodError) {
         toast.error(err.errors[0].message);
       } else {
         toast.error(err.message || "Authentication failed");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
