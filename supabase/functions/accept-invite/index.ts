@@ -161,22 +161,24 @@ Deno.serve(async (req) => {
       userId = newUser.user.id;
     }
 
-    // Update profile to link to company
+    // Ensure the invited user has a profile linked to the company
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({
-        company_id: invite.company_id,
-        display_name: display_name || invite.email.split("@")[0],
-      })
-      .eq("user_id", userId);
+      .upsert(
+        {
+          user_id: userId,
+          email: invite.email,
+          company_id: invite.company_id,
+          display_name: display_name || invite.email.split("@")[0],
+        },
+        { onConflict: "user_id" }
+      );
 
-    // If profile doesn't exist yet (trigger may not have fired), create it
     if (profileError) {
-      await supabase.from("profiles").insert({
-        user_id: userId,
-        email: invite.email,
-        company_id: invite.company_id,
-        display_name: display_name || invite.email.split("@")[0],
+      console.error("Upsert profile error:", profileError);
+      return new Response(JSON.stringify({ error: "Failed to link account to company" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
