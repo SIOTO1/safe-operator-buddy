@@ -122,6 +122,23 @@ Deno.serve(async (req) => {
 
     if (existingUser) {
       userId = existingUser.id;
+
+      const { error: updateUserError } = await supabase.auth.admin.updateUserById(userId, {
+        password,
+        email_confirm: true,
+        user_metadata: {
+          ...(existingUser.user_metadata || {}),
+          display_name: display_name || existingUser.user_metadata?.display_name || invite.email.split("@")[0],
+        },
+      });
+
+      if (updateUserError) {
+        console.error("Update existing user error:", updateUserError);
+        return new Response(JSON.stringify({ error: "Failed to update account" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     } else {
       // Create the user account
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({

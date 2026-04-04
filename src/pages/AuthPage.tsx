@@ -49,7 +49,12 @@ const AuthPage = () => {
       if (err instanceof z.ZodError) {
         toast.error(err.errors[0].message);
       } else {
-        toast.error(err.message || "Authentication failed");
+        const message = err.message || "Authentication failed";
+        if (message.toLowerCase().includes("email not confirmed")) {
+          toast.error("This invite account has not finished activation yet. Open the latest invite email and complete the invite link first.");
+        } else {
+          toast.error(message);
+        }
       }
     }
   };
