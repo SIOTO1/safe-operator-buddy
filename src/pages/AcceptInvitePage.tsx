@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const AcceptInvitePage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const { session } = useAuth();
   const [step, setStep] = useState<"loading" | "form" | "success" | "error" | "already_accepted">("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -23,6 +25,14 @@ const AcceptInvitePage = () => {
   const [companyName, setCompanyName] = useState("");
   const [companySlug, setCompanySlug] = useState("");
   const [inviteRole, setInviteRole] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
+
+  useEffect(() => {
+    if (session && pendingRedirect) {
+      navigate(companySlug ? `/app/${companySlug}` : "/dashboard", { replace: true });
+    }
+  }, [session, pendingRedirect, companySlug, navigate]);
 
   useEffect(() => {
     if (!token) {
@@ -145,14 +155,20 @@ const AcceptInvitePage = () => {
     }
 
     try {
+      setSigningIn(true);
+      setPendingRedirect(false);
+
       const { error } = await supabase.auth.signInWithPassword({
         email: inviteEmail,
         password,
       });
 
       if (error) throw error;
-      navigate(companySlug ? `/app/${companySlug}` : "/dashboard");
+
+      toast.success("Signed in successfully!");
+      setPendingRedirect(true);
     } catch {
+      setSigningIn(false);
       navigate("/auth");
     }
   };
@@ -305,8 +321,15 @@ const AcceptInvitePage = () => {
             <p className="text-muted-foreground mb-6">
               Your account has been created and you've been added to <span className="font-semibold">{companyName || "the team"}</span>.
             </p>
-            <Button onClick={handleSignIn} className="w-full">
-              Sign In Now
+            <Button onClick={handleSignIn} className="w-full" disabled={signingIn}>
+              {signingIn ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                "Sign In Now"
+              )}
             </Button>
           </div>
         )}
