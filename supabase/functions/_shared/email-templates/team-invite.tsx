@@ -47,6 +47,10 @@ export const TeamInviteEmail = ({
         <Button style={button} href={inviteUrl}>
           Accept Invitation
         </Button>
+        <Text style={linkHelpText}>
+          If the button doesn&apos;t appear, copy and paste this link into your browser:
+        </Text>
+        <Text style={linkText}>{inviteUrl}</Text>
         <Text style={footer}>
           This invitation link will expire in 7 days. If you weren't expecting this, you can safely ignore this email.
         </Text>
@@ -63,22 +67,37 @@ const h1 = {
   fontSize: '24px',
   fontWeight: 'bold' as const,
   fontFamily: "'Space Grotesk', Arial, sans-serif",
-  color: 'hsl(0, 0%, 8%)',
+  color: '#141414',
   margin: '0 0 20px',
 }
 const text = {
   fontSize: '14px',
-  color: 'hsl(0, 0%, 40%)',
+  color: '#666666',
   lineHeight: '1.6',
   margin: '0 0 15px',
 }
 const button = {
-  backgroundColor: 'hsl(24, 95%, 53%)',
+  backgroundColor: '#f97316',
   color: '#ffffff',
   fontSize: '14px',
   fontWeight: '600' as const,
   borderRadius: '12px',
   padding: '12px 24px',
   textDecoration: 'none',
+  display: 'inline-block',
+  margin: '8px 0 20px',
+}
+const linkHelpText = {
+  fontSize: '13px',
+  color: '#666666',
+  lineHeight: '1.6',
+  margin: '0 0 6px',
+}
+const linkText = {
+  fontSize: '13px',
+  color: '#f97316',
+  lineHeight: '1.6',
+  margin: '0 0 24px',
+  wordBreak: 'break-all' as const,
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
