@@ -175,6 +175,138 @@ export type Database = {
           },
         ]
       }
+      checklist_completions: {
+        Row: {
+          checklist_id: string
+          completed_at: string
+          completed_by: string
+          event_id: string | null
+          id: string
+          item_id: string
+        }
+        Insert: {
+          checklist_id: string
+          completed_at?: string
+          completed_by?: string
+          event_id?: string | null
+          id?: string
+          item_id: string
+        }
+        Update: {
+          checklist_id?: string
+          completed_at?: string
+          completed_by?: string
+          event_id?: string | null
+          id?: string
+          item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_completions_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "checklists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_completions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_completions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_items: {
+        Row: {
+          checklist_id: string
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklists: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          description: string
+          id: string
+          is_template: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_template?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_template?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklists_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklists_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           created_at: string
@@ -284,6 +416,65 @@ export type Database = {
             columns: ["quote_id"]
             isOneToOne: false
             referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_guides: {
+        Row: {
+          category: string
+          company_id: string | null
+          context: string
+          created_at: string
+          do_list: string[] | null
+          dont_list: string[] | null
+          follow_up: string
+          id: string
+          is_global: boolean
+          script: string
+          severity: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          company_id?: string | null
+          context?: string
+          created_at?: string
+          do_list?: string[] | null
+          dont_list?: string[] | null
+          follow_up?: string
+          id?: string
+          is_global?: boolean
+          script?: string
+          severity?: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string | null
+          context?: string
+          created_at?: string
+          do_list?: string[] | null
+          dont_list?: string[] | null
+          follow_up?: string
+          id?: string
+          is_global?: boolean
+          script?: string
+          severity?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_guides_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -698,6 +889,60 @@ export type Database = {
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_compliance: {
+        Row: {
+          company_id: string
+          completed: boolean
+          completed_at: string | null
+          compliance_type: string
+          created_at: string
+          driver_id: string
+          id: string
+          item_key: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          completed?: boolean
+          completed_at?: string | null
+          compliance_type: string
+          created_at?: string
+          driver_id: string
+          id?: string
+          item_key: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          compliance_type?: string
+          created_at?: string
+          driver_id?: string
+          id?: string
+          item_key?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_compliance_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_compliance_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
         ]
@@ -1348,6 +1593,56 @@ export type Database = {
           },
         ]
       }
+      knowledge_articles: {
+        Row: {
+          category: string
+          company_id: string | null
+          content: string
+          created_at: string
+          icon: string
+          id: string
+          is_global: boolean
+          preview: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          company_id?: string | null
+          content?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_global?: boolean
+          preview?: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string | null
+          content?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_global?: boolean
+          preview?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_articles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -1913,6 +2208,62 @@ export type Database = {
           },
         ]
       }
+      sops: {
+        Row: {
+          category: string
+          company_id: string | null
+          content: string
+          created_at: string
+          flashcard_answer: string | null
+          flashcard_question: string | null
+          id: string
+          is_global: boolean
+          sort_order: number
+          subcategory: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          company_id?: string | null
+          content?: string
+          created_at?: string
+          flashcard_answer?: string | null
+          flashcard_question?: string | null
+          id?: string
+          is_global?: boolean
+          sort_order?: number
+          subcategory?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string | null
+          content?: string
+          created_at?: string
+          flashcard_answer?: string | null
+          flashcard_question?: string | null
+          id?: string
+          is_global?: boolean
+          sort_order?: number
+          subcategory?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sops_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -2036,6 +2387,100 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waivers: {
+        Row: {
+          acknowledged_medical: boolean
+          acknowledged_risks: boolean
+          acknowledged_rules: boolean
+          company_id: string
+          created_at: string
+          created_by: string
+          equipment_types: string[] | null
+          event_date: string | null
+          event_id: string | null
+          event_location: string | null
+          guardian_name: string | null
+          guardian_relationship: string | null
+          guardian_signature_data: string | null
+          id: string
+          participant_age: string | null
+          participant_email: string | null
+          participant_name: string
+          participant_phone: string | null
+          pdf_url: string | null
+          signature_data: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          acknowledged_medical?: boolean
+          acknowledged_risks?: boolean
+          acknowledged_rules?: boolean
+          company_id: string
+          created_at?: string
+          created_by?: string
+          equipment_types?: string[] | null
+          event_date?: string | null
+          event_id?: string | null
+          event_location?: string | null
+          guardian_name?: string | null
+          guardian_relationship?: string | null
+          guardian_signature_data?: string | null
+          id?: string
+          participant_age?: string | null
+          participant_email?: string | null
+          participant_name: string
+          participant_phone?: string | null
+          pdf_url?: string | null
+          signature_data?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          acknowledged_medical?: boolean
+          acknowledged_risks?: boolean
+          acknowledged_rules?: boolean
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          equipment_types?: string[] | null
+          event_date?: string | null
+          event_id?: string | null
+          event_location?: string | null
+          guardian_name?: string | null
+          guardian_relationship?: string | null
+          guardian_signature_data?: string | null
+          id?: string
+          participant_age?: string | null
+          participant_email?: string | null
+          participant_name?: string
+          participant_phone?: string | null
+          pdf_url?: string | null
+          signature_data?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waivers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waivers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waivers_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
