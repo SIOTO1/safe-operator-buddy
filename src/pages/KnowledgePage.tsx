@@ -126,7 +126,7 @@ const KnowledgePage = () => {
         title: form.title,
         preview: form.preview,
         content: form.content,
-        icon: categoryMeta[form.category]?.icon?.name || "BookOpen",
+        icon: Object.entries(iconMap).find(([, v]) => v === categoryMeta[form.category]?.icon)?.[0] || "BookOpen",
       });
       if (error) throw error;
       toast.success("Article added");

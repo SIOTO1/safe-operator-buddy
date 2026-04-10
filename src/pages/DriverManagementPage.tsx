@@ -177,9 +177,11 @@ const DriverManagementPage = () => {
     try {
       const { error } = await supabase.from("driver_compliance").insert({
         company_id: companyId!,
-        item_name: newItem.label,
-        status: newItem.status,
-        due_date: newItem.dueDate || null,
+        driver_id: companyId!,
+        compliance_type: "compliance_check",
+        item_key: newItem.label,
+        completed: newItem.status === "compliant",
+        notes: newItem.dueDate ? `Due: ${newItem.dueDate}` : null,
       });
       if (error) throw error;
       toast.success("Compliance item added");

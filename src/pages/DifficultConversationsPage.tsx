@@ -365,8 +365,8 @@ const DifficultConversationsPage = () => {
         context: newGuide.context,
         do_list: newGuide.doList.split("\n").filter(Boolean),
         dont_list: newGuide.dontList.split("\n").filter(Boolean),
-        script_lines: newGuide.script.split("\n").filter(Boolean),
-        follow_up: newGuide.followUp.split("\n").filter(Boolean),
+        script: newGuide.script,
+        follow_up: newGuide.followUp,
       });
       if (error) throw error;
       toast.success("Conversation guide added");
