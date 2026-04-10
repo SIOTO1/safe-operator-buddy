@@ -1,12 +1,17 @@
-import { useState, useMemo, useRef } from "react";
-import { Search, Download, Sparkles, BookOpen, ChevronRight, ArrowLeft, RotateCcw, Truck, Dumbbell, Scale, Award, Wrench, MessageCircle } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Search, Download, Sparkles, BookOpen, ChevronRight, ArrowLeft, RotateCcw, Truck, Dumbbell, Scale, Award, Wrench, MessageCircle, Plus, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
 import { sopCategories, sopArticles, type SOPArticle } from "@/lib/sopData";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import jsPDF from "jspdf";
 
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -14,6 +19,9 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 };
 
 const SOPsPage = () => {
+  const { role, companyId } = useAuth();
+  const isManager = role === "owner" || role === "manager";
+
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<SOPArticle | null>(null);
@@ -22,11 +30,66 @@ const SOPsPage = () => {
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [generating, setGenerating] = useState(false);
   const { orgName, orgLogo } = useOrgSettings();
-  
+
+  /* ── Custom SOPs from database ── */
+  const [customSops, setCustomSops] = useState<SOPArticle[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [newSop, setNewSop] = useState({ title: "", category: "driver-protocols", subcategory: "", content: "", flashFront: "", flashBack: "" });
+
+  const fetchCustomSops = async () => {
+    const { data, error } = await supabase
+      .from("sops")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) { console.error(error); return; }
+    if (data) {
+      setCustomSops(data.map((s: any) => ({
+        id: `db-${s.id}`,
+        title: s.title,
+        category: s.category,
+        subcategory: s.subcategory || "Custom",
+        content: s.content,
+        flashcard: { front: s.flashcard_front || s.title, back: s.flashcard_back || "See full SOP for details." },
+        tags: s.tags || [],
+      })));
+    }
+  };
+
+  useEffect(() => { fetchCustomSops(); }, []);
+
+  const handleSaveSop = async () => {
+    if (!newSop.title.trim() || !newSop.content.trim()) { toast.error("Title and content are required"); return; }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("sops").insert({
+        company_id: companyId!,
+        title: newSop.title,
+        category: newSop.category,
+        subcategory: newSop.subcategory || "Custom",
+        content: newSop.content,
+        flashcard_front: newSop.flashFront || newSop.title,
+        flashcard_back: newSop.flashBack || "See full SOP for details.",
+        tags: [],
+      });
+      if (error) throw error;
+      toast.success("SOP added");
+      setDialogOpen(false);
+      setNewSop({ title: "", category: "driver-protocols", subcategory: "", content: "", flashFront: "", flashBack: "" });
+      fetchCustomSops();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save SOP");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* ── Merge static + custom articles ── */
+  const allArticles = useMemo(() => [...sopArticles, ...customSops], [customSops]);
 
   // Filter articles
   const filteredArticles = useMemo(() => {
-    let articles = sopArticles;
+    let articles = allArticles;
     if (selectedCategory) {
       articles = articles.filter(a => a.category === selectedCategory);
     }
@@ -212,9 +275,17 @@ const SOPsPage = () => {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-display font-bold">SOPs & Policies</h1>
-        <p className="text-muted-foreground text-sm mt-1">Standard operating procedures, HR policies, and quick-reference flashcards</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">SOPs & Policies</h1>
+          <p className="text-muted-foreground text-sm mt-1">Standard operating procedures, HR policies, and quick-reference flashcards</p>
+        </div>
+        {isManager && (
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus size={16} />
+            Add SOP
+          </Button>
+        )}
       </div>
 
       {/* View Toggle */}
@@ -355,7 +426,7 @@ const SOPsPage = () => {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {sopCategories.map((cat, i) => {
                     const Icon = iconMap[cat.icon] || BookOpen;
-                    const count = sopArticles.filter(a => a.category === cat.id).length;
+                    const count = allArticles.filter(a => a.category === cat.id).length;
                     return (
                       <motion.button
                         key={cat.id}
@@ -448,6 +519,59 @@ const SOPsPage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Add SOP Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add Custom SOP</DialogTitle>
+            <DialogDescription>Create a new standard operating procedure for your team.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>Category</Label>
+              <Select value={newSop.category} onValueChange={v => setNewSop({ ...newSop, category: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {sopCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Subcategory</Label>
+              <Input value={newSop.subcategory} onChange={e => setNewSop({ ...newSop, subcategory: e.target.value })} placeholder="e.g. Custom Procedures" />
+            </div>
+            <div>
+              <Label>Title *</Label>
+              <Input value={newSop.title} onChange={e => setNewSop({ ...newSop, title: e.target.value })} placeholder="SOP title" />
+            </div>
+            <div>
+              <Label>Content *</Label>
+              <textarea
+                value={newSop.content}
+                onChange={e => setNewSop({ ...newSop, content: e.target.value })}
+                placeholder="Full SOP content (supports markdown)..."
+                rows={8}
+                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Flashcard Question</Label>
+                <Input value={newSop.flashFront} onChange={e => setNewSop({ ...newSop, flashFront: e.target.value })} placeholder="Quiz question" />
+              </div>
+              <div>
+                <Label>Flashcard Answer</Label>
+                <Input value={newSop.flashBack} onChange={e => setNewSop({ ...newSop, flashBack: e.target.value })} placeholder="Answer" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveSop} disabled={saving}>{saving ? "Saving..." : "Add SOP"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

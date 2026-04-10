@@ -1,12 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
-  Truck, CheckCircle2, Circle, AlertTriangle, Phone, Cigarette, ShieldCheck,
-  Clock, Eye, ChevronDown, ChevronUp, Award, XCircle, BookOpen, Download
+  Truck, CheckCircle2, Circle, AlertTriangle, ShieldCheck,
+  Clock, Eye, ChevronDown, ChevronUp, Award, XCircle, BookOpen, Download, Plus, Loader2, Save
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import jsPDF from "jspdf";
 
 // ─── Driver Rules Data ───────────────────────────────────────────────
@@ -19,7 +26,6 @@ interface RuleItem {
 }
 
 const driverRules: RuleItem[] = [
-  // Safety
   { id: "s1", rule: "Wear seatbelt at ALL times while vehicle is in motion", category: "safety", severity: "critical" },
   { id: "s2", rule: "ZERO TOLERANCE for phone use while driving — no calls, texts, or GPS adjustments", category: "safety", severity: "critical" },
   { id: "s3", rule: "Obey all posted speed limits — no exceptions", category: "safety", severity: "critical" },
@@ -29,8 +35,6 @@ const driverRules: RuleItem[] = [
   { id: "s7", rule: "Never lift more than 75 lbs alone — always use a partner or equipment", category: "safety", severity: "important" },
   { id: "s8", rule: "Wear closed-toe shoes and appropriate work attire at all times", category: "safety", severity: "important" },
   { id: "s9", rule: "Report any vehicle damage, accidents, or near-misses immediately", category: "safety", severity: "critical" },
-
-  // Conduct
   { id: "c1", rule: "No smoking, vaping, or tobacco use in company vehicles or at customer sites", category: "conduct", severity: "critical" },
   { id: "c2", rule: "No alcohol or drug use before or during work — ZERO TOLERANCE", category: "conduct", severity: "critical" },
   { id: "c3", rule: "Arrive on time for all scheduled shifts and deliveries", category: "conduct", severity: "important" },
@@ -39,16 +43,12 @@ const driverRules: RuleItem[] = [
   { id: "c6", rule: "Follow the company uniform policy at all times", category: "conduct", severity: "standard" },
   { id: "c7", rule: "No personal errands or stops during company time (time theft)", category: "conduct", severity: "important" },
   { id: "c8", rule: "Keep company information and customer data confidential", category: "conduct", severity: "important" },
-
-  // Vehicle
   { id: "v1", rule: "Lock vehicle when unattended — even during deliveries", category: "vehicle", severity: "important" },
   { id: "v2", rule: "Keep vehicle clean and organized at all times", category: "vehicle", severity: "standard" },
   { id: "v3", rule: "Check tire pressure, fluids, and lights during pre-trip inspection", category: "vehicle", severity: "important" },
   { id: "v4", rule: "Properly secure all cargo before driving — use straps, ties, and pads", category: "vehicle", severity: "critical" },
   { id: "v5", rule: "Do not exceed vehicle weight capacity", category: "vehicle", severity: "critical" },
   { id: "v6", rule: "Park in designated areas only — never block fire lanes or emergency exits", category: "vehicle", severity: "important" },
-
-  // Customer
   { id: "cu1", rule: "Greet every customer professionally and introduce yourself by name", category: "customer", severity: "standard" },
   { id: "cu2", rule: "Walk the setup area with the customer and confirm placement before unloading", category: "customer", severity: "important" },
   { id: "cu3", rule: "Provide a complete safety briefing to the customer before leaving the site", category: "customer", severity: "critical" },
@@ -99,6 +99,7 @@ interface ComplianceItem {
   label: string;
   status: "compliant" | "due_soon" | "overdue" | "na";
   dueDate?: string;
+  dbId?: string; // database id for persisted items
 }
 
 const defaultCompliance: ComplianceItem[] = [
@@ -126,12 +127,71 @@ const statusStyles: Record<string, { label: string; color: string; icon: React.C
 type TabType = "rules" | "inspection" | "compliance";
 
 const DriverManagementPage = () => {
+  const { role, companyId } = useAuth();
+  const isManager = role === "owner" || role === "manager";
+
   const [activeTab, setActiveTab] = useState<TabType>("rules");
   const [acknowledgedRules, setAcknowledgedRules] = useState<Set<string>>(new Set());
   const [expandedCategory, setExpandedCategory] = useState<string | null>("safety");
   const [inspection, setInspection] = useState(defaultInspection);
-  const [compliance, setCompliance] = useState(defaultCompliance);
+  const [compliance, setCompliance] = useState<ComplianceItem[]>(defaultCompliance);
+  const [loading, setLoading] = useState(true);
   const { orgName } = useOrgSettings();
+
+  /* ── Add compliance item dialog ── */
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [newItem, setNewItem] = useState({ label: "", status: "compliant" as string, dueDate: "" });
+
+  /* ── Fetch compliance items from DB ── */
+  const fetchCompliance = async () => {
+    const { data, error } = await supabase
+      .from("driver_compliance")
+      .select("*")
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      // Fall back to defaults
+      setCompliance(defaultCompliance);
+    } else if (data && data.length > 0) {
+      setCompliance(data.map((d: any) => ({
+        id: `db-${d.id}`,
+        dbId: d.id,
+        label: d.item_name,
+        status: d.status || "na",
+        dueDate: d.due_date || undefined,
+      })));
+    } else {
+      setCompliance(defaultCompliance);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchCompliance(); }, []);
+
+  /* ── Save new compliance item ── */
+  const handleSaveItem = async () => {
+    if (!newItem.label.trim()) { toast.error("Item name is required"); return; }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("driver_compliance").insert({
+        company_id: companyId!,
+        item_name: newItem.label,
+        status: newItem.status,
+        due_date: newItem.dueDate || null,
+      });
+      if (error) throw error;
+      toast.success("Compliance item added");
+      setDialogOpen(false);
+      setNewItem({ label: "", status: "compliant", dueDate: "" });
+      fetchCompliance();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const toggleRule = (id: string) => {
     setAcknowledgedRules(prev => {
@@ -192,7 +252,6 @@ const DriverManagementPage = () => {
         const lines = doc.splitTextToSize(rule.rule, maxW - 15);
         if (y + lines.length * 5 > 270) { doc.addPage(); y = 20; }
 
-        // Draw colored bullet circle
         doc.setFillColor(sevColor[0], sevColor[1], sevColor[2]);
         doc.circle(margin + 7, y - 1.2, 1.8, "F");
 
@@ -205,7 +264,7 @@ const DriverManagementPage = () => {
     y += 10;
     if (y > 240) { doc.addPage(); y = 20; }
     doc.setFontSize(9);
-    doc.text("I acknowledge that I have read, understand, and agree to follow all rules listed above.", margin, y, { maxWidth: maxW });
+    doc.text("I acknowledge that I have read, understand, and agree to follow all rules listed above.", margin, y);
     y += 16;
     doc.line(margin, y, 95, y);
     doc.text("Driver Signature", margin + 15, y + 5);
@@ -406,8 +465,17 @@ const DriverManagementPage = () => {
 
         {activeTab === "compliance" && (
           <motion.div key="compliance" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-w-3xl space-y-4">
-            <h2 className="font-display font-semibold text-lg">Compliance Tracker</h2>
-            <p className="text-sm text-muted-foreground">Track certifications, inspections, and training deadlines</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display font-semibold text-lg">Compliance Tracker</h2>
+                <p className="text-sm text-muted-foreground">Track certifications, inspections, and training deadlines</p>
+              </div>
+              {isManager && (
+                <Button size="sm" onClick={() => setDialogOpen(true)}>
+                  <Plus size={14} /> Add Item
+                </Button>
+              )}
+            </div>
 
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <table className="w-full text-sm">
@@ -442,11 +510,47 @@ const DriverManagementPage = () => {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Compliance items are tracked manually. Update status as certifications and inspections are completed.
+              Compliance items are tracked per company. Managers can add new items above.
             </p>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Add Compliance Item Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Compliance Item</DialogTitle>
+            <DialogDescription>Track a new certification, inspection, or training deadline.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>Item Name *</Label>
+              <Input value={newItem.label} onChange={e => setNewItem({ ...newItem, label: e.target.value })} placeholder="e.g. CDL Renewal" />
+            </div>
+            <div>
+              <Label>Status</Label>
+              <Select value={newItem.status} onValueChange={v => setNewItem({ ...newItem, status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="compliant">Compliant</SelectItem>
+                  <SelectItem value="due_soon">Due Soon</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                  <SelectItem value="na">N/A</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Due Date</Label>
+              <Input type="date" value={newItem.dueDate} onChange={e => setNewItem({ ...newItem, dueDate: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveItem} disabled={saving}>{saving ? "Saving..." : "Add Item"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

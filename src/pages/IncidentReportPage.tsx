@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { AlertTriangle, Download, MapPin, Clock, User, FileText } from "lucide-react";
+import { AlertTriangle, Download, MapPin, Clock, User, FileText, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import DatePicker from "@/components/DatePicker";
 import jsPDF from "jspdf";
 
 const IncidentReportPage = () => {
   const { orgName } = useOrgSettings();
+  const { user } = useAuth();
   const [incidentDate, setIncidentDate] = useState<Date>();
   const [formData, setFormData] = useState({
     reporterName: "",
@@ -31,14 +34,66 @@ const IncidentReportPage = () => {
     additionalNotes: "",
   });
   const [generated, setGenerated] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  /* ── Build a full description string from all form fields ── */
+  const buildDescription = () => {
+    const parts: string[] = [];
+    if (formData.reporterName) parts.push(`Reporter: ${formData.reporterName}${formData.reporterRole ? ` (${formData.reporterRole})` : ""}`);
+    if (formData.location) parts.push(`Location: ${formData.location}`);
+    if (formData.time) parts.push(`Time: ${formData.time}`);
+    if (formData.equipmentType) parts.push(`Equipment: ${formData.equipmentType}${formData.equipmentId ? ` — ${formData.equipmentId}` : ""}`);
+    if (formData.injuredPerson) parts.push(`Injured Person: ${formData.injuredPerson}${formData.injuredAge ? `, age ${formData.injuredAge}` : ""}`);
+    if (formData.injuryDescription) parts.push(`Injury: ${formData.injuryDescription}`);
+    if (formData.circumstances) parts.push(`Circumstances: ${formData.circumstances}`);
+    if (formData.actionTaken) parts.push(`Action Taken: ${formData.actionTaken}`);
+    if (formData.witnessName) parts.push(`Witness: ${formData.witnessName}${formData.witnessContact ? ` (${formData.witnessContact})` : ""}`);
+    if (formData.weatherConditions) parts.push(`Weather: ${formData.weatherConditions}`);
+    if (formData.windSpeed) parts.push(`Wind Speed: ${formData.windSpeed} mph`);
+    if (formData.surfaceType) parts.push(`Surface: ${formData.surfaceType}`);
+    if (formData.additionalNotes) parts.push(`Notes: ${formData.additionalNotes}`);
+    return parts.join("\n");
+  };
+
   const handleGenerate = () => {
-    if (!formData.reporterName || !incidentDate || !formData.circumstances) return;
+    if (!formData.reporterName || !incidentDate || !formData.circumstances) {
+      toast.error("Please fill in Reporter Name, Date, and Circumstances");
+      return;
+    }
     setGenerated(true);
+  };
+
+  /* ── Save to Supabase incident_reports table ── */
+  const handleSaveToDb = async () => {
+    if (!formData.reporterName || !incidentDate || !formData.circumstances) {
+      toast.error("Please fill in Reporter Name, Date, and Circumstances");
+      return;
+    }
+    setSaving(true);
+    try {
+      const description = buildDescription();
+      const { data, error } = await supabase.from("incident_reports").insert({
+        description,
+        date_reported: incidentDate.toISOString(),
+        reported_by_user_id: user?.id || "",
+        event_id: "00000000-0000-0000-0000-000000000000", // placeholder — no event context in this form
+      }).select().single();
+
+      if (error) throw error;
+      setSavedId(data.id);
+      setGenerated(true);
+      toast.success("Incident report saved to database");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to save incident report");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDownloadPDF = () => {
@@ -208,7 +263,7 @@ const IncidentReportPage = () => {
           <AlertTriangle className="text-destructive" size={24} />
           Incident Report
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">Document incidents immediately — generate a professional PDF report</p>
+        <p className="text-muted-foreground text-sm mt-1">Document incidents immediately — save to database and generate a professional PDF report</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8 max-w-6xl">
@@ -258,10 +313,16 @@ const IncidentReportPage = () => {
             </div>
           </div>
 
-          <Button onClick={handleGenerate} className="w-full" size="lg" variant="destructive">
-            <AlertTriangle size={18} />
-            Generate Incident Report
-          </Button>
+          <div className="flex gap-3">
+            <Button onClick={handleSaveToDb} className="flex-1" size="lg" variant="destructive" disabled={saving}>
+              {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+              {saving ? "Saving..." : savedId ? "Saved ✓" : "Save & Generate Report"}
+            </Button>
+            <Button onClick={handleGenerate} className="flex-1" size="lg" variant="outline">
+              <AlertTriangle size={18} />
+              Preview Only
+            </Button>
+          </div>
         </div>
 
         <div>
@@ -275,6 +336,7 @@ const IncidentReportPage = () => {
                 <h2 className="font-display font-bold text-lg">{orgName || "Your Company"}</h2>
                 <p className="text-destructive font-bold text-base mt-1">INCIDENT REPORT</p>
                 <p className="text-xs text-muted-foreground">Confidential — For Internal Use Only</p>
+                {savedId && <p className="text-xs text-success mt-1">Saved to database</p>}
               </div>
 
               {[

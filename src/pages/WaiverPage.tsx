@@ -8,19 +8,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useOrgSettings } from "@/contexts/OrgSettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { contractTemplates } from "@/lib/contractTemplates";
-import { FileSignature, Download, RotateCcw } from "lucide-react";
+import { FileSignature, Download, RotateCcw, Save, Loader2 } from "lucide-react";
 import DatePicker from "@/components/DatePicker";
 import jsPDF from "jspdf";
 
 const WaiverPage = () => {
   const { orgName } = useOrgSettings();
-  
+  const { companyId, workspaceId } = useAuth();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const guardianCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [activeCanvas, setActiveCanvas] = useState<"participant" | "guardian" | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const [eventDate, setEventDate] = useState<Date>();
   const [dateOfBirth, setDateOfBirth] = useState<Date>();
@@ -105,6 +110,49 @@ const WaiverPage = () => {
     form.ackIndemnity &&
     !isCanvasBlank(canvasRef.current) &&
     (!form.isMinor || (form.guardianName && !isCanvasBlank(guardianCanvasRef.current)));
+
+  /* ── Save waiver to Supabase ── */
+  const saveToDb = async () => {
+    if (!companyId) {
+      toast.error("Company not found. Please log in again.");
+      return null;
+    }
+    setSaving(true);
+    try {
+      const signatureData = canvasRef.current?.toDataURL("image/png") || null;
+      const guardianSignatureData = form.isMinor ? (guardianCanvasRef.current?.toDataURL("image/png") || null) : null;
+
+      const { data, error } = await supabase.from("waivers").insert({
+        company_id: companyId,
+        workspace_id: workspaceId,
+        participant_name: form.participantName,
+        participant_age: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
+        participant_email: form.email || null,
+        participant_phone: form.phone || null,
+        guardian_name: form.isMinor ? form.guardianName : null,
+        guardian_relationship: form.isMinor ? form.guardianRelationship : null,
+        event_date: eventDate ? format(eventDate, "yyyy-MM-dd") : null,
+        event_location: form.eventLocation || null,
+        equipment_types: form.equipmentType ? [form.equipmentType] : [],
+        signature_data: signatureData,
+        guardian_signature_data: guardianSignatureData,
+        acknowledged_risks: form.ackRisks,
+        acknowledged_rules: form.ackRules,
+        acknowledged_medical: form.ackIndemnity,
+      }).select().single();
+
+      if (error) throw error;
+      setSavedId(data.id);
+      toast.success("Waiver saved to database");
+      return data.id;
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to save waiver");
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const generatePDF = () => {
     if (!canSubmit) {
@@ -218,6 +266,16 @@ const WaiverPage = () => {
 
     doc.save(`Waiver_${form.participantName.replace(/\s+/g, "_")}_${eventDate ? format(eventDate, "yyyy-MM-dd") : "undated"}.pdf`);
     toast.success("Waiver Generated — PDF downloaded successfully.");
+  };
+
+  /* ── Save to DB then generate PDF ── */
+  const handleSaveAndGenerate = async () => {
+    if (!canSubmit) {
+      toast.error("Please fill all required fields and sign.");
+      return;
+    }
+    await saveToDb();
+    generatePDF();
   };
 
   return (
@@ -426,10 +484,16 @@ const WaiverPage = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={generatePDF} size="lg" className="w-full" disabled={!canSubmit}>
-        <Download size={18} className="mr-2" />
-        Generate & Download Waiver PDF
-      </Button>
+      <div className="flex gap-3">
+        <Button onClick={handleSaveAndGenerate} size="lg" className="flex-1" disabled={!canSubmit || saving}>
+          {saving ? <Loader2 size={18} className="animate-spin mr-2" /> : <Save size={18} className="mr-2" />}
+          {saving ? "Saving..." : savedId ? "Saved ✓ — Download Again" : "Save & Download Waiver"}
+        </Button>
+        <Button onClick={generatePDF} size="lg" variant="outline" className="flex-1" disabled={!canSubmit}>
+          <Download size={18} className="mr-2" />
+          PDF Only
+        </Button>
+      </div>
     </div>
   );
 };

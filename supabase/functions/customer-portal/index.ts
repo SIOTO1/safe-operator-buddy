@@ -46,7 +46,7 @@ serve(async (req) => {
     }
     const customerId = customers.data[0].id;
 
-    const origin = req.headers.get("origin") || "https://safe-operator-buddy.lovable.app";
+    const origin = req.headers.get("origin") || "https://sioto.ai";
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/dashboard`,

@@ -6,11 +6,13 @@ import { toast } from "sonner";
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: "owner" | "manager" | "crew";
+  requireSubscription?: boolean;
 }
 
-const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { session, role, loading } = useAuth();
+const ProtectedRoute = ({ children, requiredRole, requireSubscription }: ProtectedRouteProps) => {
+  const { session, role, loading, subscription } = useAuth();
   const hasShownToast = useRef(false);
+  const hasShownSubToast = useRef(false);
 
   const shouldRedirectRole =
     requiredRole && role
@@ -20,6 +22,9 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
         })()
       : false;
 
+  const shouldRedirectSubscription =
+    requireSubscription && !subscription.loading && !subscription.subscribed;
+
   useEffect(() => {
     if (shouldRedirectRole && !hasShownToast.current) {
       hasShownToast.current = true;
@@ -27,7 +32,14 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     }
   }, [shouldRedirectRole]);
 
-  if (loading) {
+  useEffect(() => {
+    if (shouldRedirectSubscription && !hasShownSubToast.current) {
+      hasShownSubToast.current = true;
+      toast.error("An active subscription is required to access this feature.");
+    }
+  }, [shouldRedirectSubscription]);
+
+  if (loading || (requireSubscription && subscription.loading)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
@@ -44,6 +56,10 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
   if (shouldRedirectRole) {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  if (shouldRedirectSubscription) {
+    return <Navigate to="/pricing" replace />;
   }
 
   return <>{children}</>;

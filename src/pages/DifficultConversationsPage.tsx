@@ -1,9 +1,17 @@
-import { useState } from "react";
-import { MessageSquareWarning, ChevronDown, ChevronRight, Copy, Check, AlertTriangle, Users, UserX, ShieldAlert } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { MessageSquareWarning, ChevronDown, ChevronRight, Copy, Check, AlertTriangle, Users, UserX, ShieldAlert, Plus, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Scenario = {
   id: string;
@@ -300,11 +308,81 @@ const severityConfig = {
 };
 
 const DifficultConversationsPage = () => {
+  const { role, companyId } = useAuth();
+  const isManager = role === "owner" || role === "manager";
+
   const [selectedCategory, setSelectedCategory] = useState<"customer" | "performance" | "termination" | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const filtered = selectedCategory ? scenarios.filter(s => s.category === selectedCategory) : scenarios;
+  /* ── Custom guides from database ── */
+  const [customGuides, setCustomGuides] = useState<Scenario[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [newGuide, setNewGuide] = useState({
+    title: "",
+    category: "customer" as "customer" | "performance" | "termination",
+    severity: "moderate" as "moderate" | "serious" | "critical",
+    context: "",
+    doList: "",
+    dontList: "",
+    script: "",
+    followUp: "",
+  });
+
+  const fetchCustomGuides = async () => {
+    const { data, error } = await supabase
+      .from("conversation_guides")
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (error) { console.error(error); return; }
+    if (data) {
+      setCustomGuides(data.map((g: any) => ({
+        id: `db-${g.id}`,
+        title: g.title,
+        category: g.category || "customer",
+        severity: g.severity || "moderate",
+        context: g.context || "",
+        doList: g.do_list || [],
+        dontList: g.dont_list || [],
+        script: g.script_lines || [],
+        followUp: g.follow_up || [],
+      })));
+    }
+  };
+
+  useEffect(() => { fetchCustomGuides(); }, []);
+
+  const handleSaveGuide = async () => {
+    if (!newGuide.title.trim() || !newGuide.context.trim()) { toast.error("Title and context are required"); return; }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("conversation_guides").insert({
+        company_id: companyId!,
+        title: newGuide.title,
+        category: newGuide.category,
+        severity: newGuide.severity,
+        context: newGuide.context,
+        do_list: newGuide.doList.split("\n").filter(Boolean),
+        dont_list: newGuide.dontList.split("\n").filter(Boolean),
+        script_lines: newGuide.script.split("\n").filter(Boolean),
+        follow_up: newGuide.followUp.split("\n").filter(Boolean),
+      });
+      if (error) throw error;
+      toast.success("Conversation guide added");
+      setDialogOpen(false);
+      setNewGuide({ title: "", category: "customer", severity: "moderate", context: "", doList: "", dontList: "", script: "", followUp: "" });
+      fetchCustomGuides();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* ── Merge static + custom ── */
+  const allScenarios = useMemo(() => [...scenarios, ...customGuides], [customGuides]);
+  const filtered = selectedCategory ? allScenarios.filter(s => s.category === selectedCategory) : allScenarios;
 
   const copyScript = (scenario: Scenario) => {
     const text = scenario.script.join("\n\n");
@@ -315,9 +393,16 @@ const DifficultConversationsPage = () => {
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Difficult Conversations</h1>
-        <p className="text-muted-foreground text-sm mt-1">Scripts and talking points for tough situations</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Difficult Conversations</h1>
+          <p className="text-muted-foreground text-sm mt-1">Scripts and talking points for tough situations</p>
+        </div>
+        {isManager && (
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus size={16} /> Add Guide
+          </Button>
+        )}
       </div>
 
       {/* Disclaimer */}
@@ -340,10 +425,10 @@ const DifficultConversationsPage = () => {
             !selectedCategory ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary"
           )}
         >
-          All ({scenarios.length})
+          All ({allScenarios.length})
         </button>
         {(Object.entries(categoryConfig) as [keyof typeof categoryConfig, typeof categoryConfig[keyof typeof categoryConfig]][]).map(([key, cfg]) => {
-          const count = scenarios.filter(s => s.category === key).length;
+          const count = allScenarios.filter(s => s.category === key).length;
           return (
             <button
               key={key}
@@ -413,7 +498,7 @@ const DifficultConversationsPage = () => {
                         {/* Do / Don't */}
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
-                            <h4 className="text-sm font-semibold text-chart-2 mb-2">✅ Do</h4>
+                            <h4 className="text-sm font-semibold text-chart-2 mb-2">Do</h4>
                             <ul className="space-y-1.5">
                               {scenario.doList.map((item, j) => (
                                 <li key={j} className="text-sm text-muted-foreground flex gap-2">
@@ -423,7 +508,7 @@ const DifficultConversationsPage = () => {
                             </ul>
                           </div>
                           <div>
-                            <h4 className="text-sm font-semibold text-destructive mb-2">❌ Don't</h4>
+                            <h4 className="text-sm font-semibold text-destructive mb-2">Don't</h4>
                             <ul className="space-y-1.5">
                               {scenario.dontList.map((item, j) => (
                                 <li key={j} className="text-sm text-muted-foreground flex gap-2">
@@ -437,7 +522,7 @@ const DifficultConversationsPage = () => {
                         {/* Script */}
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-sm font-semibold">📝 Sample Script</h4>
+                            <h4 className="text-sm font-semibold">Sample Script</h4>
                             <button
                               onClick={() => copyScript(scenario)}
                               className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -456,7 +541,7 @@ const DifficultConversationsPage = () => {
 
                         {/* Follow Up */}
                         <div>
-                          <h4 className="text-sm font-semibold mb-2">📋 Follow-Up Actions</h4>
+                          <h4 className="text-sm font-semibold mb-2">Follow-Up Actions</h4>
                           <ul className="space-y-1.5">
                             {scenario.followUp.map((item, j) => (
                               <li key={j} className="text-sm text-muted-foreground flex gap-2">
@@ -474,6 +559,100 @@ const DifficultConversationsPage = () => {
           );
         })}
       </div>
+
+      {/* Add Guide Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Conversation Guide</DialogTitle>
+            <DialogDescription>Create a custom script for a difficult conversation scenario.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>Title *</Label>
+              <Input value={newGuide.title} onChange={e => setNewGuide({ ...newGuide, title: e.target.value })} placeholder="e.g. Employee Caught Stealing" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Category</Label>
+                <Select value={newGuide.category} onValueChange={v => setNewGuide({ ...newGuide, category: v as any })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="customer">Customer Complaints</SelectItem>
+                    <SelectItem value="performance">Performance Issues</SelectItem>
+                    <SelectItem value="termination">Terminations</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Severity</Label>
+                <Select value={newGuide.severity} onValueChange={v => setNewGuide({ ...newGuide, severity: v as any })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="moderate">Moderate</SelectItem>
+                    <SelectItem value="serious">Serious</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label>Context / Situation *</Label>
+              <textarea
+                value={newGuide.context}
+                onChange={e => setNewGuide({ ...newGuide, context: e.target.value })}
+                placeholder="Describe the situation..."
+                rows={3}
+                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              />
+            </div>
+            <div>
+              <Label>Do List (one per line)</Label>
+              <textarea
+                value={newGuide.doList}
+                onChange={e => setNewGuide({ ...newGuide, doList: e.target.value })}
+                placeholder="Stay calm&#10;Listen first&#10;Document everything"
+                rows={3}
+                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              />
+            </div>
+            <div>
+              <Label>Don't List (one per line)</Label>
+              <textarea
+                value={newGuide.dontList}
+                onChange={e => setNewGuide({ ...newGuide, dontList: e.target.value })}
+                placeholder="Don't raise your voice&#10;Don't make promises"
+                rows={3}
+                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              />
+            </div>
+            <div>
+              <Label>Script Lines (one per line)</Label>
+              <textarea
+                value={newGuide.script}
+                onChange={e => setNewGuide({ ...newGuide, script: e.target.value })}
+                placeholder="Opening line...&#10;Follow-up line..."
+                rows={4}
+                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              />
+            </div>
+            <div>
+              <Label>Follow-Up Actions (one per line)</Label>
+              <textarea
+                value={newGuide.followUp}
+                onChange={e => setNewGuide({ ...newGuide, followUp: e.target.value })}
+                placeholder="Document the conversation&#10;Follow up in 1 week"
+                rows={3}
+                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveGuide} disabled={saving}>{saving ? "Saving..." : "Add Guide"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
