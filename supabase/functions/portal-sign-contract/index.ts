@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { render } from "npm:@react-email/render@0.0.12";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { render } from "npm:@react-email/render@0.0.17";
 import { ContractSignedEmail } from "../_shared/email-templates/contract-signed.tsx";
 import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 

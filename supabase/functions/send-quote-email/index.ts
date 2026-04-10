@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { render } from "npm:@react-email/render@0.0.12";
+import { render } from "npm:@react-email/render@0.0.17";
 import { QuoteSentEmail } from "../_shared/email-templates/quote-sent.tsx";
 import { getUnsubscribeToken } from "../_shared/unsubscribe-token.ts";
 

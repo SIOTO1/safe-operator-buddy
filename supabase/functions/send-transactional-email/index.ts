@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { render } from "npm:@react-email/render@0.0.12";
+import { render } from "npm:@react-email/render@0.0.17";
 import { BookingConfirmationEmail } from "../_shared/email-templates/booking-confirmation.tsx";
 import { PaymentReceiptEmail } from "../_shared/email-templates/payment-receipt.tsx";
 import { OwnerNotificationEmail } from "../_shared/email-templates/owner-notification.tsx";
