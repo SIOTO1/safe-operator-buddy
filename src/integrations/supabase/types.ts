@@ -175,6 +175,138 @@ export type Database = {
           },
         ]
       }
+      checklist_completions: {
+        Row: {
+          checklist_id: string
+          completed_at: string
+          completed_by: string
+          event_id: string | null
+          id: string
+          item_id: string
+        }
+        Insert: {
+          checklist_id: string
+          completed_at?: string
+          completed_by?: string
+          event_id?: string | null
+          id?: string
+          item_id: string
+        }
+        Update: {
+          checklist_id?: string
+          completed_at?: string
+          completed_by?: string
+          event_id?: string | null
+          id?: string
+          item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_completions_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "checklists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_completions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_completions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_items: {
+        Row: {
+          checklist_id: string
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklists: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          description: string
+          id: string
+          is_template: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_template?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_template?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklists_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklists_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           created_at: string
@@ -288,185 +420,53 @@ export type Database = {
           },
         ]
       }
-      checklist_completions: {
-        Row: {
-          id: string
-          checklist_id: string
-          item_id: string
-          event_id: string | null
-          completed_by: string
-          completed_at: string
-        }
-        Insert: {
-          id?: string
-          checklist_id: string
-          item_id: string
-          event_id?: string | null
-          completed_by?: string
-          completed_at?: string
-        }
-        Update: {
-          id?: string
-          checklist_id?: string
-          item_id?: string
-          event_id?: string | null
-          completed_by?: string
-          completed_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checklist_completions_checklist_id_fkey"
-            columns: ["checklist_id"]
-            isOneToOne: false
-            referencedRelation: "checklists"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checklist_completions_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "checklist_items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checklist_completions_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      checklist_items: {
-        Row: {
-          id: string
-          checklist_id: string
-          label: string
-          sort_order: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          checklist_id: string
-          label: string
-          sort_order?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          checklist_id?: string
-          label?: string
-          sort_order?: number
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checklist_items_checklist_id_fkey"
-            columns: ["checklist_id"]
-            isOneToOne: false
-            referencedRelation: "checklists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      checklists: {
-        Row: {
-          id: string
-          company_id: string | null
-          workspace_id: string | null
-          title: string
-          description: string
-          sort_order: number
-          is_template: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          company_id?: string | null
-          workspace_id?: string | null
-          title: string
-          description?: string
-          sort_order?: number
-          is_template?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          company_id?: string | null
-          workspace_id?: string | null
-          title?: string
-          description?: string
-          sort_order?: number
-          is_template?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checklists_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checklists_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       conversation_guides: {
         Row: {
-          id: string
-          company_id: string | null
           category: string
-          title: string
-          severity: string
+          company_id: string | null
           context: string
-          do_list: string[]
-          dont_list: string[]
-          script: string
-          follow_up: string
-          is_global: boolean
-          sort_order: number
           created_at: string
+          do_list: string[] | null
+          dont_list: string[] | null
+          follow_up: string
+          id: string
+          is_global: boolean
+          script: string
+          severity: string
+          sort_order: number
+          title: string
           updated_at: string
         }
         Insert: {
-          id?: string
-          company_id?: string | null
           category: string
-          title: string
-          severity?: string
+          company_id?: string | null
           context?: string
-          do_list?: string[]
-          dont_list?: string[]
-          script?: string
-          follow_up?: string
-          is_global?: boolean
-          sort_order?: number
           created_at?: string
+          do_list?: string[] | null
+          dont_list?: string[] | null
+          follow_up?: string
+          id?: string
+          is_global?: boolean
+          script?: string
+          severity?: string
+          sort_order?: number
+          title: string
           updated_at?: string
         }
         Update: {
-          id?: string
-          company_id?: string | null
           category?: string
-          title?: string
-          severity?: string
+          company_id?: string | null
           context?: string
-          do_list?: string[]
-          dont_list?: string[]
-          script?: string
-          follow_up?: string
-          is_global?: boolean
-          sort_order?: number
           created_at?: string
+          do_list?: string[] | null
+          dont_list?: string[] | null
+          follow_up?: string
+          id?: string
+          is_global?: boolean
+          script?: string
+          severity?: string
+          sort_order?: number
+          title?: string
           updated_at?: string
         }
         Relationships: [
@@ -893,6 +893,60 @@ export type Database = {
           },
         ]
       }
+      driver_compliance: {
+        Row: {
+          company_id: string
+          completed: boolean
+          completed_at: string | null
+          compliance_type: string
+          created_at: string
+          driver_id: string
+          id: string
+          item_key: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          completed?: boolean
+          completed_at?: string | null
+          compliance_type: string
+          created_at?: string
+          driver_id: string
+          id?: string
+          item_key: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          compliance_type?: string
+          created_at?: string
+          driver_id?: string
+          id?: string
+          item_key?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_compliance_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_compliance_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           company_id: string | null
@@ -930,60 +984,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "drivers_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      driver_compliance: {
-        Row: {
-          id: string
-          driver_id: string
-          company_id: string
-          compliance_type: string
-          item_key: string
-          completed: boolean
-          notes: string | null
-          completed_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          driver_id: string
-          company_id: string
-          compliance_type: string
-          item_key: string
-          completed?: boolean
-          notes?: string | null
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          driver_id?: string
-          company_id?: string
-          compliance_type?: string
-          item_key?: string
-          completed?: boolean
-          notes?: string | null
-          completed_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "driver_compliance_driver_id_fkey"
-            columns: ["driver_id"]
-            isOneToOne: false
-            referencedRelation: "drivers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "driver_compliance_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -1595,42 +1595,42 @@ export type Database = {
       }
       knowledge_articles: {
         Row: {
-          id: string
-          company_id: string | null
           category: string
-          title: string
-          preview: string
+          company_id: string | null
           content: string
-          icon: string
-          sort_order: number
-          is_global: boolean
           created_at: string
+          icon: string
+          id: string
+          is_global: boolean
+          preview: string
+          sort_order: number
+          title: string
           updated_at: string
         }
         Insert: {
-          id?: string
-          company_id?: string | null
           category: string
-          title: string
-          preview?: string
+          company_id?: string | null
           content?: string
-          icon?: string
-          sort_order?: number
-          is_global?: boolean
           created_at?: string
+          icon?: string
+          id?: string
+          is_global?: boolean
+          preview?: string
+          sort_order?: number
+          title: string
           updated_at?: string
         }
         Update: {
-          id?: string
-          company_id?: string | null
           category?: string
-          title?: string
-          preview?: string
+          company_id?: string | null
           content?: string
-          icon?: string
-          sort_order?: number
-          is_global?: boolean
           created_at?: string
+          icon?: string
+          id?: string
+          is_global?: boolean
+          preview?: string
+          sort_order?: number
+          title?: string
           updated_at?: string
         }
         Relationships: [
@@ -2210,48 +2210,48 @@ export type Database = {
       }
       sops: {
         Row: {
-          id: string
-          company_id: string | null
           category: string
-          subcategory: string
-          title: string
+          company_id: string | null
           content: string
-          tags: string[]
-          flashcard_question: string | null
+          created_at: string
           flashcard_answer: string | null
+          flashcard_question: string | null
+          id: string
           is_global: boolean
           sort_order: number
-          created_at: string
+          subcategory: string
+          tags: string[] | null
+          title: string
           updated_at: string
         }
         Insert: {
-          id?: string
-          company_id?: string | null
           category: string
-          subcategory?: string
-          title: string
+          company_id?: string | null
           content?: string
-          tags?: string[]
-          flashcard_question?: string | null
+          created_at?: string
           flashcard_answer?: string | null
+          flashcard_question?: string | null
+          id?: string
           is_global?: boolean
           sort_order?: number
-          created_at?: string
+          subcategory?: string
+          tags?: string[] | null
+          title: string
           updated_at?: string
         }
         Update: {
-          id?: string
-          company_id?: string | null
           category?: string
-          subcategory?: string
-          title?: string
+          company_id?: string | null
           content?: string
-          tags?: string[]
-          flashcard_question?: string | null
+          created_at?: string
           flashcard_answer?: string | null
+          flashcard_question?: string | null
+          id?: string
           is_global?: boolean
           sort_order?: number
-          created_at?: string
+          subcategory?: string
+          tags?: string[] | null
+          title?: string
           updated_at?: string
         }
         Relationships: [
@@ -2393,73 +2393,73 @@ export type Database = {
       }
       waivers: {
         Row: {
-          id: string
-          company_id: string
-          workspace_id: string | null
-          event_id: string | null
-          participant_name: string
-          participant_age: string | null
-          participant_email: string | null
-          participant_phone: string | null
-          guardian_name: string | null
-          guardian_relationship: string | null
-          event_date: string | null
-          event_location: string | null
-          equipment_types: string[]
-          signature_data: string | null
-          guardian_signature_data: string | null
+          acknowledged_medical: boolean
           acknowledged_risks: boolean
           acknowledged_rules: boolean
-          acknowledged_medical: boolean
-          pdf_url: string | null
-          created_by: string
+          company_id: string
           created_at: string
+          created_by: string
+          equipment_types: string[] | null
+          event_date: string | null
+          event_id: string | null
+          event_location: string | null
+          guardian_name: string | null
+          guardian_relationship: string | null
+          guardian_signature_data: string | null
+          id: string
+          participant_age: string | null
+          participant_email: string | null
+          participant_name: string
+          participant_phone: string | null
+          pdf_url: string | null
+          signature_data: string | null
+          workspace_id: string | null
         }
         Insert: {
-          id?: string
-          company_id: string
-          workspace_id?: string | null
-          event_id?: string | null
-          participant_name: string
-          participant_age?: string | null
-          participant_email?: string | null
-          participant_phone?: string | null
-          guardian_name?: string | null
-          guardian_relationship?: string | null
-          event_date?: string | null
-          event_location?: string | null
-          equipment_types?: string[]
-          signature_data?: string | null
-          guardian_signature_data?: string | null
+          acknowledged_medical?: boolean
           acknowledged_risks?: boolean
           acknowledged_rules?: boolean
-          acknowledged_medical?: boolean
-          pdf_url?: string | null
-          created_by?: string
+          company_id: string
           created_at?: string
+          created_by?: string
+          equipment_types?: string[] | null
+          event_date?: string | null
+          event_id?: string | null
+          event_location?: string | null
+          guardian_name?: string | null
+          guardian_relationship?: string | null
+          guardian_signature_data?: string | null
+          id?: string
+          participant_age?: string | null
+          participant_email?: string | null
+          participant_name: string
+          participant_phone?: string | null
+          pdf_url?: string | null
+          signature_data?: string | null
+          workspace_id?: string | null
         }
         Update: {
-          id?: string
-          company_id?: string
-          workspace_id?: string | null
-          event_id?: string | null
-          participant_name?: string
-          participant_age?: string | null
-          participant_email?: string | null
-          participant_phone?: string | null
-          guardian_name?: string | null
-          guardian_relationship?: string | null
-          event_date?: string | null
-          event_location?: string | null
-          equipment_types?: string[]
-          signature_data?: string | null
-          guardian_signature_data?: string | null
+          acknowledged_medical?: boolean
           acknowledged_risks?: boolean
           acknowledged_rules?: boolean
-          acknowledged_medical?: boolean
-          pdf_url?: string | null
-          created_by?: string
+          company_id?: string
           created_at?: string
+          created_by?: string
+          equipment_types?: string[] | null
+          event_date?: string | null
+          event_id?: string | null
+          event_location?: string | null
+          guardian_name?: string | null
+          guardian_relationship?: string | null
+          guardian_signature_data?: string | null
+          id?: string
+          participant_age?: string | null
+          participant_email?: string | null
+          participant_name?: string
+          participant_phone?: string | null
+          pdf_url?: string | null
+          signature_data?: string | null
+          workspace_id?: string | null
         }
         Relationships: [
           {
@@ -2470,17 +2470,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "waivers_workspace_id_fkey"
-            columns: ["workspace_id"]
-            isOneToOne: false
-            referencedRelation: "workspaces"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "waivers_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waivers_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
