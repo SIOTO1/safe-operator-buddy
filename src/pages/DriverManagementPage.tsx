@@ -158,9 +158,9 @@ const DriverManagementPage = () => {
       setCompliance(data.map((d: any) => ({
         id: `db-${d.id}`,
         dbId: d.id,
-        label: d.item_name,
-        status: d.status || "na",
-        dueDate: d.due_date || undefined,
+        label: d.item_key,
+        status: d.completed ? "compliant" : "due_soon",
+        dueDate: d.notes?.replace("Due: ", "") || undefined,
       })));
     } else {
       setCompliance(defaultCompliance);
