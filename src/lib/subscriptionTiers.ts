@@ -30,6 +30,23 @@ export const SUBSCRIPTION_TIERS = {
       "Advanced analytics",
     ],
   },
+  enterprise: {
+    name: "Enterprise",
+    price: 149,
+    price_id: "PENDING_STRIPE_PRICE_ID",
+    product_id: "PENDING_STRIPE_PRODUCT_ID",
+    features: [
+      "Everything in Pro, plus:",
+      "Unlimited team members",
+      "Multi-location management",
+      "Custom SOP & checklist templates",
+      "Priority AI assistant",
+      "Dedicated account manager",
+      "Custom integrations & API access",
+      "White-label reports",
+      "Phone & email priority support",
+    ],
+  },
 } as const;
 
 export type SubscriptionTier = keyof typeof SUBSCRIPTION_TIERS;

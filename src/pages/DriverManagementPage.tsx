@@ -175,9 +175,30 @@ const DriverManagementPage = () => {
     if (!newItem.label.trim()) { toast.error("Item name is required"); return; }
     setSaving(true);
     try {
+      // Get or create a default driver for this company to attach compliance items
+      let driverId: string;
+      const { data: existingDrivers } = await supabase
+        .from("drivers")
+        .select("id")
+        .eq("company_id", companyId!)
+        .limit(1);
+
+      if (existingDrivers && existingDrivers.length > 0) {
+        driverId = existingDrivers[0].id;
+      } else {
+        // Create a default "General" driver record for company-wide compliance tracking
+        const { data: newDriver, error: driverErr } = await supabase
+          .from("drivers")
+          .insert({ company_id: companyId!, name: "General Compliance" })
+          .select("id")
+          .single();
+        if (driverErr || !newDriver) throw driverErr || new Error("Failed to create driver record");
+        driverId = newDriver.id;
+      }
+
       const { error } = await supabase.from("driver_compliance").insert({
         company_id: companyId!,
-        driver_id: companyId!,
+        driver_id: driverId,
         compliance_type: "compliance_check",
         item_key: newItem.label,
         completed: newItem.status === "compliant",

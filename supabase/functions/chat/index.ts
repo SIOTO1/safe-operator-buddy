@@ -128,7 +128,17 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const messages = body?.messages;
+
+    // Validate messages input
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Invalid request: 'messages' array is required and must not be empty." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 

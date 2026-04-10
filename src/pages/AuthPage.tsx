@@ -127,7 +127,12 @@ const AuthPage = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
+            <Link to="/reset-password" className="text-sm text-muted-foreground hover:text-primary hover:underline">
+              Forgot your password?
+            </Link>
+          </div>
+          <div className="mt-3 text-center">
             <Link to="/signup" className="text-sm text-primary hover:underline">
               Don't have an account? Create your company
             </Link>

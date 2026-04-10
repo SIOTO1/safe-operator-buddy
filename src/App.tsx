@@ -54,6 +54,8 @@ const StorefrontPage = lazy(() => import("./pages/StorefrontPage"));
 const ComplianceDashboardPage = lazy(() => import("./pages/ComplianceDashboardPage"));
 const BookingSuccessPage = lazy(() => import("./pages/BookingSuccessPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const UpdatePasswordPage = lazy(() => import("./pages/UpdatePasswordPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,6 +93,8 @@ const App = () => (
             <Route path="/rentals/:slug/booking-success" element={<BookingSuccessPage />} />
             <Route path="/invite/:token" element={<AcceptInvitePage />} />
             <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/auth/update-password" element={<UpdatePasswordPage />} />
 
             {/* Legacy /dashboard redirect → resolves slug and redirects */}
             <Route path="/dashboard/*" element={
