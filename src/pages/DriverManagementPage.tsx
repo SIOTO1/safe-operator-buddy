@@ -141,7 +141,16 @@ const DriverManagementPage = () => {
   /* ── Add compliance item dialog ── */
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [newItem, setNewItem] = useState({ label: "", status: "compliant" as string, dueDate: "" });
+  const [newItem, setNewItem] = useState({ label: "", status: "compliant" as string, dueDate: "", driverId: "" });
+
+  /* ── Drivers list for dropdown ── */
+  const [drivers, setDrivers] = useState<{ id: string; name: string }[]>([]);
+  const fetchDrivers = async () => {
+    if (!companyId) return;
+    const { data } = await supabase.from("drivers").select("id, name").eq("company_id", companyId).eq("is_active", true).order("name");
+    if (data) setDrivers(data);
+  };
+  useEffect(() => { fetchDrivers(); }, [companyId]);
 
   /* ── Fetch compliance items from DB ── */
   const fetchCompliance = async () => {
@@ -173,32 +182,12 @@ const DriverManagementPage = () => {
   /* ── Save new compliance item ── */
   const handleSaveItem = async () => {
     if (!newItem.label.trim()) { toast.error("Item name is required"); return; }
+    if (!newItem.driverId) { toast.error("Please select a driver"); return; }
     setSaving(true);
     try {
-      // Get or create a default driver for this company to attach compliance items
-      let driverId: string;
-      const { data: existingDrivers } = await supabase
-        .from("drivers")
-        .select("id")
-        .eq("company_id", companyId!)
-        .limit(1);
-
-      if (existingDrivers && existingDrivers.length > 0) {
-        driverId = existingDrivers[0].id;
-      } else {
-        // Create a default "General" driver record for company-wide compliance tracking
-        const { data: newDriver, error: driverErr } = await supabase
-          .from("drivers")
-          .insert({ company_id: companyId!, name: "General Compliance" })
-          .select("id")
-          .single();
-        if (driverErr || !newDriver) throw driverErr || new Error("Failed to create driver record");
-        driverId = newDriver.id;
-      }
-
       const { error } = await supabase.from("driver_compliance").insert({
         company_id: companyId!,
-        driver_id: driverId,
+        driver_id: newItem.driverId,
         compliance_type: "compliance_check",
         item_key: newItem.label,
         completed: newItem.status === "compliant",
@@ -207,7 +196,7 @@ const DriverManagementPage = () => {
       if (error) throw error;
       toast.success("Compliance item added");
       setDialogOpen(false);
-      setNewItem({ label: "", status: "compliant", dueDate: "" });
+      setNewItem({ label: "", status: "compliant", dueDate: "", driverId: "" });
       fetchCompliance();
     } catch (err: any) {
       toast.error(err.message || "Failed to save");
@@ -547,6 +536,19 @@ const DriverManagementPage = () => {
             <DialogDescription>Track a new certification, inspection, or training deadline.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            <div>
+              <Label>Driver *</Label>
+              <Select value={newItem.driverId} onValueChange={v => setNewItem({ ...newItem, driverId: v })}>
+                <SelectTrigger><SelectValue placeholder="Select a driver" /></SelectTrigger>
+                <SelectContent>
+                  {drivers.length === 0 ? (
+                    <SelectItem value="__none" disabled>No drivers found — add a driver first</SelectItem>
+                  ) : (
+                    drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label>Item Name *</Label>
               <Input value={newItem.label} onChange={e => setNewItem({ ...newItem, label: e.target.value })} placeholder="e.g. CDL Renewal" />
