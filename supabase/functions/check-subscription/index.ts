@@ -33,11 +33,11 @@ serve(async (req) => {
     );
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !userData?.user) throw new Error(`Authentication error: ${userError?.message || "invalid user"}`);
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) throw new Error(`Authentication error: ${claimsError?.message || "invalid claims"}`);
     
-    const userId = userData.user.id;
-    const email = userData.user.email as string;
+    const userId = claimsData.claims.sub as string;
+    const email = claimsData.claims.email as string;
     if (!userId || !email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId, email });
 
